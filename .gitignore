@@ -1,3 +1,6 @@
+# Ne pas commit le fichier .env
+.env
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
