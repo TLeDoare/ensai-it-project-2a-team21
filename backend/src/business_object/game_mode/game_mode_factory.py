@@ -20,4 +20,4 @@ class GameModeFactory:
         elif game_mode == "coinflip":
             return CoinFlipMode
         else:
-            raise ValueError("Error: game_mode must identify a game mode (e.g. 'coinflip', 'dice', ...)")
+            raise ValueError("game_mode must identify a game mode (e.g. 'coinflip', 'dice', ...)")
