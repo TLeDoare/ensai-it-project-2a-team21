@@ -31,13 +31,13 @@ def play_game(
         HTTPException: 401 if unauthenticated, 400 if invalid request.
     """
     logger.info("Play a game")
-    res = game_service.play(current_player.id_player, req.id_opponent, **req.params)
+    game = game_service.play(current_player.id_player, req.id_opponent, req.game_mode, **req.params)
 
     return GameResponse(
-        username1=res["player1"],
-        username2=res["player2"],
-        description=res["description"],
-        winner=res["winner"],
-        new_elo1=res["new_elo1"],
-        new_elo2=res["new_elo2"],
+        username1=game.player1.username,
+        username2=game.player2.username,
+        description=game.description,
+        winner=game.winner.username if game.winner else None,
+        new_elo1=game.player1.elo,
+        new_elo2=game.player2.elo,
     )
