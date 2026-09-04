@@ -1,5 +1,7 @@
 import secrets
+from datetime import datetime
 
+from business_object.game import Game
 from business_object.game_mode.game_mode import GameMode
 
 
@@ -12,4 +14,4 @@ class DiceMode(GameMode):
             winner = p1
         elif d1 < d2:
             winner = p2
-        return winner
+        return Game(p1, p2, "dice", winner, "Jeu de dé", datetime.now())
