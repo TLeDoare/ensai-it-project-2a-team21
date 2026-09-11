@@ -1,0 +1,76 @@
+[
+  {
+    "id": "1",
+    "players_list": [
+      "maurice",
+      "batricia"
+    ],
+    "winner_name": "maurice",
+    "details": "maurice choose heads, the coin lands on heads",
+    "location_name": "Arena 1",
+    "duration_seconds": 120,
+    "mode_type": "coinflip"
+  },
+  {
+    "id": "2",
+    "players_list": [
+      "miguel",
+      "junior"
+    ],
+    "winner_name": "junior",
+    "details": "miguel 5 - 6 junior",
+    "location_name": "Secret Cave",
+    "duration_seconds": 300,
+    "mode_type": "dice"
+  },
+  {
+    "id": "3",
+    "players_list": [
+      "gilbert",
+      "batricia"
+    ],
+    "winner_name": "batricia",
+    "details": "gilbert 5 - 6 batricia",
+    "location_name": "A branch",
+    "duration_seconds": 300,
+    "mode_type": "dice"
+  },
+  {
+    "id": "4",
+    "players_list": [
+      "batricia",
+      "miguel"
+    ],
+    "winner_name": "",
+    "details": "batricia 2 - 2 miguel",
+    "location_name": "Secret Cave",
+    "duration_seconds": 300,
+    "mode_type": "dice"
+  },
+  {
+    "uuid_match": 103,
+    "players_list": [
+      "junior",
+      "gilbert"
+    ],
+    "winner_name": "junior",
+    "details": "junior 3 - 2 gilbert",
+    "location_name": "Secret Cave",
+    "duration_seconds": 300,
+    "mode_type": "dice",
+    "id": "5"
+  },
+  {
+    "uuid_match": 103,
+    "players_list": [
+      "gilbert",
+      "batricia"
+    ],
+    "winner_name": "batricia",
+    "details": "gilbert 1 - 6 batricia",
+    "location_name": "Secret Cave",
+    "duration_seconds": 300,
+    "mode_type": "dice",
+    "id": "6"
+  }
+]
