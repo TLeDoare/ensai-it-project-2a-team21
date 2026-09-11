@@ -1,0 +1,187 @@
+\documentclass[12pt,a4paper]{article}
+
+% ------------------------------------------------
+% Packages
+% ------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{lmodern}
+\usepackage{setspace}
+
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm
+}
+
+\definecolor{ensaiBlue}{RGB}{47,91,140}
+
+\begin{document}
+
+% ==================================================
+% PAGE DE GARDE
+% ==================================================
+
+\begin{titlepage}
+
+\begin{center}
+
+% ------------------------------------------------
+% Logo ENSAI
+% ------------------------------------------------
+
+\IfFileExists{logo_ensai.png}{
+    \includegraphics[width=0.32\textwidth]{logo_ensai2.jpg}
+}{
+    {\Large \textbf{ENSAI}}
+}
+
+\vspace{1.2cm}
+
+% ------------------------------------------------
+% École / Formation
+% ------------------------------------------------
+
+\vspace{0.4cm}
+
+{\large
+Deuxième année -- Projet informatique
+}
+
+\vfill
+
+% ------------------------------------------------
+% Projet
+% ------------------------------------------------
+
+{\color{ensaiBlue}
+\rule{\textwidth}{1.2pt}
+}
+
+\vspace{0.7cm}
+
+{\Huge \bfseries ANONYMIA}
+
+\vspace{0.3cm}
+
+{\Large \textbf{Groupe 21}}
+
+\vspace{0.4cm}
+
+{\Large
+Application d'anonymisation\\
+de documents administratifs
+}
+
+\vspace{0.8cm}
+
+{\color{ensaiBlue}
+\rule{\textwidth}{1.2pt}
+}
+
+\vspace{1.4cm}
+
+% ------------------------------------------------
+% Type de document
+% ------------------------------------------------
+
+{\LARGE \bfseries Document d'analyse}
+
+\vspace{0.4cm}
+
+{\large
+Analyse du besoin et conception fonctionnelle
+}
+
+\vfill
+
+% ------------------------------------------------
+% Membres du groupe
+% ------------------------------------------------
+
+\begin{minipage}{0.75\textwidth}
+
+\centering
+
+{\large \textbf{Équipe projet}}
+
+\vspace{0.5cm}
+
+\begin{tabular}{c}
+ALVES Ryan \\[0.2cm]
+HAUET Noah \\[0.2cm]
+LE BESNERAIS Tom \\[0.2cm]
+LE DOARÉ Tanguy
+\end{tabular}
+
+\vspace{1cm}
+
+{\large
+\textbf{Tuteur :} LAGALLE Maxence
+}
+
+\end{minipage}
+
+\vfill
+
+% ------------------------------------------------
+% Date
+% ------------------------------------------------
+
+{\large
+Année universitaire 2026--2027
+}
+
+\vspace{0.3cm}
+
+
+\end{center}
+
+\end{titlepage}
+
+% ==================================================
+% SUITE DU DOCUMENT
+% ==================================================
+
+\tableofcontents
+\newpage
+
+\section{Expression du besoin}
+
+Les documents administratifs (courriers, factures, contrats…) contiennent très souvent des données personnelles, comme des noms, des adresses, voire même des coordonnées bancaires, qui peuvent être très sensibles et doivent donc éviter tout risque de fuite ; or cela peut arriver lorsque l’on partage ces données, par exemple pour les archiver. Selon le règlement général sur la protection des données (RGPD), ces informations doivent donc être protégées le mieux possible ; on peut pour cela utiliser par exemple la technique du caviardage, mais c’est une tâche qui peut être très longue et sujette à l’erreur.
+
+C’est dans ce contexte que s’inscrit notre projet Anonymia : notre but est de créer une application qui soit capable de détecter automatiquement les données confidentielles qui sont présentes dans un document fourni, puis de les caviarder. De plus, il faut que le texte fourni soit encore lisible et qu’il ait du sens.
+\newline
+
+Pour détecter les éléments à caviarder, nous avons utilisé deux approches différentes qui se complètent : une méthode “régulière” pour les types de données avec un format toujours identique, comme l’IBAN ou le numéro de sécurité sociale, et un grand modèle de langage (LLM) pour les données dont le format peut varier, comme des noms de personnes ou des lieux. Cette application doit de plus pouvoir continuer de fonctionner même si le modèle de langage est indisponible, et doit pouvoir se défendre contre les injections de prompt qui seraient dans le contenu des documents analysés.
+\newline
+
+Ce document présente notre démarche d’analyse et de conception de cette application : l’architecture logicielle que nous avons adoptée, la modélisation du système à l’aide de plusieurs diagrammes UML (diagramme de cas d’utilisation / de classes / séquences) et [j’ai pas la suite]
+
+
+\section{Reformulation du besoin}
+
+\section{Analyse fonctionnelle}
+
+\subsection{Acteurs}
+
+\subsection{Cas d'utilisation}
+
+\subsection{Diagramme de cas d'utilisation}
+
+\section{Diagrammes d'activité}
+
+\subsection{Utilisateur}
+
+\subsection{Superviseur}
+
+\subsection{Administrateur}
+
+\section{Architecture envisagée}
+
+\end{document}
