@@ -176,6 +176,11 @@ Ce document présente notre démarche d’analyse et de conception de cette appl
 
 \section{Diagrammes}
 \subsection{Diagramme de cas d'utilisation}
+
+Notre application propose des fonctionnalités en réponse directe aux besoins formulés précédemment. Ainsi, l'administrateur aura la possibilité de créer un compte, le désactiver, le supprimer, ou même en modifier le rôle. Une fois connecté à son compte, le superviseur peut consulter les métadonnées d'un document traité en filtrant par utilisateur ou par période. Enfin, l'utilisateur pourra réaliser le métier de caviardage : lorsqu'il importe un document, celui-ci pourra être analysé avec une détection des données personnelles et une stratégie d'anonymisation au choix de l'utilisateur, tout en assurant une journalisation du traitement.
+Nous avons fait le choix d'une logique d'emboîtement (héritage) des profils d'utilisation : un administrateur possède les fonctions d'un superviseur qui lui-même peut réaliser les actions d'un utilisateur.
+
+
 \subsection{Diagrammes d'activité}
 \subsection{Diagramme de séquence}
 \subsection{Diagramme des classes}
