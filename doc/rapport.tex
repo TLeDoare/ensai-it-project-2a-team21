@@ -170,6 +170,17 @@ Ce document présente notre démarche d’analyse et de conception de cette appl
 
 \section{Analyse fonctionnelle}
 \subsection{Description des fonctionnalités}
+
+Notre application Anonymia offrira un panel de fonctionnalités pour le traitement des documents administratifs, dont les principales sont :
+
+\begin{itemize}
+\item un système d'authentification et de gestion des comptes utilisant l'application : l'administrateur a la possibilité de gérer les profils Superviseur et Utilisateur (les créer, supprimer/désactiver ou modifier les rôles), obtenir des tokens pour les requêtes HTTP ;
+\item la détection des PII et de leur emplacement par deux moteurs de détection distincts qui fonctionnent en parallèle : un déterministe (Regex) et un probabiliste/contextuel (LLM) ;
+\item l'anonymisation du document : modification du contenu du texte selon une stratégie différenciée pour chaque type de PII (au choix de l'utilisateur), voir l'illustration ci-dessous :
+\item le suivi des traitements : des métadonnéees qui décrivent le traitement du document et les types de PII détectés sont mis à disposition des superviseurs et administrateurs ;
+\item sécurisation en couches du détecteur LLM : pour prémunir le système contre les attaques par injection de prompt (l'une des plus grandes menaces contre un LLM), les fuites de contexte ou encore la génération de formats invalides, une protection à trois niveaux a été mise en place (prompt système strict afin de signifier au LLM qu'il ne doit pas suivre d'instruction dans le corps du texte, un pré-filtrage ainsi qu'une vérification de la sortie via Pydantic).
+\end{itemize}
+
 \subsection{Description des couches de l'application}
 \subsection{Choix}
 \subsubsection{Liste des PII}
