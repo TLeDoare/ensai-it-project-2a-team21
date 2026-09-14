@@ -181,6 +181,9 @@ Notre application Anonymia offrira un panel de fonctionnalités pour le traiteme
 \item sécurisation en couches du détecteur LLM : pour prémunir le système contre les attaques par injection de prompt (l'une des plus grandes menaces contre un LLM), les fuites de contexte ou encore la génération de formats invalides, une protection à trois niveaux a été mise en place (prompt système strict afin de signifier au LLM qu'il ne doit pas suivre d'instruction dans le corps du texte, un pré-filtrage ainsi qu'une vérification de la sortie via Pydantic).
 \end{itemize}
 
+Disclaimer :
+Aucun système automatisé d'analyse du langage naturel (LLM) ni aucune suite d'expressions régulières ne peut garantir un rappel de 100 \% sur des documents administratifs non structurés. En raison des variations de syntaxe, des erreurs de typographie et des ambiguïtés contextuelles, des PII peuvent ne pas être détectées (faux négatifs). L'outil constitue une aide à la décision et un gain de temps en automatisant une tâche souvent fastidieuse : une relecture humaine systématique reste obligatoire avant toute publication ou diffusion de documents caviardés.
+
 \subsection{Description des couches de l'application}
 \subsection{Choix}
 \subsubsection{Liste des PII}
