@@ -11,6 +11,8 @@
 \usepackage{xcolor}
 \usepackage{lmodern}
 \usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
 
 \geometry{
     top=2.5cm,
@@ -35,7 +37,7 @@
 % Logo ENSAI
 % ------------------------------------------------
 
-\IfFileExists{logo_ensai.png}{
+\IfFileExists{logo_ensai2.jpg}{
     \includegraphics[width=0.32\textwidth]{logo_ensai2.jpg}
 }{
     {\Large \textbf{ENSAI}}
@@ -115,6 +117,7 @@ Analyse du besoin et conception fonctionnelle
 \begin{tabular}{c}
 ALVES Ryan \\[0.2cm]
 HAUET Noah \\[0.2cm]
+KUATE Cabrel\\[0.2cm]
 LE BESNERAIS Tom \\[0.2cm]
 LE DOARÉ Tanguy
 \end{tabular}
@@ -176,17 +179,53 @@ Ce document présente notre démarche d’analyse et de conception de cette appl
 
 \section{Diagrammes}
 \subsection{Diagramme de cas d'utilisation}
-
-Notre application propose des fonctionnalités en réponse directe aux besoins formulés précédemment. Ainsi, l'administrateur aura la possibilité de créer un compte, le désactiver, le supprimer, ou même en modifier le rôle. Une fois connecté à son compte, le superviseur peut consulter les métadonnées d'un document traité en filtrant par utilisateur ou par période. Enfin, l'utilisateur pourra réaliser le métier de caviardage : lorsqu'il importe un document, celui-ci pourra être analysé avec une détection des données personnelles et une stratégie d'anonymisation au choix de l'utilisateur, tout en assurant une journalisation du traitement.
-Nous avons fait le choix d'une logique d'emboîtement (héritage) des profils d'utilisation : un administrateur possède les fonctions d'un superviseur qui lui-même peut réaliser les actions d'un utilisateur.
-
-
 \subsection{Diagrammes d'activité}
 \subsection{Diagramme de séquence}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagramme_sequence.png}
+    \caption{Diagramme de séquence du flux nominal de détection des PII}
+    \label{fig:sequence-detection}
+\end{figure}
+
+Le diagramme de séquence présenté en figure~\ref{fig:sequence-detection} décrit le flux nominal de détection des données personnelles au sein d'Anonymia. Lorsqu'un utilisateur soumet un document, la requête est reçue par FastAPI puis transmise au DetectionService, chargé d'orchestrer l'analyse.
+
+Le service lance en parallèle les deux mécanismes de détection. Le RegexDetector recherche les PII dont la forme peut être caractérisée par des motifs prédéfinis, tandis que le LLMDetector prend en charge les informations nécessitant davantage de contexte. Avant l'appel au modèle, le document passe par un InjectionFilter visant à repérer d'éventuelles tentatives d'injection de prompt. La réponse du LLM est ensuite contrôlée par un OutputVerifier, qui vérifie notamment la conformité du format retourné, la validité des types de PII et la présence effective des textes détectés dans le document.
+
+Lorsque les deux traitements sont terminés, le DetectionService fusionne leurs résultats afin de constituer une liste unique de PIISpan. Cette liste est retournée à l'API puis transmise à l'utilisateur comme résultat de l'analyse.
+
+En cas d'indisponibilité ou d'échec du détecteur LLM, l'application fonctionne en mode dégradé : l'analyse se poursuit à partir des résultats du détecteur Regex. L'échec du LLM ne provoque donc pas l'arrêt complet du traitement.
+
 \subsection{Diagramme des classes}
 
 \section{Organisation du projet}
+
 \subsection{Diagramme de Gantt}
+
+Afin d'organiser le développement de notre projet dans le temps, nous avons établi un diagramme de Gantt présentant les principales phases de réalisation d'Anonymia. Cet outil permet de visualiser la répartition temporelle des différentes tâches, leurs éventuels chevauchements ainsi que les principaux jalons du projet. Le planning présenté reste prévisionnel : il constitue une vision macroscopique de l'organisation et pourra être ajusté au cours du projet en fonction de l'avancement de l'équipe et des retours obtenus lors des différents sprints.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{diagramme_gantt.png}
+    \caption{Planning prévisionnel du projet Anonymia}
+    \label{fig:gantt}
+\end{figure}
+
+Le planning présenté à la figure~\ref{fig:gantt} couvre l'ensemble du projet,
+depuis la phase d'analyse jusqu'à la soutenance.
+
+Une première phase est consacrée à l'analyse et à la conception de l'application.
+Elle comprend notamment la définition de la typologie des PII, la modélisation UML, la spécification des détecteurs, la définition de l'architecture de l'application ainsi que la préparation du dossier d'analyse, dont le dépôt constitue le premier jalon du projet le 17 septembre.
+
+Après une courte phase de préparation technique, le développement est organisé en plusieurs sprints successifs. Le premier vise à obtenir un premier flux fonctionnel traversant les différentes couches de l'application. Le deuxième approfondit le coeur du système de détection avec l'intégration du LLM, la fusion des résultats des différents détecteurs, la sécurisation des appels au modèle et la gestion du mode dégradé. Le troisième est principalement consacré à l'intégration des fonctionnalités restantes, aux tests et à la stabilisation de l'application.
+
+Nos tests seront réalisés progressivement au cours du développement plutôt que d'être concentrés uniquement à la fin du projet. La dernière phase est consacrée aux corrections éventuelles, à la préparation de la démonstration et à la soutenance prévue le 9 décembre.
+
+Les périodes de week-end et de vacances sont également représentées afin de
+prendre en compte la disponibilité réelle de l'équipe. Ce planning reste
+prévisionnel et pourra être révisé lors des différentes planifications de sprint en fonction de notre avancement dans la réalisation du projet.
+
 \subsection{Collaboration}
 
 
