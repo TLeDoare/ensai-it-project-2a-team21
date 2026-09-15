@@ -204,9 +204,11 @@ C'est cette couche qui englobe la partie logique de l'application. Elle communiq
 
 La complexité de cette tâche entraîne une nouvelle segmentation cette couche en sous-couches, chacune ayant leur responsabilités propres:
 \begin{enumerate}
+\label{sec:controle}
 \item La couche de contrôle, qui reçoit les requêtes HTTP du client et communique les réponses en se servant la couche de service. Pour faciliter le traitement de ces requêtes, FastAPI propose des \textit{modèles}, qui sont des classes de données utiles pour structurer les requêtes entrantes et sortantes de l'API.
 \item La couche de service, qui propose des services qui traitent les appels provenant principalement de la couche de contrôle. Il est prévu que cette couche propose deux services: un service qui traite les appels relatifs aux utilisateurs (création de compte, liste des comptes, etc.) et un autre qui traite les appels relatifs aux documents (création et caviardage d'un document, liste des documents caviardés).
 \item La couche d'accès aux données, qui constitue une interface communiquant avec la base de données. La base de données correspond à la couche de persistance. Pour réaliser des requêtes sur cette base, on utilise le module \href{https://www.psycopg.org/}{psycopg2}. 
+\item La couche "Business", qui modélise les objets qui seront utilisés par le couche de traitement dans son ensemble, c'est à dire qui sont utilisés par la couche de service et d'accès aux données pour modéliser les joueurs et les documents, et ces objets peuvent être communiqués d'une couche à une autre.
 \end{enumerate}
 
 \subsubsection{La couche de persistance (Persistence layer)}
@@ -245,14 +247,30 @@ En cas d'indisponibilité ou d'échec du détecteur LLM, l'application fonctionn
 
 \subsection{Diagramme des classes}
 
-
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{img2.png}
     \caption{Diagramme des classes - Types et modèles}
     \label{fig:sequence-detection}
 \end{figure}
+
+Tout d'abord, nous devons décrire les types personnalisés utilisés dans le projet. Afin de favoriser la clarité de la lecture, les liens entre les types représentés ici et les classes du deuxième diagramme des classes sont implicites. Les rôles, PII et sources d'analyse ont été modélisés par des types énumérés. En effet, les types énumérés représentent avec simplicité les éléments d'une catégorie. Une position est modélisée par un tuple nommé (\textit{Named tuple}), qui contient une position à caviarder, la PII impliquée, le niveau de confiance accordé à ce caviardage (par défaut $0$, choix tout à fait arbitraire), et la source du signalement de cette position (LLM ou expression régulière). Le choix du tuple nommé est justifié par le fait que ce type fournit des champs immutable, ce qui correspond à notre cas d'utilisation. Les positions à caviarder dans un texte sont représentées par un ensemble de positions, car l'union évite les doublons par rapport à la concaténation de listes, et l'ordre n'importe pas dans les zones à caviarder.\footnote{Il faut cependant noter que deux positions peuvent se confondre. A titre d'exemple seulement, une expression régulière peut signaler une date (e.g. "12/09/1958"), et le LLM peut signaler la même date dans une zone plus large: (e.g. "né le 12/09/1958"). Ainsi, les positions de "12/09/1958" sont signalées à la fois par le LLM et par l'expression régulière.} \hyperref[sec:controle]{Comme décrit précédemment}, les modèles sont utilisés afin de structurer les requêtes de l'API. Ainsi, voici leurs utilités respectives:
+\begin{itemize}
+\item Les métadonnées des documents sont représentées par DocModel, et les documents téléversés prennent la forme d'UploadDocModel.
+\item RegisterModel sert à inscrire un compte.
+\item LoginModel sert à se connecter, mais aussi à changer de mot de passe.
+\item PersonModel sert à lire les utilisateurs, mais aussi à les modifier.
+\end{itemize}
+Tous ces modèles sont hérités de \emph{BaseModel}, qui est un objet Pydantic. Nous avons utilisé d'autres type Pydantic, tel que EmailStr pour modéliser des e-mail servant à la connexion, ou encore constr pour le mot passe, qui permet de faire respecter des contraintes aux chaînes de caractères.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{img1.png}
+    \caption{Diagramme des classes - Hors types et modèles}
+    \label{fig:sequence-detection}
+\end{figure}
+
+
 
 \section{Organisation du projet}
 
