@@ -13,6 +13,8 @@
 \usepackage{setspace}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{blindtext}
+\usepackage{hyperref}
 
 \geometry{
     top=2.5cm,
@@ -185,6 +187,32 @@ Disclaimer :
 Aucun système automatisé d'analyse du langage naturel (LLM) ni aucune suite d'expressions régulières ne peut garantir un rappel de 100 \% sur des documents administratifs non structurés. En raison des variations de syntaxe, des erreurs de typographie et des ambiguïtés contextuelles, des PII peuvent ne pas être détectées (faux négatifs). L'outil constitue une aide à la décision et un gain de temps en automatisant une tâche souvent fastidieuse : une relecture humaine systématique reste obligatoire avant toute publication ou diffusion de documents caviardés.
 
 \subsection{Description des couches de l'application}
+
+L'application que nous allons proposer est d'importance suffisante pour qu'il soit préferable de la segementer en différentes couches, afin de permettre une meilleure organisation. Pour cela, nous pouvons essayer de suivre le principe de "séparation des responsabilités" (separation of concerns ou SoC en anglais). Ce principe préconise d'isoler les parties du code ayant une fonction précise relativement à la problématique générale. Il favorise notamment le travail en équipe, le déboggage et la lisibilité du code. L'application finale sera ainsi dotée de ces trois couches principales:
+
+\subsubsection{La couche de présentation (Presentation layer)}
+Cette couche communique directement avec le client. Elle correspond au front-end de notre application, écrit en Python et utilisant le framework \href{https://streamlit.io/}{Streamlit}. Cette couche ne sera pas détaillée dans la suite de ce rapport, où l'on portera plus d'attention aux deux autres couches.
+
+\subsubsection{La couche de traitement (Business layer)}
+C'est cette couche qui englobe la partie logique de l'application. Elle communique avec l'application sous forme d'une API de type \href{https://fr.wikipedia.org/wiki/Representational_state_transfer}{REST} de préférence. L'outil utilisé pour cela est \href{https://fastapi.tiangolo.com/}{FastAPI}. Plus générallement, elle a les missions suivantes:
+\begin{itemize}
+\item Gérer les utilisateurs (création de compte, authentification, gestion des rôles, etc.)
+\item Recevoir les documents à caviarder
+\item Caviarder les documents selon les paramètrages de l'utilisateur
+\item Communiquer avec la base de données.
+\end{itemize}
+
+La complexité de cette tâche entraîne une nouvelle segmentation cette couche en sous-couches, chacune ayant leur responsabilités propres:
+\begin{enumerate}
+\item La couche de contrôle, qui reçoit les requêtes HTTP du client et communique les réponses en se servant la couche de service. Pour faciliter le traitement de ces requêtes, FastAPI propose des \textit{modèles}, qui sont des classes de données utiles pour structurer les requêtes entrantes et sortantes de l'API.
+\item La couche de service, qui propose des services qui traitent les appels provenant principalement de la couche de contrôle. Il est prévu que cette couche propose deux services: un service qui traite les appels relatifs aux utilisateurs (création de compte, liste des comptes, etc.) et un autre qui traite les appels relatifs aux documents (création et caviardage d'un document, liste des documents caviardés).
+\item La couche d'accès aux données, qui constitue une interface communiquant avec la base de données. La base de données correspond à la couche de persistance. Pour réaliser des requêtes sur cette base, on utilise le module \href{https://www.psycopg.org/}{psycopg2}. 
+\end{enumerate}
+
+\subsubsection{La couche de persistance (Persistence layer)}
+La couche de persistance constitue la base de donnée à laquelle fait appel l'application Python. Nous utilisons pour cela le système de gestion de base de données PostgreSQL, parce qu'il est réputé robuste et qu'il est disponible sur Onyxia. 
+
+
 \subsection{Choix}
 \subsubsection{Liste des PII}
 \subsubsection{Règles}
@@ -216,6 +244,15 @@ Lorsque les deux traitements sont terminés, le DetectionService fusionne leurs 
 En cas d'indisponibilité ou d'échec du détecteur LLM, l'application fonctionne en mode dégradé : l'analyse se poursuit à partir des résultats du détecteur Regex. L'échec du LLM ne provoque donc pas l'arrêt complet du traitement.
 
 \subsection{Diagramme des classes}
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{img2.png}
+    \caption{Diagramme des classes - Types et modèles}
+    \label{fig:sequence-detection}
+\end{figure}
 
 \section{Organisation du projet}
 

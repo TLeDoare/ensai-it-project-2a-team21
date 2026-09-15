@@ -2,6 +2,7 @@
 *.pdf
 *.aux
 *.toc
+*.out
 
 # Ne pas commit le fichier .env
 .env
