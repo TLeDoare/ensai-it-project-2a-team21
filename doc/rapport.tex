@@ -216,8 +216,89 @@ La couche de persistance constitue la base de donnée à laquelle fait appel l'a
 
 
 \subsection{Choix}
-\subsubsection{Liste des PII}
-\subsubsection{Règles}
+\subsubsection{Liste des PII et Règles}
+Cette section présente les trois engagements de notre analyse~:
+\begin{enumerate}[label=(\arabic*)]
+    \item Les PII retenues et la typologie figée des PII détectées par Anonymia, classée selon le cercle de difficulté de détection~;
+    \item pour chaque type discutable des cercles 2 et 3, une règle de décision explicite~;
+    \item les règles de décision transverses qui s'appliquent au-delà de la seule typologie (seuils, exclusions).
+\end{enumerate}
+Plus on s'éloigne du cercle 1, plus la décision de détection relève d'un choix de conception à documenter, et non d'une évidence technique.
+
+\section{Cercle 1 --- Identification directe et non ambiguë}
+Ces types identifient une personne à eux seuls, sans nécessiter de mise en contexte ni de recoupement. Aucune règle de décision n'est requise~: la présence de la donnée suffit.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{p{3.2cm} p{1.6cm} p{9.5cm}}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+NIR (Numéro d’Inscription au Répertoire) & Regex & Structure fixe avec clé de contrôle calculée à partir des autres chiffres~; identifiant unique d'une personne à lui seul, sans besoin d'aucune autre information. \\
+IBAN(International Bank Account Number) & Regex & Format international normalisé, vérifiable par clé de contrôle (modulo 97)~; désigne un compte bancaire rattaché à une personne physique. \\
+Mail & Regex & Structure fixe (partie locale, arobase, domaine)~; très souvent nominative ou directement rattachable à un individu. \\
+Numéro de Téléphone & Regex & Format national fixe (nombre de chiffres, préfixe)~; un numéro, surtout mobile, est généralement propre à un seul individu. \\
+Numéro CNI(Carte nationale d'identité) & Regex & Structure fixe distincte de l'ancien format~; reste un identifiant administratif unique de son détenteur. \\
+PAN(Primary Account Number) & Regex & Format fixe par réseau émetteur, clé de contrôle (algorithme de Luhn)~; donnée financière sensible directement rattachée à son porteur. \\
+Nom (de personnes) & LLM & Aucune structure syntaxique propre~; seule la compréhension du contexte permet d'identifier un nom propre désignant une personne. Type le plus difficile à détecter. \\
+Adresse postale + code postal & LLM & Forme libre (rue, numéro, ville) qu'aucun motif fixe ne peut couvrir dans sa variété~; combinée au code postal, localise précisément le domicile d'une personne. \\
+\bottomrule
+\end{longtable}
+
+\section{Cercle 2 --- Identification indirecte ou dépendante du contexte}
+Ces types nécessitent un recoupement (fichier tiers, registre public) ou une règle de seuil pour trancher leur caractère identifiant. La décision reste largement objectivable dès lors que la règle est fixée.
+
+\begin{longtable}{p{3.2cm} p{1.6cm} p{9.5cm}}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification et règle de décision} \\
+\midrule
+\endhead
+Plaque d'immatriculation & Regex & Format réglementé et fixe (ex. AA-123-AA)~; identifie un véhicule et, par le fichier des immatriculations, remonte à son propriétaire --- identification \emph{indirecte}. \\
+Adresse IP & Regex & Format fixe (IPv4/IPv6)~; via le fournisseur d'accès, peut permettre de remonter jusqu'à un foyer ou un individu. \\
+SIREN(Système d’Identification du Répertoire des Entreprises) & Regex & Longueur et structure fixes, clé de contrôle~; identifie en principe une entreprise, non une personne --- \textbf{règle~:} retenu comme identifiant uniquement pour une entreprise individuelle ou une profession libérale, où il révèle directement la personne physique qui l'exploite. \\
+Référence cadastrale & Regex & Codification fixe (section, parcelle)~; les registres publics permettent de relier la parcelle à son propriétaire --- donnée indirectement identifiante. \\
+Données GPS & Regex & Format numérique fixe~; une position suffisamment précise peut désigner un domicile ou révéler des habitudes de déplacement. \\
+Date de naissance & LLM & Une date s'écrit toujours de la même façon, que l'événement soit une naissance ou non --- \textbf{règle~:} retenue comme DATE\_OF\_BIRTH uniquement si le contexte immédiat l'associe explicitement à une naissance. \\
+Lieu & LLM & Aucune structure identifiable en soi~; caractère identifiant dépendant du contexte --- \textbf{règle~:} voir seuil de population, Section~3. \\
+Organisme & LLM & Caractère identifiant dépendant de la taille de la structure --- \textbf{règle~:} une institution nationale (ex. l'INSEE) n'identifie personne~; une structure très restreinte (ex. une entreprise de trois salariés) devient identifiante. \\
+\bottomrule
+\end{longtable}
+
+\section{Cercle 3 --- Jugement fortement contextuel et catégories sensibles}
+Ces types exigent une lecture fine du texte, un cumul d'indices, ou relèvent de catégories de données particulièrement sensibles au sens du RGPD. La décision de détection y est la plus discutable.
+
+\begin{longtable}{p{3.2cm} p{1.6cm} p{9.5cm}}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+Fonctions révélatrices & LLM & Un intitulé seul est peu identifiant (de nombreuses personnes peuvent occuper un poste similaire)~; combiné à une organisation ou un lieu précis, il peut ne correspondre qu'à une seule personne --- risque à apprécier au cas par cas. \\
+Liens familiaux & LLM & Une mention comme « son fils » ou « sa femme » ne nomme personne directement, mais constitue un identifiant indirect une fois rapprochée d'autres informations du texte. \\
+Éléments de vie privée (cumul) & LLM & Chaque détail pris isolément peut sembler anodin~; l'accumulation de plusieurs éléments dans un même texte permet de recouper les indices jusqu'à ne laisser qu'une seule personne possible, même sans nom ni identifiant direct. \\
+Situation judiciaire & LLM & Catégorie de données particulièrement sensible, dont la divulgation peut avoir des conséquences graves~; détection dépendant entièrement de la formulation du texte. \\
+Revenus (personne physique) & LLM & Donnée financière personnelle sensible --- à distinguer du chiffre d'affaires d'une entreprise, donnée économique publique concernant une structure et non un individu, qui n'a pas à être masquée. \\
+Suivi médical & LLM & Catégorie de données à protection renforcée~; aucun format fixe n'existe, seule la compréhension du contexte médical permet de la repérer. \\
+Ethnie & LLM & Catégorie de données sensibles au sens du RGPD~; ne peut être repérée qu'à travers la formulation du texte. \\
+Sexe (accords) & LLM & Non sensible en tant que telle mais conditionne les accords grammaticaux du texte reformulé~; utile pour produire un document caviardé ou pseudonymisé cohérent, plutôt que systématiquement occultée. \\
+\bottomrule
+\end{longtable}
+
+\section{Règles de décision transverses}
+Au-delà de la typologie, certaines situations exigent une règle explicite à documenter, la frontière entre donnée identifiante et donnée neutre n'étant pas évidente à tracer.
+
+\subsection{Règles d'inclusion / seuils}
+
+\textbf{Commune de moins de 10~000 habitants \(\Rightarrow\) révélatrice.} Plus une commune compte peu d'habitants, plus le nombre de personnes correspondant à un profil donné (âge, fonction, situation) y est restreint. En dessous d'un certain seuil de population, la mentionner revient à réduire drastiquement le champ des personnes possibles, ce qui facilite la réidentification par recoupement. Fixer un seuil chiffré permet d'appliquer la règle de façon homogène plutôt que de laisser un jugement au cas par cas.
+
+\textbf{Tranches d'âge plutôt qu'âge exact.} Remplacer un âge exact par une tranche conserve l'information utile à la compréhension du document tout en réduisant sa précision. Un âge précis, combiné à d'autres détails, peut suffire à isoler une seule personne~; une tranche élargit le nombre de personnes correspondantes et diminue le risque d'identification.
+
+\textbf{Retrait du jour et du mois pour les dates liées à un événement.} Une date complète associée à un événement particulier peut être recoupée avec des sources publiques (articles de presse, comptes rendus, registres) pour retrouver la personne concernée. Ne conserver que l'année suffit généralement à situer le fait dans le temps, sans offrir la précision nécessaire à un tel recoupement.
+
+\subsection{Règles d'exclusion}
+
+\textbf{Zones géographiques larges --- non anonymisées.} Une zone géographique large regroupe par définition un très grand nombre d'individus. Une telle mention ne permet pas, seule ni combinée à d'autres éléments courants, de désigner une personne en particulier~: la masquer n'apporterait aucune protection supplémentaire tout en appauvrissant inutilement le document.
+
+\textbf{Personnalités publiques --- non anonymisées.} Une personnalité publique est par nature déjà identifiée et connue en raison de ses fonctions ou de sa notoriété, indépendamment du document traité. La protection des données personnelles vise à empêcher la divulgation d'une identité qui ne serait pas autrement accessible, pas à occulter une information déjà publique et largement diffusée par ailleurs.
 \subsection{Sécurité}
 \subsection{Technologies}
 
