@@ -1,22 +1,21 @@
-from service.game_service import GameService
-from utils.env_variables import display_values, load_environment_variables
-from utils.log_utils import initialize_logs
+# uv run --project backend python backend/src/sandbox.py
 
-# Initialization
-initialize_logs("Webservice")
+from dao.game_dao import GameDao
+from utils.env_variables import load_environment_variables
 
-load_environment_variables()
-display_values()
+load_environment_variables()  # Required to load the variables needed (env) to connect to the database
 
+# p1 = PlayerService().find_by_id(3)
+# p2 = PlayerService().find_by_id(5)
+# game = Game(
+#     player1=p1, player2=p2, game_mode="dice", winner=p1, description="aaa", timestamp=datetime.now()
+# )
 
-g = GameService().play(3, 5, "coinflip", choice="tails")
-print(g)
+# GameDao().create(game)
+# print(game.id_game)
+# game2 = GameDao().find_by_id(game.id_game)
+# print(game)
+# print(game2)
 
-print(f"{g.player1.username} : new elo -> {g.player1.elo}")
-print(f"{g.player2.username} : new elo -> {g.player2.elo}")
-
-g2 = GameService().play(3, 5, "dice")
-print(g2)
-
-print(f"{g2.player1.username} : new elo -> {g2.player1.elo}")
-print(f"{g2.player2.username} : new elo -> {g2.player2.elo}")
+for g in GameDao().find_all_by_player(4):
+    print(g)
