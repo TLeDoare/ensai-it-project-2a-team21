@@ -1,7 +1,9 @@
 from fastapi import HTTPException
 
+from business_object.game import Game
 from business_object.game_mode.game_mode_factory import GameModeFactory
 from business_object.scoring_strategy import ScoringStrategy
+from dao.game_dao import GameDao
 from dao.player_dao import PlayerDao
 from utils.log_utils import log
 
@@ -40,4 +42,21 @@ class GameService:
         PlayerDao().update(p1)
         PlayerDao().update(p2)
 
+        GameDao().create(game)
+
         return game
+
+    @log
+    def find_by_id(self, id_game: int) -> Game:
+        return GameDao().find_by_id(id_game)
+
+    @log
+    def find_all_by_player(self, id_player: int, game_mode: str | None = None) -> list[Game]:
+        if game_mode is not None:
+            return [
+                game
+                for game in GameDao().find_all_by_player(id_player)
+                if game.game_mode == game_mode
+            ]
+        else:
+            return GameDao().find_all_by_player(id_player)
