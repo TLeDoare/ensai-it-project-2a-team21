@@ -1,0 +1,59 @@
+[project]
+name = "Anonymia"
+version = "0.0.1"
+description = "Caviardage professionnel"
+authors = [{ name = "ALVES Ryan" }, { name = "HAUET Noah" }, { name = "KUATE Cabrel" }, { name = "LE BESNERAIS Tom" }, { name = "LE DOARÉ Tanguy" }]
+requires-python = ">=3.13"
+
+dependencies = [
+    "fastapi",
+    "inquirerPy",
+    "psycopg2-binary",
+    "python-dotenv",
+    "pydantic[email]",
+    "PyYAML",
+    "requests",
+    "regex",
+    "uvicorn",
+]
+
+# Dependencies used only for development, not for runtime
+[project.optional-dependencies]
+dev = ["bandit", "coverage", "pylint", "pytest", "ruff"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" } # source files are in folder src
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["B008", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["*test*.py"]
+addopts = "-v -s -x"
+
+[tool.coverage.run]
+branch = true
+include = ["src/service/*", "src/dao/*"]
+omit = ["*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.html]
+directory = "coverage_report"
