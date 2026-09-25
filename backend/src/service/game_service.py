@@ -56,7 +56,7 @@ class GameService:
         return GameDao().find_by_id(id_game)
 
     @log
-    def get_win_loss_stat(self, id_player: int):
+    def get_win_loss_stat(self, id_player: int) -> float:
         games = self.find_all_by_player(id_player)
         tot = 0
         nwin = 0
@@ -64,7 +64,7 @@ class GameService:
             tot += 1
             if g.winner is not None:
                 nwin += int(g.winner.id_player == id_player)
-        return None if tot == 0 else nwin / tot
+        return 0 if tot == 0 else nwin / tot
 
     @log
     def find_all_by_player(self, id_player: int, game_mode: str = None) -> list[Game]:

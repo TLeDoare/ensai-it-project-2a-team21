@@ -28,10 +28,11 @@ if st.query_params.id_player:
 
     matchs = api_client.get(f"/game/?id_player={st.query_params.id_player}").get("data")
     df = pd.DataFrame(matchs)
-    gagnant = df.winner.map(
-        lambda x: int(st.query_params.id_player) == x["id_player"] if x is not None else None
-    )
-    df.player1 = df.player1.map(lambda x: f"{x['username']} ({x['elo']})")
-    df.player2 = df.player2.map(lambda x: f"{x['username']} ({x['elo']})")
-    df.winner = gagnant.map(lambda x: "Win" if x else "Loss" if x is not None else "Draw")
-    st.dataframe(df.iloc[:, [1, 2, 3, 4]], hide_index=True)
+    if not df.empty:
+        gagnant = df.winner.map(
+            lambda x: int(st.query_params.id_player) == x["id_player"] if x is not None else None
+        )
+        df.player1 = df.player1.map(lambda x: f"{x['username']} ({x['elo']})")
+        df.player2 = df.player2.map(lambda x: f"{x['username']} ({x['elo']})")
+        df.winner = gagnant.map(lambda x: "Win" if x else "Loss" if x is not None else "Draw")
+        st.dataframe(df.iloc[:, [1, 2, 3, 4]], hide_index=True)
