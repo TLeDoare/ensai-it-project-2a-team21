@@ -33,5 +33,5 @@ if st.query_params.id_player:
     )
     df.player1 = df.player1.map(lambda x: f"{x['username']} ({x['elo']})")
     df.player2 = df.player2.map(lambda x: f"{x['username']} ({x['elo']})")
-    df.winner = gagnant.map(lambda x: "Win" if x else "Loss" if x is not None else "None")
+    df.winner = gagnant.map(lambda x: "Win" if x else "Loss" if x is not None else "Draw")
     st.dataframe(df.iloc[:, [1, 2, 3, 4]], hide_index=True)
