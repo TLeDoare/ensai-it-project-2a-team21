@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class UploadDocModel(BaseModel):
-    file: str # Devrait être UploadFile
+    file: str  # Devrait être UploadFile
     sent_by: int
     params: dict
 
