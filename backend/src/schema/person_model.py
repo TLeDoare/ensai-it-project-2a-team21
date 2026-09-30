@@ -1,10 +1,12 @@
 from pydantic import BaseModel, EmailStr, constr
 
+from business_object.types import Role
+
 
 class PersonModel(BaseModel):
     id: int
     email: EmailStr
-    role: Role  # à implémenter ou importer ?
+    role: Role
 
 
 class LoginModel(BaseModel):
