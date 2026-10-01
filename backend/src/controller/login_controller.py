@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from utils.log_utils import get_logger
 
 from schema.person_model import LoginModel, PersonModel
 from service.person_service import PersonService
+from utils.log_utils import get_logger
 
 router = APIRouter()
 
