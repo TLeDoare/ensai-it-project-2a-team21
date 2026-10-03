@@ -1,7 +1,7 @@
 import re
 
 from .analyser_decorator import AnalyserDecorator
-
+from ..types import Position, Positions, PII, Analyser as AnalyserSource
 
 class RegexDecorator(AnalyserDecorator):
     """Ajoute la détection des PII reconnaissables par expressions régulières."""
@@ -10,4 +10,19 @@ class RegexDecorator(AnalyserDecorator):
 
     def _detect_emails(self, content: str):
         return list(re.finditer(self.EMAIL_PATTERN, content))
-    # ajout de l'analyse une fois les positions bien définies dans types
+
+    def analyse(self, content: str) -> Positions:
+        positions = super().analyse(content)
+
+        for match in self._detect_emails(content):
+            position = Position(
+                indices=(match.start(), match.end()),
+                PII=PII.email,
+                confiance=1.0,
+                analyser_source=AnalyserSource.Regex,
+            )
+
+            positions.add(position)
+
+        return positions
+        # possibilité de factoriser plutard pour avoir une méthode commune
