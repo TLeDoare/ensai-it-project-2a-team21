@@ -1,22 +1,20 @@
-import hashlib
-
+from pwdlib import PasswordHash
 from fastapi import Header, HTTPException
 
 from dao.person_dao import PersonDAO
 
 
-def hash_password(password: str, salt: str = "") -> str:
-    """Hashes a password using the SHA-256 algorithm.
-    Args:
-        password (str): The plain text password to be hashed.
-        salt (str, optional): A string added to the password before hashing
-            to protect against rainbow table attacks.
-    Returns:
-        str: The resulting hexadecimal hash string.
-    """
-    password_bytes = password.encode("utf-8") + salt.encode("utf-8")
-    hash_object = hashlib.sha256(password_bytes)
-    return hash_object.hexdigest()
+password_hash = PasswordHash.recommended()
+
+
+def hash_password(password: str) -> str:
+    """Hache un mot de passe avant son stockage en base de données."""
+    return password_hash.hash(password)
+
+
+def verify_password(password: str, hashed_password: str) -> bool:
+    """Vérifie qu'un mot de passe correspond au hash stocké."""
+    return password_hash.verify(password, hashed_password)
 
 
 def verify_token(x_auth_token=Header(None)) -> PersonDAO:
