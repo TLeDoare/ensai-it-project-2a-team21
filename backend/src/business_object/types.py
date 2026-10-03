@@ -10,6 +10,7 @@ class PII(Enum):
     birthdate = auto()
     NIR = auto()
     IBAN = auto()
+    email = auto()
     phone_numer = auto()
     CNI = auto()
     PAN = auto()
