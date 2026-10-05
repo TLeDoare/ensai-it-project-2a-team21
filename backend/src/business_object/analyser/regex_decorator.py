@@ -16,9 +16,9 @@ class RegexDecorator(AnalyserDecorator):
 
         for match in self._detect_emails(content):
             position = Position(
-                indices=(match.start(), match.end()),
+                indices=list(range(match.start(), match.end())),
                 PII=PII.email,
-                confiance=1.0,
+                confidence=1.0,
                 analyser_source=AnalyserSource.Regex,
             )
 

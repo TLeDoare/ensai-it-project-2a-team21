@@ -1,7 +1,7 @@
 from collections import namedtuple
 from enum import Enum, auto
 
-Position = namedtuple("Position", ["indices", "PII", "confiance", "analyser_source"])
+Position = namedtuple("Position", ["indices", "PII", "confidence", "analyser_source"])
 type Positions = set[Position]
 
 class PII(Enum):
