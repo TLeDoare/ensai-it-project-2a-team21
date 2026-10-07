@@ -9,6 +9,6 @@ class RedactedDoc:
         self.filename = filename
         self.upload_date = upload_date
         self.sent_by = sent_by
-        self.id = id
         self.params = params
         self.details = details
+        self.id = id

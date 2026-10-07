@@ -10,8 +10,8 @@ class UploadDocModel(BaseModel):
 
 
 class DocModel(BaseModel):
-    id: int
     filename: str
     upload_date: datetime
     sent_by: int
+    id: int | None
     params: dict
