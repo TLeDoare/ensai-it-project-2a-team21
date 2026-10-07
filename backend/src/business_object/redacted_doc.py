@@ -5,10 +5,11 @@ from business_object.types import Positions
 
 
 class RedactedDoc:
-    def __init__(self, filename: str, upload_date: datetime, sent_by: Person, params: dict, details: Positions, id: int | None = None):
+    def __init__(self, filename: str, upload_date: datetime, sent_by: Person, params: dict, details: Positions, id: int | None = None, file_path: str = None):
         self.filename = filename
         self.upload_date = upload_date
         self.sent_by = sent_by
         self.id = id
         self.params = params
         self.details = details
+        self.file_path = file_path
