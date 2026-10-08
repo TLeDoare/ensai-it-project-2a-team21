@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schema.person_model import PersonModel
+from schema.person_model import PersonModel, RegisterModel
 from service.person_service import PersonService
 from utils.log_utils import get_logger
 
@@ -46,26 +46,25 @@ async def user_by_id(id_user: int, person_service=Depends(get_person_service)):
 
 
 @router.post("/", response_model=PersonModel, tags=["Users"])
-async def create_player(user: PersonModel, person_service=Depends(get_person_service)):
-    """Create a new user.
-    Args:
-        user (PersonModel): The user data to create.
-        person_service (PersonService): The service used to interact with user data.
-    Returns:
-        PersonModel: The newly created user data.
-    Raises:
-        HTTPException: 400 error if the username is already taken.
-        HTTPException: 500 error if the creation process fails.
-    """
+def create_person(
+    user: RegisterModel,
+    person_service: PersonService = Depends(get_person_service),
+):
     logger.info("Create a user")
-    if person_service.username_already_used(user.username):
-        raise HTTPException(status_code=400, detail="Username already used.")
 
-    user = person_service.create(user.email, user.password, user.role)
-    if not user:
-        raise HTTPException(status_code=500, detail="Error while creating user.")
+    person = person_service.create(
+        user.email,
+        user.password,
+        user.role,
+    )
 
-    return user
+    if person is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Email already used.",
+        )
+
+    return person
 
 
 @router.put("/{id_user}", response_model=PersonModel, tags=["Users"])

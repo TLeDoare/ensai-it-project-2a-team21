@@ -34,8 +34,8 @@ def verify_token(x_auth_token=Header(None)) -> PersonDAO:
     if not x_auth_token:
         raise HTTPException(status_code=401, detail="Missing token.")
 
-    player = PersonDAO().find_by_token(x_auth_token)
-    if not player:
+    person = PersonDAO().find_by_token(x_auth_token)
+    if person is None:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
-    return player
+    return person
