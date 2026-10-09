@@ -11,14 +11,14 @@ class DocDAO(metaclass=Singleton):
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, file_path)        "
+                    "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, params)        "
                     "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s)"
                     "  RETURNING id;",
                     {
                         "filename": doc.filename,
                         "upload_date": doc.upload_date,
                         "pii_count": len(doc.details),
-                        "pii_positions": json.dumps(doc.details),
+                        "pii_positions": str(doc.details),
                         "params": json.dumps(doc.params)
                     }
                 )

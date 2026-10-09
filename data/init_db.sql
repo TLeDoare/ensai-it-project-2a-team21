@@ -17,8 +17,8 @@ CREATE TABLE RedactedDoc (
   filename VARCHAR(255) NOT NULL,
   upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pii_count INT DEFAULT 0,
-  pii_positions JSONB,
-  params JSONB -- chemin d'enregistrement du document caviarde
+  pii_positions VARCHAR(1000),
+  params VARCHAR(1000) -- chemin d'enregistrement du document caviarde
 );
 
 -- Table d'association Many-to-Many
