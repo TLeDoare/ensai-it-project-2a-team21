@@ -11,5 +11,4 @@ class RedactedDoc:
         self.sent_by = sent_by
         self.params = params
         self.details = details
-        self.file_path = file_path
         self.id = id
