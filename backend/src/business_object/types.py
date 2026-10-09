@@ -38,6 +38,6 @@ class Analyser(Enum):
 
 
 class Role(Enum):
-    Utilisateur = auto()
-    Superviseur = auto()
-    Administrateur = auto()
+    Utilisateur = "UTILISATEUR"
+    Superviseur = "SUPERVISEUR"
+    Administrateur = "ADMINISTRATEUR"
