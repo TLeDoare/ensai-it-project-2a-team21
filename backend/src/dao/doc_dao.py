@@ -1,7 +1,7 @@
 import json
 
-from ..business_object.redacted_doc import RedactedDoc
-from ..utils.singleton import Singleton
+from business_object.redacted_doc import RedactedDoc
+from utils.singleton import Singleton
 from .db_connection import DBConnection
 
 
@@ -12,16 +12,16 @@ class DocDAO(metaclass=Singleton):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, file_path)        "
-                    "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(file_path)s)"
+                    "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s)"
                     "  RETURNING id;                                                                 ",
                     {"filename": doc.filename,
                     "upload_date": doc.upload_date,
-                    "pii_count": doc.params["count"],  # pas sûr, peut-être agréger avec un len(doc.positions)
+                    "pii_count": len(doc.details),  # pas sûr, peut-être agréger avec un len(doc.positions)
                     # ouais, y a un risque d'avoir une keyError prcq params a pas forcément de clé count
                     # len(doc.details) nan? y a pas d'arg positions dans redacteddoc
-                    "pii_positions": json.dumps(doc.details),
+                    "pii_positions": str(doc.details),
                     #details pas sérialisable? c'est un dict, ça alors que json c'est des tableaux
-                    "file_path": doc.file_path}
+                    }
                 )
                 id_généré = cursor.fetchone()["id"]
                 doc.id = id_généré  # ajout à l'instance de classe
