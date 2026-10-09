@@ -11,7 +11,7 @@ class PII(Enum):
     NIR = auto()
     IBAN = auto()
     email = auto()
-    phone_numer = auto()
+    phone_number = auto()
     CNI = auto()
     PAN = auto()
     postal_code = auto()

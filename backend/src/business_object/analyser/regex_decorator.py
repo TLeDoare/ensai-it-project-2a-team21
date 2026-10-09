@@ -17,6 +17,7 @@ class RegexDecorator(AnalyserDecorator):
         for match in self._detect_emails(content):
             position = Position(
                 # Les indices sont finalements dans un tuple plutôt qu'une liste car il est impossible de réaliser des ensembles de liste en python
+                # pourquoi range et pas juste tuple ?
                 indices=tuple(range(match.start(), match.end())),
                 PII=PII.email,
                 confidence=1.0,
