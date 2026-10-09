@@ -2,6 +2,7 @@ from pwdlib import PasswordHash
 from fastapi import Header, HTTPException
 
 from dao.person_dao import PersonDAO
+from business_object.person import Person
 
 
 password_hash = PasswordHash.recommended()
@@ -17,7 +18,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
-def verify_token(x_auth_token=Header(None)) -> PersonDAO:
+def verify_token(x_auth_token=Header(None)) -> Person:
     """Verifies the authenticity of a player via the provided auth token.
 
     This function checks if a token is present in the request headers and
