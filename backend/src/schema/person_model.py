@@ -16,5 +16,6 @@ class LoginModel(BaseModel):
 
 class RegisterModel(BaseModel):
     email: EmailStr
-    password: constr
+    password: str
     role: Role
+
