@@ -60,3 +60,135 @@ class DocDAO(metaclass=Singleton):
                         id=doc_found["id"]
                     )
         return RedactedDoc
+
+    def find_all(self) -> list[RedactedDoc]:
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM redacteddoc
+                    """
+                )
+                doc_bdd = cursor.fetchall()
+        liste_doc = []
+        if doc_bdd:
+            for doc in doc_bdd:
+                liste_doc.append(
+                    RedactedDoc(
+                        filename=doc["filename"],
+                        upload_date=doc["upload_date"],
+                        sent_by=doc["sent_by"],
+                        params=doc["params"],
+                        details=doc["details"],
+                        id=doc["id"]
+                    )
+                )
+        return liste_doc
+
+    def find_by_user(self, id_person: int) -> list[RedactedDoc]:
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM redacteddoc
+                    WHERE sent_by = %(id_person)s
+                    """,
+                    {
+                        "id_person": id_person
+                    }
+                )
+                doc_bdd = cursor.fetchall()
+        liste_doc = []
+        if doc_bdd:
+            for doc in doc_bdd:
+                liste_doc.append(
+                    RedactedDoc(
+                        filename=doc["filename"],
+                        upload_date=doc["upload_date"],
+                        sent_by=doc["sent_by"],
+                        params=doc["params"],
+                        details=doc["details"],
+                        id=doc["id"]
+                    )
+                )
+        return liste_doc
+
+    def find_with_filter(self, filter) -> list[RedactedDoc]:
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM redacteddoc
+                    WHERE filter = %(filter)s
+                    """,
+                    {
+                        "filter": filter
+                    }
+                )
+                doc_bdd = cursor.fetchall()
+        liste_doc = []
+        if doc_bdd:
+            for doc in doc_bdd:
+                liste_doc.append(
+                    RedactedDoc(
+                        filename=doc["filename"],
+                        upload_date=doc["upload_date"],
+                        sent_by=doc["sent_by"],
+                        params=doc["params"],
+                        details=doc["details"],
+                        id=doc["id"]
+                    )
+                )
+        return liste_doc
+
+    def update(self, doc) -> bool:
+        """Update a doc in the database.
+        Args:
+            doc to be updated
+        Returns:
+            True if update is successful, False otherwise
+        """
+        nb_affected_rows = 0
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE redacteddoc                                                  "
+                    "   SET filename = %(filename)s,                                "
+                    "       upload_date = %(upload_date)s,            "
+                    "       sent_by = %(sent_by)s,                                          "
+                    "       params = %(params)s,                                      "
+                    "       details = %(details)s,                          "
+                    "       id = %(id)s "
+                    " WHERE id_doc = %(id_doc)s;                              ",
+                    {
+                        "filename": doc.filename,
+                        "upload_date": doc.upload_date,
+                        "sent_by": doc.sent_by,
+                        "params": doc.params,
+                        "details": doc.details,
+                        "id": doc.id,
+                        "id_doc": doc.id_doc,
+                    },
+                )
+                nb_affected_rows = cursor.rowcount
+        return nb_affected_rows == 1
+
+    def delete(self, doc) -> bool:
+        """Delete a doc from the database.
+        Args:
+            Doc to delete from the database
+        Returns:
+            True if the doc was successfully deleted, False otherwise
+        """
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM doc                               "
+                    " WHERE id_doc = %(id_doc)s                 ",
+                    {"id_doc": doc.id_doc},
+                )
+                res = cursor.rowcount
+        return res > 0
