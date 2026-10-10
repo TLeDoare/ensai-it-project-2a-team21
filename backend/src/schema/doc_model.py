@@ -1,17 +1,16 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class UploadDocModel(BaseModel):
     file: str  # Devrait être UploadFile
-    sent_by: int
     params: dict
 
 
 class DocModel(BaseModel):
     filename: str
     upload_date: datetime
-    sent_by: int
+    sent_by: EmailStr
     id: int | None
     params: dict

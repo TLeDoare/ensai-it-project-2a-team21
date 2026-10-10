@@ -14,7 +14,7 @@ def get_person_service():
     return PersonService()
 
 
-@router.post("/", tags=["login"])
+@router.post("/")
 def login(credentials: LoginModel, service=Depends(get_person_service)):
     """Authentifie un utilisateur."""
 
