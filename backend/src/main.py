@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 from controller import doc_controller, login_controller
 from utils.log_utils import get_logger
@@ -8,9 +9,11 @@ logger = get_logger(__name__)
 
 app = FastAPI(title="Anonymia Webservice")
 
-@app.get("/")
-async def root():
-    return {"message": "bonjour"}
+@app.get("/", include_in_schema=False)
+async def redirect_to_docs():
+    """Redirect to the API documentation"""
+    return RedirectResponse(url="/docs")
+
 
 
 @app.get("/reset_database", tags=["Misc"])
