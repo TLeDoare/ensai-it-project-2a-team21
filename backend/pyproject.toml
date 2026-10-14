@@ -58,3 +58,8 @@ show_missing = true
 
 [tool.coverage.html]
 directory = "coverage_report"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
