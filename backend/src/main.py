@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from controller import doc_controller
-from controller import login_controller
+
+from controller import doc_controller, login_controller
 from utils.log_utils import get_logger
 from utils.reset_database import ResetDatabase
 
