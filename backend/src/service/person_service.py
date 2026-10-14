@@ -3,7 +3,7 @@ import secrets
 from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
-from utils.security import hash_password, verify_password
+from utils.security import hash_any, verify_password
 
 
 class PersonService:
@@ -17,7 +17,7 @@ class PersonService:
         if dao.find_by_email(email) is not None:
             return None
 
-        hashed_password = hash_password(password)
+        hashed_password = hash_any(password)
 
         person = Person(
             email=email,

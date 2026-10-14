@@ -18,7 +18,8 @@ CREATE TABLE RedactedDoc (
   upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pii_count INT DEFAULT 0,
   pii_positions VARCHAR(1000),
-  params VARCHAR(1000) -- chemin d'enregistrement du document caviarde
+  params VARCHAR(1000), -- chemin d'enregistrement du document caviarde
+  hash_doc hash
 );
 
 -- Table d'association Many-to-Many

@@ -8,9 +8,9 @@ from business_object.person import Person
 password_hash = PasswordHash.recommended()
 
 
-def hash_password(password: str) -> str:
-    """Hache un mot de passe avant son stockage en base de données."""
-    return password_hash.hash(password)
+def hash_any(any: str) -> str:
+    """Hache un objet (mot de passe, un document) avant son stockage en base de données."""
+    return password_hash.hash(any)
 
 
 def verify_password(password: str, hashed_password: str) -> bool:

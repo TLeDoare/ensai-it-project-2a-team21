@@ -1,10 +1,12 @@
-from utils.log_utils import log
 from datetime import datetime
-from business_object.redacted_doc import RedactedDoc
+
 from business_object.analyser.analyser_factory import AnalyserFactory
+from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
+from utils.log_utils import log
+from utils.security import hash_any
 
 
 class DocService:
@@ -16,6 +18,7 @@ class DocService:
 
         analyser = AnalyserFactory().get_analyser(params)
         positions = analyser.analyse(text)
+        hash = hash_any(file)
 
         redactor = MaskRedactor()
         redacted_content = redactor.redact(text, positions)
@@ -28,9 +31,7 @@ class DocService:
         print(redacted_content)
         print("========================")
 
-        redacted_doc = RedactedDoc("test", datetime.now(), author.email, params, positions, None)
+        redacted_doc = RedactedDoc("test", datetime.now(), author.email, params, positions, hash, None)
         DocDAO().register_document(redacted_doc, sent_by)
 
         return redacted_doc
-
-

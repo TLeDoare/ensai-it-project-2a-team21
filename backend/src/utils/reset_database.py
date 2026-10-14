@@ -7,7 +7,7 @@ import dotenv
 from dao.db_connection import DBConnection
 from dao.person_dao import PersonDAO
 from utils.log_utils import get_logger, log
-from utils.security import hash_password
+from utils.security import hash_any
 from utils.singleton import Singleton
 
 logger = get_logger(__name__)
@@ -63,7 +63,7 @@ class ResetDatabase(metaclass=Singleton):
         # Apply password hashing to all players
         for p in PersonDAO().find_all():
             #p.password = hash_password(p.password, p.email)
-            p.password = hash_password(p.password)
+            p.password = hash_any(p.password)
             PersonDAO().update(p)
 
         return True
