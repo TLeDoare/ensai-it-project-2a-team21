@@ -1,3 +1,5 @@
+import asyncio
+
 from datetime import datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
@@ -17,7 +19,7 @@ class DocService:
         text = file
 
         analyser = AnalyserFactory().get_analyser(params)
-        positions = analyser.analyse(text)
+        positions = asyncio.run(analyser.analyse(text))
         hash = hash_any(file)
 
         redactor = MaskRedactor()

@@ -11,5 +11,5 @@ class AnalyserDecorator(Analyser, ABC):
         self.params = params
 
     @abstractmethod
-    def analyse(self, content: str) -> Positions:
-        return self.wrapper.analyse(content)
+    async def analyse(self, content: str) -> Positions:
+        return await self.wrapper.analyse(content)
