@@ -62,4 +62,5 @@ directory = "coverage_report"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
 ]
