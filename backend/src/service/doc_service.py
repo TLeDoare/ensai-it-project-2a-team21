@@ -15,11 +15,11 @@ class DocService:
 
     # dans le futur, file sera UploadFile et non str
     @log
-    def create(self, file: str, sent_by: int, params: dict):
+    async def create(self, file: str, sent_by: int, params: dict):
         text = file
 
         analyser = AnalyserFactory().get_analyser(params)
-        positions = asyncio.run(analyser.analyse(text))
+        positions = await analyser.analyse(text)
         hash = hash_any(file)
 
         redactor = MaskRedactor()

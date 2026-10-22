@@ -16,6 +16,7 @@ dependencies = [
     "regex",
     "uvicorn",
     "pwdlib[argon2]>=0.3.1",
+    "python-multipart"
 ]
 
 # Dependencies used only for development, not for runtime

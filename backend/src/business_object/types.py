@@ -32,7 +32,7 @@ class PII(Enum):
     gender = auto()
 
     def __str__(self):
-        return f"{type(self)}.{self.name}"
+        return f"PII.{self.name}"
 
 
 class Analyser(Enum):
@@ -40,7 +40,7 @@ class Analyser(Enum):
     LLM = auto()
 
     def __str__(self):
-        return f"{type(self)}.{self.name}"
+        return f"Analyser.{self.name}"
 
 
 class Role(Enum):

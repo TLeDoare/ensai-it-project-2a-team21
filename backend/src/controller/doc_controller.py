@@ -1,4 +1,8 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from ast import literal_eval
+
+from fastapi import APIRouter, Depends, Form, File
 
 from schema.doc_model import DocModel, UploadDocModel
 from service.doc_service import DocService
@@ -12,8 +16,12 @@ def get_doc_service():
     return DocService()
 
 
-@router.post("/redact", response_model=DocModel, status_code=201, tags=["Doc"])
-def televerser_doc(req: UploadDocModel, doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
+@router.post("/redact/", response_model=DocModel, status_code=201, tags=["Doc"])
+async def televerser_doc(
+        file: Annotated[bytes, File()],
+        params: Annotated[str, Form()] = "{}",
+        doc_service=Depends(get_doc_service),
+        current_person=Depends(verify_token)):
     # L'objet req contient le fichier et les paramètres (stratégie, etc.)
-    doc_traite = doc_service.create(req.file, current_person.id, req.params)
+    doc_traite = await doc_service.create(file.decode("utf-8"), current_person.id, literal_eval(params))
     return doc_traite
