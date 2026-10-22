@@ -31,10 +31,16 @@ class PII(Enum):
     ethnicity = auto()
     gender = auto()
 
+    def __str__(self):
+        return f"{type(self)}.{self.name}"
+
 
 class Analyser(Enum):
     Regex = auto()
     LLM = auto()
+
+    def __str__(self):
+        return f"{type(self)}.{self.name}"
 
 
 class Role(Enum):

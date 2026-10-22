@@ -24,25 +24,13 @@ class MaskRedactor(RedactorStrategy):
             redacted_content = redacted_content[:debut] + "[MASQUÉ]" + redacted_content[fin:]
         return redacted_content
     """
-    # Pour gérer des zones non continues, remplace chaque sous-groupe d'index "collés" de positions
     def redact(self, content: str, positions: Positions) -> str:
-        # Fusion de tous les indices uniques
-        all_indices = sorted({idx for pos in positions for idx in pos.indices})
+        redacted_content = content
 
-        if not all_indices:
-            return content
-
-        # Regroupement des indices contigus en plages (ex: [10, 11, 12] -> start=10, end=13)
-        ranges = []
-        for _, group in groupby(enumerate(all_indices), lambda ix: ix[0] - ix[1]):
-            group_list = list(map(itemgetter(1), group))
-            start = group_list[0]
-            end = group_list[-1] + 1  # Borne supérieure (exclue) pour le découpage
-            ranges.append((start, end))
+        # Je ne suis pas totalement sûr de cette nouvelle implémentation.
 
         # Application du masquage de la fin vers le début pour préserver les index
-        redacted_content = content
-        for start, end in sorted(ranges, key=lambda r: r[0], reverse=True):
-            redacted_content = redacted_content[:start] + "[MASQUÉ]" + redacted_content[end:]
+        for position in sorted(positions, key=lambda r: r.indices[0], reverse=True):
+            redacted_content = redacted_content[:position.indices[0]] + "[MASQUÉ]" + redacted_content[position.indices[1]:]
 
         return redacted_content

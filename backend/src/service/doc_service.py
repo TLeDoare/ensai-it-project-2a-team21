@@ -31,9 +31,10 @@ class DocService:
         #f.write(redacted_content)
         print("========================")
         print(redacted_content)
-        print("========================")
 
         redacted_doc = RedactedDoc("test", datetime.now(), author.email, params, positions, hash, None)
         DocDAO().register_document(redacted_doc, sent_by)
+        print(str(list(redacted_doc.details)[0].PII))
+        print("========================")
 
         return redacted_doc
