@@ -25,7 +25,7 @@ class DocService:
         redactor = MaskRedactor()
         redacted_content = redactor.redact(text, positions)
 
-        author = PersonDAO().find_by_id(sent_by)
+        author = await PersonDAO().find_by_id(sent_by)
 
         #f = open("test", "wb")
         #f.write(redacted_content)
@@ -34,7 +34,7 @@ class DocService:
 
         redacted_doc = RedactedDoc("test", datetime.now(), author.email, params, positions, hash, None)
         DocDAO().register_document(redacted_doc, sent_by)
-        print(str(list(redacted_doc.details)[0].PII))
+        print(list(redacted_doc.details)[0])
         print("========================")
 
         return redacted_doc
