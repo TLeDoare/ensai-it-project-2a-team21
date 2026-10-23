@@ -86,21 +86,7 @@ class PersonDAO:
                 )
                 res = cursor.fetchall()
 
-        players_list = []
-
-        if res:
-            for row in res:
-                player = Person(
-                    id=row["id"],
-                    email=row["email"],
-                    password=row["password"],
-                    role=row["role"],
-                    access_token=row["access_token"],
-                )
-
-                players_list.append(player)
-
-        return players_list
+        return [self._build_person(row) for row in res]
 
     def update_access_token(self, person_id: int, access_token: str) -> None:
         """Met à jour le token d'accès d'un utilisateur."""
@@ -158,7 +144,7 @@ class PersonDAO:
                         "email": person.email,
                         "access_token": person.access_token,
                         "id": person.id,
-                        "role": person.role
+                        "role": person.role.name.lower()
                     },
                 )
                 nb_affected_rows = cursor.rowcount
