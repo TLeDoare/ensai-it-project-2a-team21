@@ -1,6 +1,7 @@
-import pytest
 import datetime
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from business_object.redacted_doc import RedactedDoc
 from dao.doc_dao import DocDAO
@@ -45,3 +46,63 @@ async def test_create_ok(
     mock_person_dao_instance.find_by_id.assert_called_once_with(sent_by_id)
     # Vérifie que le document caviardé a bien été enregistré via le DAO
     mock_doc_dao_class.return_value.register_document.assert_called_once()
+
+
+@pytest.mark.asyncio
+@patch("service.doc_service.DocDAO")
+async def test_find_all(mock_doc_dao_class):
+    # GIVEN
+    mock_doc_dao_instance = mock_doc_dao_class.return_value
+
+    simulated_docs_list = [
+        MagicMock(id=1, filename="file1.txt"),
+        MagicMock(id=2, filename="file2.txt")
+    ]
+    mock_doc_dao_instance.find_all.return_value = simulated_docs_list
+
+    # WHEN
+    result = await DocService().find_all()
+
+    # THEN
+    assert result is not None
+    assert len(result) == len(simulated_docs_list)
+    assert result[0].filename == "file1.txt"
+    mock_doc_dao_instance.find_all.assert_called_once()
+
+
+@pytest.mark.asyncio
+@patch("service.doc_service.DocDAO")
+async def test_find_by_id_ok(mock_doc_dao_class):
+    # GIVEN
+    doc_id = 1
+    mock_doc_dao_instance = mock_doc_dao_class.return_value
+
+    # On simule un faux document retourné par le DAO avec l'id donné
+    fake_doc = MagicMock()
+    fake_doc.id = doc_id
+    fake_doc.filename = "mon_fichier.txt"
+    mock_doc_dao_instance.find_by_id.return_value = fake_doc
+
+    # WHEN
+    result = await DocService().find_by_id(doc_id)
+
+    # THEN
+    assert result is not None
+    assert result.id == doc_id
+    assert result.filename == "mon_fichier.txt"
+    mock_doc_dao_instance.find_by_id.assert_called_once_with(doc_id)
+
+
+@pytest.mark.asyncio
+@patch("service.doc_service.DocDAO")
+async def test_find_by_id_not_found(mock_doc_dao_class):
+    # GIVEN
+    doc_id = 999999999
+    mock_doc_dao_instance = mock_doc_dao_class.return_value
+    # Le DAO renvoie None si le document n'existe pas en BDD
+    mock_doc_dao_instance.find_by_id.return_value = None
+
+    # WHEN / THEN
+    with pytest.raises(ValueError):
+        result = await DocService().find_by_id(doc_id)
+        assert result is None
