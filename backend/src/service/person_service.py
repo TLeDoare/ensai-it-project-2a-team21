@@ -1,5 +1,6 @@
 import secrets
 
+from psycopg2.errors import UniqueViolation
 from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
@@ -25,7 +26,10 @@ class PersonService:
             role=role,
         )
 
-        return dao.create(person)
+        try:
+            return dao.create(person)
+        except UniqueViolation:
+            return None
 
     def login(self, email: str, password: str) -> Person | None:
         """Authentifie un utilisateur à partir de son email et de son mot de passe."""
