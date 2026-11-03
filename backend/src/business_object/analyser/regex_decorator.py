@@ -8,11 +8,10 @@ class RegexDecorator(AnalyserDecorator):
     """Ajoute la détection des PII reconnaissables par expressions régulières."""
 
     # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 8 chiffres
-    NIR_PATTERN = r"\b[12]\d{2}(0[1-9]|1[0-2])\d{8}\b"
-
-    # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres
-    # (on va considérer l'IBAN sans espace prcq sinon le découpage est dur à coder)
-    IBAN_PATTERN = r"\b[A-Z]{2}\d{2}(?:[A-Z0-9][ -]*?){11,30}\b"
+    NIR_PATTERN = r"\b[12]\s?\d{2}\s?(0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(\s?\d{2})?\b"
+    
+    # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres avec des espaces possibles
+    IBAN_PATTERN = r"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){11,30}\b"
 
     # Adresse mail : des symboles, puis un @, puis des symboles, puis un point
     # et au moins deux lettres
@@ -31,7 +30,7 @@ class RegexDecorator(AnalyserDecorator):
 
     # Numéro de compte principal PAN : 12 à 19 chiffres, éventuellement séparés par 
     # des espaces ou des tirets
-    PAN_PATTERN = r"\b(?:\d[ -]*?){12,19}\b"
+    PAN_PATTERN = r"\b\d(?:[ -]?\d){12,18}\b"
 
     # Numéro de plaque d'immatriculation : 2 lettres majuscules, un tiret ou un espace,
     # 3 chiffres, un tiret ou un espace, et 2 lettres majuscules
@@ -39,7 +38,7 @@ class RegexDecorator(AnalyserDecorator):
     
     # Adresse IP : 2 types possibles (IPv4 et IPv6)
     # IPv4 : 4 nombres de 0 à 255 séparés par des points
-    IP_V4_PATTERN = r"\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b"
+    IP_V4_PATTERN = r"\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b"
     # IPv6 : 8 groupes de 4 chiffres hexadécimaux séparés par des deux points
     IP_V6_PATTERN = r"\b(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}\b"
 
@@ -49,8 +48,9 @@ class RegexDecorator(AnalyserDecorator):
     # Référence cadastrale : 
     REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
 
-    # Coordonnées GPS : 
-    GPS_PATTERN = r"[-+]?\d{1,3}\.\d{4,8}[,\s]+[-+]?\d{1,3}\.\d{4,8}"
+    # Coordonnées GPS : système DMS (sexagésimal)
+    # Exemple : 48°51'29.99"N 2°17'40.98"E
+    GPS_PATTERN = r"\d{1,3}°\d{1,2}'\d{1,2}(?:\.\d+)?\"[NSEWO]"
     
 
     PATTERNS: dict[PII, str] = {
