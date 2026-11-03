@@ -1,15 +1,15 @@
-import pytest
-
 from pathlib import Path
 from uuid import uuid4
-from psycopg2 import errors
 
+import pytest
 from dotenv import load_dotenv
+from psycopg2 import errors
 
 from business_object.person import Person
 from business_object.types import Role
 from dao.db_connection import DBConnection
 from dao.person_dao import PersonDAO
+
 
 @pytest.fixture
 def personne_test(connexion_test):

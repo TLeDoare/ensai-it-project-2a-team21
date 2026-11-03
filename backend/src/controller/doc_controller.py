@@ -1,10 +1,9 @@
+from ast import literal_eval
 from typing import Annotated
 
-from ast import literal_eval
+from fastapi import APIRouter, Depends, File, Form, HTTPException
 
-from fastapi import APIRouter, Depends, Form, File
-
-from schema.doc_model import DocModel, UploadDocModel
+from schema.doc_model import DocModel
 from service.doc_service import DocService
 from utils.security import verify_token
 
@@ -25,3 +24,11 @@ async def televerser_doc(
     # L'objet req contient le fichier et les paramètres (stratégie, etc.)
     doc_traite = await doc_service.create(file.decode("utf-8"), current_person.id, literal_eval(params))
     return doc_traite
+
+@router.post("/find_all", response_model=DocModel, tags=["Doc"])
+async def find_all(id: int, doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
+    doc = DocService().find_by_id(id, current_person.id)
+    if doc is None:
+        raise HTTPException(status_code=500, detail="Erreur interne.")
+    else:
+        return doc
