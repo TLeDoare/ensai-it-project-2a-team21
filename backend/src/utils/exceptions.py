@@ -6,3 +6,6 @@ class AuthError(Exception):
 
 class DocNotFound(Exception):
     """Erreur levée quand un ou plusieurs documents ne sont pas trouvés"""
+
+class PersonNotFound(Exception):
+    """Erreur levée quand une ou plusieurs personnes ne sont pas trouvées"""

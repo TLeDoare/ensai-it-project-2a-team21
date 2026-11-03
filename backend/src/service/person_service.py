@@ -6,6 +6,7 @@ from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
 from utils.security import hash_any, verify_password
+from utils.exceptions import PersonNotFound, AuthError
 
 
 class PersonService:
@@ -31,6 +32,28 @@ class PersonService:
             return dao.create(person)
         except UniqueViolation:
             return None
+
+    def find_all(self, sent_by: int):
+        author = PersonDAO().find_by_id(sent_by)
+        if author.role == Role.Administrateur or author.role == Role.Superviseur:
+            persons = PersonDAO().find_all()
+            if persons == []:
+                raise PersonNotFound
+            else:
+                return persons
+        else:
+            raise AuthError(Role.Superviseur)
+
+    def find_by_id(self, id: int, sent_by: int):
+        author = PersonDAO().find_by_id(sent_by)
+        if author.role == Role.Administrateur or author.role == Role.Superviseur:
+            person = PersonDAO().find_by_id(id)
+            if person is None:
+                raise PersonNotFound
+            else:
+                return person
+        else:
+            raise AuthError(Role.Superviseur)
 
     def login(self, email: str, password: str) -> Person | None:
         """Authentifie un utilisateur à partir de son email et de son mot de passe."""
