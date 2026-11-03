@@ -40,7 +40,7 @@ class DocDAO(metaclass=Singleton):
         except psycopg2.Error as erreur:
             logger.error(
                 "Échec de l'enregistrement du document '%s' : %s",
-                doc.filename, erreur,
+                doc.hash, erreur,
             )
             raise DocRegistrationError(
                 "Impossible d'enregistrer le document en base."
@@ -48,7 +48,7 @@ class DocDAO(metaclass=Singleton):
 
         logger.info(
             "Document '%s' enregistré (id=%s, %d PII)",
-            doc.filename, doc.id, len(doc.details),
+            doc.hash, doc.id, len(doc.details),
         )
         return True
 
