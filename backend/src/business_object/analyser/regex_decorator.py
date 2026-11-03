@@ -9,7 +9,8 @@ from .analyser_decorator import AnalyserDecorator
 class RegexDecorator(AnalyserDecorator):
     """Ajoute la détection des PII reconnaissables par expressions régulières."""
 
-    # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 8 chiffres
+    # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 10 chiffres
+    # (avec éventuellement des espaces)
     NIR_PATTERN = r"\b[12]\s?\d{2}\s?(0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(\s?\d{2})?\b"
     
     # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres avec des espaces possibles
@@ -50,16 +51,10 @@ class RegexDecorator(AnalyserDecorator):
     # Référence cadastrale :
     REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
 
-<<<<<<< HEAD
     # Coordonnées GPS : système DMS (sexagésimal)
     # Exemple : 48°51'29.99"N 2°17'40.98"E
     GPS_PATTERN = r"\d{1,3}°\d{1,2}'\d{1,2}(?:\.\d+)?\"[NSEWO]"
     
-=======
-    # Coordonnées GPS :
-    GPS_PATTERN = r"[-+]?\d{1,3}\.\d{4,8}[,\s]+[-+]?\d{1,3}\.\d{4,8}"
-
->>>>>>> 7a09b4cd72f03a84442cfb6e4c15c1664b7fde80
 
     PATTERNS: dict[PII, str] = {
         PII.NIR: NIR_PATTERN,
