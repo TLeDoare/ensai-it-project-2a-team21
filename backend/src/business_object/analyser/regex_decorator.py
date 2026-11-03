@@ -50,39 +50,42 @@ class RegexDecorator(AnalyserDecorator):
     REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
 
     # Coordonnées GPS : 
-    GPS_PATTERN = r"\b[-+]?[0-180]\.[0-9]{6,8}\b"
+    GPS_PATTERN = r"[-+]?\d{1,3}\.\d{4,8}[,\s]+[-+]?\d{1,3}\.\d{4,8}"
     
 
+    PATTERNS: dict[PII, str] = {
+        PII.NIR: NIR_PATTERN,
+        PII.IBAN: IBAN_PATTERN,
+        PII.email: EMAIL_PATTERN,
+        PII.phone_number: TEL_PATTERN,
+        PII.EX_CNI: EX_NUM_CNI_PATTERN,
+        PII.CNI: NV_NUM_CNI_PATTERN,
+        PII.PAN: PAN_PATTERN,
+        PII.immatriculation: IMMAT_PATTERN,
+        PII.IP_V4: IP_V4_PATTERN,
+        PII.IP_V6: IP_V6_PATTERN,
+        PII.SIREN: SIREN_PATTERN,
+        PII.cadastre: REF_CADASTR_PATTERN,
+        PII.GPS: GPS_PATTERN
+    }
 
-    async def _detect_emails(self, content: str):
-        return list(re.finditer(self.EMAIL_PATTERN, content))
-
-    async def _detect_tels(self, content: str):
-        return list(re.finditer(self.TEL_PATTERN, content))
-
-    async def analyse(self, content: str) -> Positions:
-        # On place self._detect_emails ici car on considère que c'est la fonction
-        # qu'il faut paralléliser. La boucle for match [...] qui suit est considérée
-        # comme quelque chose qui a un temps d'exécution négligeable et qui ne sert qu'à
-        # concaténer les PII détectées
-        analyses = await asyncio.gather(
-            super().analyse(content),
-            self._detect_emails(content)
-        )
-
-        positions = analyses[0]
-
-        for match in analyses[1]:
-            position = Position(
-                # Les indices sont finalements dans un tuple plutôt qu'une liste car il est impossible de réaliser des ensembles de liste en python
-                # pourquoi range et pas juste tuple ?
-                indices=(match.start(), match.end()),
-                PII=PII.email,
+    async def _detect(self, content: str, type_pii: PII, pattern: str):
+        return [
+            Position(
+                indices=(m.start(), m.end()),
+                PII=type_pii,
                 confidence=1.0,
                 analyser_source=AnalyserSource.Regex,
             )
+            for m in re.finditer(pattern, content)
+        ]
 
-            positions.add(position)
+    async def analyse(self, content: str) -> Positions:
+        taches = [super().analyse(content)]
+        taches += [self._detect(content, t, p) for t, p in self.PATTERNS.items()]
+        resultats = await asyncio.gather(*taches)
 
+        positions: Positions = set() 
+        for element in resultats:
+            positions.update(element)
         return positions
-        # possibilité de factoriser plutard pour avoir une méthode commune

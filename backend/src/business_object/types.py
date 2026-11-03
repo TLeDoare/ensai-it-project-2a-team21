@@ -13,10 +13,12 @@ class PII(IntEnum):
     email = auto()
     phone_number = auto()
     CNI = auto()
+    EX_CNI = auto()
     PAN = auto()
     postal_code = auto()
     immatriculation = auto()
-    IP = auto()
+    IP_V4 = auto()
+    IP_V6 = auto()
     SIREN = auto()
     cadastre = auto()
     GPS = auto()
@@ -30,6 +32,7 @@ class PII(IntEnum):
     medical = auto()
     ethnicity = auto()
     gender = auto()
+    address = auto()
 
     def __str__(self):
         return f"PII.{self.name}"
