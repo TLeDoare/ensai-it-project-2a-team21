@@ -11,12 +11,12 @@ from ..types import PII
 
 
 def _chiffres(texte: str) -> str:
-    """Ne garde que les chiffres (retire espaces, tirets, etc.)."""
+    """Ne garde que les chiffres (retire espaces + tirets + lettres)"""
     return re.sub(r"\D", "", texte)
 
 
 def luhn_valide(numero: str) -> bool:
-    """Vrai si la suite de chiffres respecte l'algorithme de Luhn (cartes)."""
+    """Validation PAN : vrai si l'algorithme de Luhn est validé"""
     chiffres = [int(c) for c in _chiffres(numero)]
     if not chiffres:
         return False
@@ -31,13 +31,12 @@ def luhn_valide(numero: str) -> bool:
 
 
 def nir_valide(numero: str) -> bool:
-    """Vrai si le NIR a une clé de contrôle correcte (clé = 97 - N mod 97)."""
+    """Validation NIR : vrai si la clé de contrôle est correcte (clé = 97 - N mod 97)"""
     texte = numero.strip().upper()
-    # Corse : 2A et 2B doivent devenir des chiffres avant calcul.
+    # Cas de la Corse : transformer les lettres en chiffres 
     texte_num = texte.replace("2A", "19").replace("2B", "18")
     chiffres = _chiffres(texte_num)
-    # 13 chiffres de corps + 2 de clé = 15 ; sans clé, on ne peut pas valider.
-    if len(chiffres) != 15:
+    if len(chiffres) != 15: # 13 chiffres + 2 chiffres de clé
         return False
     corps = int(chiffres[:13])
     cle_lue = int(chiffres[13:])
@@ -46,13 +45,12 @@ def nir_valide(numero: str) -> bool:
 
 
 def iban_valide(iban: str) -> bool:
-    """Vrai si l'IBAN respecte la validation modulo 97 (norme ISO 13616)."""
+    """Validation IBAN : vrai si la validation modulo 97 (norme ISO 13616) est respectée"""
     iban = re.sub(r"\s", "", iban).upper()
     if len(iban) < 4:
         return False
-    # On déplace les 4 premiers caractères à la fin.
-    reorganise = iban[4:] + iban[:4]
-    # Chaque lettre -> nombre (A=10 ... Z=35).
+    reorganise = iban[4:] + iban[:4] # déplacer les 4 premiers caractères à la fin
+    # Chaque lettre = un nombre (A = 10, B = 11 etc)
     nombre = "".join(
         str(int(c, 36)) if c.isalpha() else c
         for c in reorganise
@@ -63,7 +61,6 @@ def iban_valide(iban: str) -> bool:
         return False
 
 
-# Table : type de PII -> sa fonction de validation (seuls ceux qui en ont une).
 VALIDATORS = {
     PII.PAN: luhn_valide,
     PII.NIR: nir_valide,
