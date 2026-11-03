@@ -1,21 +1,19 @@
-from pwdlib import PasswordHash
+import hashlib
 from fastapi import Header, HTTPException
 
 from dao.person_dao import PersonDAO
 from business_object.person import Person
 
 
-password_hash = PasswordHash.recommended()
-
-
-def hash_any(any: str) -> str:
-    """Hache un objet (mot de passe, un document) avant son stockage en base de données."""
-    return password_hash.hash(any)
+def hash_any(text: str, salt: str = "") -> str:
+    password_bytes = text.encode("utf-8") + salt.encode("utf-8")
+    hash_object = hashlib.sha256(password_bytes)
+    return hash_object.hexdigest()
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
     """Vérifie qu'un mot de passe correspond au hash stocké."""
-    return password_hash.verify(password, hashed_password)
+    return hash_any(password) == hashed_password
 
 
 def verify_token(x_auth_token=Header(None)) -> Person:

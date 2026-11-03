@@ -1,10 +1,10 @@
 from collections import namedtuple
-from enum import Enum, auto
+from enum import IntEnum, StrEnum, auto
 
 Position = namedtuple("Position", ["indices", "PII", "confidence", "analyser_source"])
 type Positions = set[Position]
 
-class PII(Enum):
+class PII(IntEnum):
     last_name = auto()
     first_name = auto()
     birthdate = auto()
@@ -35,7 +35,7 @@ class PII(Enum):
         return f"PII.{self.name}"
 
 
-class Analyser(Enum):
+class Analyser(IntEnum):
     Regex = auto()
     LLM = auto()
 
@@ -43,7 +43,7 @@ class Analyser(Enum):
         return f"Analyser.{self.name}"
 
 
-class Role(Enum):
+class Role(StrEnum):
     Utilisateur = "UTILISATEUR"
     Superviseur = "SUPERVISEUR"
     Administrateur = "ADMINISTRATEUR"

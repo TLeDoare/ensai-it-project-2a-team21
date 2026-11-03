@@ -30,11 +30,11 @@ def connexion_test():
 
     host = connection.get_dsn_parameters().get("host")
 
-    if config["db"] != "anonymia_test":
-        pytest.fail("La connexion ne pointe pas vers anonymia_test.")
+    if config["db"] != "defaultdb":
+        pytest.fail("La connexion ne pointe pas vers defaultdb.")
 
-    if host not in ("localhost", "127.0.0.1", "::1"):
-        pytest.fail("La connexion PostgreSQL n'est pas locale.")
+    if host != os.getenv("POSTGRES_HOST"):
+        pytest.fail(f"La connexion PostgreSQL n'est pas locale; elle vaut {host}.")
 
     with connection:
         with connection.cursor() as cursor:
