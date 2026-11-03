@@ -1,36 +1,69 @@
-from itertools import groupby
-from operator import itemgetter
 
 from ..types import Positions
 from .redactor_strategy import RedactorStrategy
 
 
 class MaskRedactor(RedactorStrategy):
-    """Remplace les données sensibles par une chaîne de caractères comme [Masqué] ou une série de *
-    """
-    """
-    Version naïve :
-    def redact(self, content, positions: Positions):
-        # on inverse l'ordre des positions pour remplacer depuis la fin
-        # (pour préserver les index en remplaçant)
-        sorted_positions = sorted(positions, key=lambda x: x['debut'], reverse=True)
-        # la liste de dictionnaires positions pouvant être triée de
-        # plusieurs manières, on indique la clé de tri avec une petite
-        # fonction lambda
-        redacted_content = content
-        for pos in sorted_positions:
-            debut, fin = pos['debut'], pos['fin']
-            # on concatène pour remplacer à chaque itération
-            redacted_content = redacted_content[:debut] + "[MASQUÉ]" + redacted_content[fin:]
-        return redacted_content
-    """
+    """Masque les données personnelles détectées dans un texte."""
+
     def redact(self, content: str, positions: Positions) -> str:
+        """Remplace les intervalles détectés par [MASQUÉ]."""
+
+        # récupérer les intervalles et les trier
+        intervalles = sorted(
+            (
+                position.indices[0],
+                position.indices[1],
+                position.PII.name.upper()
+            )
+            for position in positions
+        )
+
+        # Vérifier et fusionner les intervalles qui se chevauchent
+        intervalles_fusionnes = []
+
+        for debut, fin, type_pii in intervalles:
+
+            if not (0 <= debut < fin <= len(content)):
+                raise ValueError("Position de PII invalide.")
+
+            if intervalles_fusionnes and debut < intervalles_fusionnes[-1][1]:
+                ancien_debut, ancien_fin, ancien_type = intervalles_fusionnes[-1]
+
+                intervalles_fusionnes[-1] = (
+                    ancien_debut,
+                    max(ancien_fin, fin),
+                    ancien_type if ancien_type == type_pii else "PII"
+                )
+            else:
+                intervalles_fusionnes.append((debut, fin, type_pii))
+
+        # Attribuer un marqueur à chaque donnée personnelle
+        compteurs = {}
+        correspondances = {}
+        remplacements = []
+
+        for debut, fin, type_pii in intervalles_fusionnes:
+
+            valeur = content[debut:fin]
+            cle = (type_pii, valeur)
+
+            if cle not in correspondances:
+                compteurs[type_pii] = compteurs.get(type_pii, 0) + 1
+                correspondances[cle] = f"[{type_pii}_{compteurs[type_pii]}]"
+
+            remplacements.append(
+                (debut, fin, correspondances[cle])
+            )
+
+        # remplacer les PII de la fin vers le début
         redacted_content = content
 
-        # Je ne suis pas totalement sûr de cette nouvelle implémentation.
-
-        # Application du masquage de la fin vers le début pour préserver les index
-        for position in sorted(positions, key=lambda r: r.indices[0], reverse=True):
-            redacted_content = redacted_content[:position.indices[0]] + "[MASQUÉ]" + redacted_content[position.indices[1]:]
+        for debut, fin, marqueur in reversed(remplacements):
+            redacted_content = (
+                redacted_content[:debut]
+                + marqueur
+                + redacted_content[fin:]
+            )
 
         return redacted_content

@@ -1,61 +1,54 @@
 import json
+from ast import literal_eval
+
 import psycopg2
 
 from business_object.redacted_doc import RedactedDoc
-from utils.singleton import Singleton
-from .db_connection import DBConnection
 from utils.log_utils import get_logger
-    
+from utils.singleton import Singleton
+
+from .db_connection import DBConnection
+
 logger = get_logger(__name__)
 
 class DocRegistrationError(Exception):
     """Erreur métier levée quand l'enregistrement d'un document échoue."""
 
 class DocDAO(metaclass=Singleton):
-    def register_document(self, doc: RedactedDoc, id_person: int) -> bool:
-        """Enregistre un document et son lien avec la personne.
-
-        Les deux INSERT partagent une transaction : atomicité garantie.
-        En cas d'échec SQL, on journalise et on relève une erreur métier
-        claire au lieu de laisser fuiter une psycopg2.Error brute.
-        """
+    def register_document(self, doc: RedactedDoc) -> bool:
+        """To register a document in the database"""
         try:
             with DBConnection().connection as connection:
                 with connection.cursor() as cursor:
-                    cursor.execute(
-                        "INSERT INTO redacteddoc "
-                        "       (filename, upload_date, pii_count, pii_positions, params) "
-                        "VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, "
-                        "        %(pii_positions)s, %(params)s) "
-                        "RETURNING id;",
-                        {
-                            "filename": doc.filename,
-                            "upload_date": doc.upload_date,
-                            "pii_count": len(doc.details),
-                            "pii_positions": str(doc.details),
-                            "params": json.dumps(doc.params),
-                        },
-                    )
-                    id_genere = cursor.fetchone()["id"]
-                    doc.id = id_genere
+                        cursor.execute(
+                            "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, params, author_email)        "
+                            "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s, %(author)s)"
+                            "  RETURNING id;",
+                            {
+                                "filename": doc.hash,
+                                "upload_date": doc.upload_date,
+                                "pii_count": len(doc.details),
+                                "pii_positions": json.dumps(list(doc.details)),
+                                "params": json.dumps(doc.params),
+                                "author": doc.sent_by
+                            }
+                        )
+                        res = cursor.fetchone()
+                        id_généré = res["id"]
+                        doc.id = id_généré  # ajout à l'instance de classe
 
-                    cursor.execute(
-                        "INSERT INTO traitement (id_person, id_doc) "
-                        "VALUES (%(id_person)s, %(id_doc)s);",
-                        {"id_person": id_person, "id_doc": id_genere},
-                    )
         except psycopg2.Error as erreur:
             logger.error(
-                "Échec de l'enregistrement du document '%s' pour la personne %s : %s",
-                doc.filename, id_person, erreur,
+                "Échec de l'enregistrement du document '%s' : %s",
+                doc.hash, erreur,
             )
             raise DocRegistrationError(
                 "Impossible d'enregistrer le document en base."
             ) from erreur
 
         logger.info(
-            "Document '%s' enregistré (id=%s, personne=%s, %d PII)",
-            doc.filename, doc.id, id_person, len(doc.details),
+            "Document '%s' enregistré (id=%s, %d PII)",
+            doc.hash, doc.id, len(doc.details),
         )
         return True
 
@@ -64,7 +57,7 @@ class DocDAO(metaclass=Singleton):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, filename, upload_date, pii_count, pii_positions, params
+                    SELECT id, filename, upload_date, pii_positions, params, author_email
                     FROM redacteddoc
                     WHERE id = %(id)s
                     """,
@@ -76,12 +69,12 @@ class DocDAO(metaclass=Singleton):
                 redacted_doc = None
                 if doc_found:
                     redacted_doc = RedactedDoc(
-                        filename=doc_found["filename"],
+                        hash=doc_found["filename"],
                         upload_date=doc_found["upload_date"],
-                        sent_by=doc_found["sent_by"],
-                        params=doc_found["params"],
-                        details=doc_found["details"],
-                        id=doc_found["id"]
+                        params=literal_eval(doc_found["params"]),
+                        details=literal_eval(doc_found["pii_positions"]),
+                        id=doc_found["id"],
+                        sent_by=doc_found["author_email"]
                     )
         return redacted_doc
 

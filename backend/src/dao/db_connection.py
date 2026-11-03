@@ -3,6 +3,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+from utils.env_variables import load_environment_variables
 from utils.singleton import Singleton
 
 
@@ -24,6 +25,7 @@ class DBConnection(metaclass=Singleton):
             psycopg2.Error: If the connection to the database fails.
         """
 
+        load_environment_variables()
         self.__connection = psycopg2.connect(
             host=os.environ["POSTGRES_HOST"],
             port=os.environ["POSTGRES_PORT"],
