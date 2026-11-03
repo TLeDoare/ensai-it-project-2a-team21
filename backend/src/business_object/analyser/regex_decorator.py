@@ -13,9 +13,12 @@ class RegexDecorator(AnalyserDecorator):
     TEL_PATTERN = r"\b(?:\+33|0)[1-9](?:[\s.-]*\d{2}){4}\b"
     EX_NUM_CNI_PATTERN = r"\b[0-9]{2}(0[1-9]|1[0-2])[A-Z0-9]{3}\d{5}\b"
     NV_NUM_CNI_PATTERN = r"\b[A-Z0-9]{9}\b"
+    PAN_PATTERN = r"\b(?:\d[ -]*?){12,19}\b"
     IMMAT_PATTERN = r"\b[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}\b"    
-    IP_PATTERN = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
+    IP_V4_PATTERN = r"\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b"
+    IP_V6_PATTERN = r"\b(?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}\b"
     SIREN_PATTERN = r"\b\d{3}\s?\d{3}\s?\d{3}\b"
+    REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
     
 
 
