@@ -4,6 +4,7 @@ from ast import literal_eval
 import psycopg2
 
 from business_object.redacted_doc import RedactedDoc
+from utils.exceptions import DocRegistrationError
 from utils.log_utils import get_logger
 from utils.singleton import Singleton
 
@@ -11,8 +12,6 @@ from .db_connection import DBConnection
 
 logger = get_logger(__name__)
 
-class DocRegistrationError(Exception):
-    """Erreur métier levée quand l'enregistrement d'un document échoue."""
 
 class DocDAO(metaclass=Singleton):
     def register_document(self, doc: RedactedDoc) -> bool:
@@ -40,7 +39,7 @@ class DocDAO(metaclass=Singleton):
         except psycopg2.Error as erreur:
             logger.error(
                 "Échec de l'enregistrement du document '%s' : %s",
-                doc.filename, erreur,
+                doc.hash, erreur,
             )
             raise DocRegistrationError(
                 "Impossible d'enregistrer le document en base."
@@ -48,7 +47,7 @@ class DocDAO(metaclass=Singleton):
 
         logger.info(
             "Document '%s' enregistré (id=%s, %d PII)",
-            doc.filename, doc.id, len(doc.details),
+            doc.hash, doc.id, len(doc.details),
         )
         return True
 
@@ -93,12 +92,12 @@ class DocDAO(metaclass=Singleton):
             for doc in doc_bdd:
                 liste_doc.append(
                     RedactedDoc(
-                        filename=doc["filename"],
+                        hash=doc["filename"],
                         upload_date=doc["upload_date"],
-                        sent_by=doc["sent_by"],
-                        params=doc["params"],
-                        details=doc["details"],
-                        id=doc["id"]
+                        params=literal_eval(doc["params"]),
+                        details=literal_eval(doc["pii_positions"]),
+                        id=doc["id"],
+                        sent_by=doc["author_email"]
                     )
                 )
         return liste_doc

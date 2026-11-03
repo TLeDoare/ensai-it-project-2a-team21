@@ -6,6 +6,7 @@ from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.types import Role
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
+from utils.exceptions import AuthError, DocNotFound
 from utils.log_utils import log
 from utils.security import hash_any
 
@@ -32,11 +33,23 @@ class DocService:
     @log
     def find_by_id(self, id: int, sent_by: id) -> RedactedDoc | None:
         author = PersonDAO().find_by_id(sent_by)
-        if author.role == Role.Administrateur:
-            return DocDAO().find_by_id(id)
+        if author.role == Role.Administrateur or Role.Superviseur:
+            doc = DocDAO().find_by_id(id)
+            if doc is None:
+                raise DocNotFound
+            else:
+                return doc
         else:
-            return None
+            raise AuthError(Role.Superviseur)
 
     @log
-    def find_all(self):
-        return DocDAO().find_all()
+    def find_all(self, sent_by: int):
+        author = PersonDAO().find_by_id(sent_by)
+        if author.role == Role.Administrateur or Role.Superviseur:
+            docs = DocDAO().find_all()
+            if docs == []:
+                raise DocNotFound
+            else:
+                return docs
+        else:
+            raise AuthError(Role.Superviseur)
