@@ -9,6 +9,7 @@ from dao.person_dao import PersonDAO
 from utils.exceptions import AuthError, DocNotFound
 from utils.log_utils import log
 from utils.security import hash_any
+from business_object.analyser.overlap import resoudre_chevauchements
 
 
 class DocService:
@@ -18,6 +19,7 @@ class DocService:
 
         analyser = AnalyserFactory().get_analyser(params)
         positions = await analyser.analyse(text)
+        positions = resoudre_chevauchements(positions, text)
         doc_hash = hash_any(file)
 
         redactor = MaskRedactor()
