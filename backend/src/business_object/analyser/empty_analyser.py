@@ -1,5 +1,6 @@
-from .analyser import Analyser
 from ..types import Positions
+from .analyser import Analyser
+
 
 class EmptyAnalyser(Analyser):
     """Analyseur vide servant de base aux décorateurs."""

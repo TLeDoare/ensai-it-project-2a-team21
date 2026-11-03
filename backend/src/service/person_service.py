@@ -1,6 +1,7 @@
 import secrets
 
 from psycopg2.errors import UniqueViolation
+
 from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO

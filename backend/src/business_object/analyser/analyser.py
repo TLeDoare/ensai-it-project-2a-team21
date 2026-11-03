@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from ..types import Positions
 
+
 class Analyser(ABC):
     """Interface commune à tous les analyseurs de PII."""
 
