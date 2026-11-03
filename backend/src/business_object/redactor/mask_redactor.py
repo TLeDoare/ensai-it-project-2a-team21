@@ -59,7 +59,7 @@ class MaskRedactor(RedactorStrategy):
         # remplacer les PII de la fin vers le début
         redacted_content = content
 
-        for debut, fin, marqueur in reversed(intervalles_fusionnes):
+        for debut, fin, marqueur in reversed(remplacements):
             redacted_content = (
                 redacted_content[:debut]
                 + marqueur
