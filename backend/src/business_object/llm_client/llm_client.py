@@ -11,14 +11,19 @@ client = AsyncOpenAI(
 
 
 async def detect_pii(document: str) -> list:
-    response = await client.chat.completions.create(
-        model="llama3.1:8b",
-        messages=[
-          {"role": "system", "content": SYSTEM_PROMPT},
-          {"role": "user", "content": build_user_message(document)},
-        ],
-        temperature=0.1,
-        response_format={"type": "json_object"},
-    )
-    raw = response.choices[0].message.content
-    return json.loads(raw)["spans"]
+    try:
+        response = await client.chat.completions.create(
+            model="llama3.1:8b",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": build_user_message(document)},
+            ],
+            temperature=0.1,
+            response_format={"type": "json_object"},
+        )
+        raw = response.choices[0].message.content
+        return json.loads(raw)["spans"]
+    except Exception as e:
+        # En cas d'échec (timeout, JSON invalide...), journaliser et gérer le mode dégradé
+        print(f"Erreur lors de l'appel LLM: {e}")
+        return []
