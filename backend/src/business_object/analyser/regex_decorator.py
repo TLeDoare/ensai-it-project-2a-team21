@@ -7,12 +7,12 @@ from ..types import Position, Positions, PII, Analyser as AnalyserSource
 class RegexDecorator(AnalyserDecorator):
     """Ajoute la détection des PII reconnaissables par expressions régulières."""
 
-    # NIR : commence par un 1 ou un 2, puis la date de 
+    # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 8 chiffres
     NIR_PATTERN = r"\b[12]\d{2}(0[1-9]|1[0-2])\d{8}\b"
 
     # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres
     # (on va considérer l'IBAN sans espace prcq sinon le découpage est dur à coder)
-    IBAN_PATTERN = r"\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b"
+    IBAN_PATTERN = r"\b[A-Z]{2}\d{2}(?:[A-Z0-9][ -]*?){11,30}\b"
 
     # Adresse mail : des symboles, puis un @, puis des symboles, puis un point
     # et au moins deux lettres
@@ -45,7 +45,11 @@ class RegexDecorator(AnalyserDecorator):
 
     # SIREN : 9 chiffres, éventuellement séparés par des espaces
     SIREN_PATTERN = r"\b\d{3}\s?\d{3}\s?\d{3}\b"
+
+    # Référence cadastrale : 
     REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
+
+    # Coordonnées GPS : 
     GPS_PATTERN = r"\b[-+]?[0-180]\.[0-9]{6,8}\b"
     
 
