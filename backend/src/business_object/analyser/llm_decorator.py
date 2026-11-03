@@ -1,8 +1,8 @@
 import asyncio
 
-from .analyser_decorator import AnalyserDecorator
 from ..llm_client.llm_client import detect_pii
 from ..llm_client.output_verifier import OutputVerifier
+from .analyser_decorator import AnalyserDecorator
 
 
 class LLMDecorator(AnalyserDecorator):

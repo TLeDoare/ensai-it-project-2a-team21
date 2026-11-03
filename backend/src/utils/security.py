@@ -1,8 +1,9 @@
 import hashlib
+
 from fastapi import Header, HTTPException
 
-from dao.person_dao import PersonDAO
 from business_object.person import Person
+from dao.person_dao import PersonDAO
 
 
 def hash_any(text: str, salt: str = "") -> str:

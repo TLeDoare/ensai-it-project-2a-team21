@@ -33,7 +33,8 @@ class DocService:
     @log
     def find_by_id(self, id: int, sent_by: id) -> RedactedDoc | None:
         author = PersonDAO().find_by_id(sent_by)
-        if author.role == Role.Administrateur or Role.Superviseur:
+        print(author.role)
+        if author.role == Role.Administrateur or author.role == Role.Superviseur:
             doc = DocDAO().find_by_id(id)
             if doc is None:
                 raise DocNotFound
@@ -45,7 +46,7 @@ class DocService:
     @log
     def find_all(self, sent_by: int):
         author = PersonDAO().find_by_id(sent_by)
-        if author.role == Role.Administrateur or Role.Superviseur:
+        if author.role == Role.Administrateur or author.role == Role.Superviseur:
             docs = DocDAO().find_all()
             if docs == []:
                 raise DocNotFound

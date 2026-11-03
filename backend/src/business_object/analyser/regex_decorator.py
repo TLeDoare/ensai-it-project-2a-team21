@@ -1,8 +1,10 @@
 import asyncio
 import re
 
+from ..types import PII, Position, Positions
+from ..types import Analyser as AnalyserSource
 from .analyser_decorator import AnalyserDecorator
-from ..types import Position, Positions, PII, Analyser as AnalyserSource
+
 
 class RegexDecorator(AnalyserDecorator):
     """Ajoute la détection des PII reconnaissables par expressions régulières."""
@@ -23,20 +25,20 @@ class RegexDecorator(AnalyserDecorator):
     TEL_PATTERN = r"\b(?:\+33|0)[1-9](?:[\s.-]*\d{2}){4}\b"
 
     # Numéro de la CNI : 2 types possibles (ancien et nouveau format)
-    # Ancien format : 2 chiffres pour l'année, 2 chiffres pour le mois, 3 lettres ou 
+    # Ancien format : 2 chiffres pour l'année, 2 chiffres pour le mois, 3 lettres ou
     # chiffres, et 5 chiffres
     EX_NUM_CNI_PATTERN = r"\b[0-9]{2}(0[1-9]|1[0-2])[A-Z0-9]{3}\d{5}\b"
     # Nouveau format : 9 caractères alphanumériques (majuscules)
     NV_NUM_CNI_PATTERN = r"\b[A-Z0-9]{9}\b"
 
-    # Numéro de compte principal PAN : 12 à 19 chiffres, éventuellement séparés par 
+    # Numéro de compte principal PAN : 12 à 19 chiffres, éventuellement séparés par
     # des espaces ou des tirets
     PAN_PATTERN = r"\b(?:\d[ -]*?){12,19}\b"
 
     # Numéro de plaque d'immatriculation : 2 lettres majuscules, un tiret ou un espace,
     # 3 chiffres, un tiret ou un espace, et 2 lettres majuscules
-    IMMAT_PATTERN = r"\b[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}\b"  
-    
+    IMMAT_PATTERN = r"\b[A-Z]{2}[-\s]?\d{3}[-\s]?[A-Z]{2}\b"
+
     # Adresse IP : 2 types possibles (IPv4 et IPv6)
     # IPv4 : 4 nombres de 0 à 255 séparés par des points
     IP_V4_PATTERN = r"\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b"
@@ -46,12 +48,12 @@ class RegexDecorator(AnalyserDecorator):
     # SIREN : 9 chiffres, éventuellement séparés par des espaces
     SIREN_PATTERN = r"\b\d{3}\s?\d{3}\s?\d{3}\b"
 
-    # Référence cadastrale : 
+    # Référence cadastrale :
     REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
 
-    # Coordonnées GPS : 
+    # Coordonnées GPS :
     GPS_PATTERN = r"[-+]?\d{1,3}\.\d{4,8}[,\s]+[-+]?\d{1,3}\.\d{4,8}"
-    
+
 
     PATTERNS: dict[PII, str] = {
         PII.NIR: NIR_PATTERN,
@@ -85,7 +87,7 @@ class RegexDecorator(AnalyserDecorator):
         taches += [self._detect(content, t, p) for t, p in self.PATTERNS.items()]
         resultats = await asyncio.gather(*taches)
 
-        positions: Positions = set() 
+        positions: Positions = set()
         for element in resultats:
             positions.update(element)
         return positions

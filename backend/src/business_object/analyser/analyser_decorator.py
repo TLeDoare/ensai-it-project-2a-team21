@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-from .analyser import Analyser
 from ..types import Positions
+from .analyser import Analyser
+
 
 class AnalyserDecorator(Analyser, ABC):
     """Classe de base des décorateurs d'analyse."""

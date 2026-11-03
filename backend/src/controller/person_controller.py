@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from schema.person_model import PersonModel, RegisterModel
 from service.person_service import PersonService
 from utils.log_utils import get_logger
+from utils.security import verify_token
+from utils.exceptions import AuthError, PersonNotFound
 
 router = APIRouter()
 
@@ -15,20 +17,24 @@ def get_person_service():
 
 
 @router.get("/", response_model=list[PersonModel], tags=["Users"])
-async def find_all_users(person_service=Depends(get_person_service)):
+async def find_all_users(person_service=Depends(get_person_service), current_person=Depends(verify_token)):
     """List all users.
     Returns:
         list[PlayerReadModel]: A list of all registered users.
     """
     logger.info("List all users")
-    users_list = person_service.find_all()
-    return users_list
+    try:
+        return person_service.find_all(current_person.id)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail="user (id={id_user}) not found.") from PersonNotFound
+    except AuthError as a:
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
 
 # à voir la terminologie exacte user/person
 
 
 @router.get("/{id_user}", response_model=PersonModel, tags=["Users"])
-async def user_by_id(id_user: int, person_service=Depends(get_person_service)):
+async def user_by_id(id_user: int, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
     """Find a user by his unique ID.
     Args:
         id_user (int)
@@ -39,32 +45,36 @@ async def user_by_id(id_user: int, person_service=Depends(get_person_service)):
         HTTPException: 404 error if the person is not found
     """
     logger.info("Find a user by id")
-    user = person_service.find_by_id(id_user)
-    if not user:
-        raise HTTPException(status_code=404, detail="user (id={id_user}) not found.")
-    return user
+    try:
+        return person_service.find_by_id(id_user, current_person.id)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
+    except AuthError as a:
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
 
 
 @router.post("/", response_model=PersonModel, tags=["Users"])
 def create_person(
     user: RegisterModel,
     person_service: PersonService = Depends(get_person_service),
+    current_person=Depends(verify_token)
 ):
     logger.info("Create a user")
 
-    person = person_service.create(
-        user.email,
-        user.password,
-        user.role,
-    )
 
-    if person is None:
-        raise HTTPException(
-            status_code=409,
-            detail="Email already used.",
+    try:
+        person = person_service.create(
+            user.email,
+            user.password,
+            user.role,
+            current_person.id
         )
-
-    return person
+        if person is None:
+            raise HTTPException(status_code=409, detail=f"Email {user.email} already used.")
+        else:
+            return person
+    except AuthError as a:
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum pour créer un compte.") from a
 
 
 @router.put("/{id_user}", response_model=PersonModel, tags=["Users"])
@@ -95,22 +105,3 @@ async def update_user(id_user: int, user: PersonModel, person_service=Depends(ge
 
     return u
 
-
-@router.delete("/{id_user}", tags=["Users"])
-async def delete_user(id_user: int, person_service=Depends(get_person_service)):
-    """Delete a user from the system.
-    Args:
-        id_user (int)
-        person_service (PersonService): The service used to interact with user data.
-    Returns:
-        str: A confirmation message indicating the user was deleted.
-    Raises:
-        HTTPException: 404 error if the user is not found.
-    """
-    logger.info("Delete a user")
-    user = person_service.find_by_id(id_user)
-    if not user:
-        raise HTTPException(status_code=404, detail="User (id={id_user}) not found.")
-
-    person_service.delete(user)
-    return f"Player {user.username} deleted"

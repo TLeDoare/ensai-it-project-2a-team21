@@ -1,10 +1,11 @@
-# à améliorer plus tard pour avoir peut etre le meme init_db_sql pour nos tables principales et de tests 
+# à améliorer plus tard pour avoir peut etre le meme init_db_sql pour nos tables principales et de tests
 import os
 from pathlib import Path
 
 import pytest
 
 from dao.db_connection import DBConnection
+from utils.env_variables import load_environment_variables
 
 
 @pytest.fixture(scope="session")
@@ -17,7 +18,7 @@ def connexion_test():
     if not env_path.is_file():
         pytest.fail("Fichier backend/.env introuvable.")
 
-    load_dotenv(env_path, override=True)
+    load_environment_variables()
 
     if os.getenv("POSTGRES_SCHEMA") != "project_test_dao":
         pytest.fail("Le schéma PostgreSQL n'est pas celui des tests.")
@@ -63,21 +64,8 @@ def connexion_test():
                     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     pii_count INT DEFAULT 0,
                     pii_positions VARCHAR(1000),
-                    params VARCHAR(1000),
-                    hash_doc CHAR(64)
-                )
-            """)
-
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS project_test_dao.traitement (
-                    id_person INT NOT NULL,
-                    id_doc INT NOT NULL,
-                    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (id_person, id_doc),
-                    FOREIGN KEY (id_person)
-                        REFERENCES project_test_dao.person(id) ON DELETE CASCADE,
-                    FOREIGN KEY (id_doc)
-                        REFERENCES project_test_dao.redacteddoc(id) ON DELETE CASCADE
+                    author_email VARCHAR(100),
+                    params VARCHAR(1000)
                 )
             """)
 
