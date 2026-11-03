@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from service.doc_service import DocService
-from utils.exceptions import DocNotFound
 
 
 @pytest.mark.asyncio
@@ -134,4 +133,3 @@ async def test_find_by_id_not_found(mock_person_dao, mock_person, mock_doc_dao_c
     with pytest.raises(DocNotFound):
         result = DocService().find_by_id(doc_id, 13)
         assert result is None
-        mock_person_dao_instance.find_by_id.assert_called_once_with(13)
