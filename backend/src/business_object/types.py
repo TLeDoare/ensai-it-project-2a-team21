@@ -30,6 +30,7 @@ class PII(Enum):
     medical = auto()
     ethnicity = auto()
     gender = auto()
+    address = auto()
 
     def __str__(self):
         return f"PII.{self.name}"
