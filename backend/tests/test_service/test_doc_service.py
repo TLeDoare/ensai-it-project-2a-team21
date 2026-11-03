@@ -1,14 +1,12 @@
-import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from business_object.redacted_doc import RedactedDoc
-from dao.doc_dao import DocDAO
 from service.doc_service import DocService
 
 
 @pytest.mark.asyncio
+@patch("business_object.person.Person")
 @patch("service.doc_service.DocDAO")
 @patch("service.doc_service.PersonDAO")
 @patch("service.doc_service.AnalyserFactory")
@@ -17,7 +15,8 @@ async def test_create_ok(
     mock_mask_redactor_class,
     mock_analyser_factory_class,
     mock_person_dao_class,
-    mock_doc_dao_class
+    mock_doc_dao_class,
+    mock_person
 ):
     # GIVEN
     file_content = "Ceci est un texte avec le nom Jean Dupont."
@@ -26,7 +25,9 @@ async def test_create_ok(
 
     # 1. Mock de PersonDAO pour retourner un faux utilisateur avec un email
     mock_person_dao_instance = mock_person_dao_class.return_value
-    mock_person_dao_instance.find_by_id = AsyncMock(return_value=AsyncMock(email="test@example.com"))
+    mock_person_instance = mock_person.return_value
+    mock_person_instance.email = "a@a.com"
+    mock_person_dao_instance.find_by_id = mock_person_instance
 
     # 2. Mock de l'analyseur (AnalyserFactory)
     mock_analyser = AsyncMock()
@@ -49,10 +50,18 @@ async def test_create_ok(
 
 
 @pytest.mark.asyncio
+@patch("business_object.person.Person")
 @patch("service.doc_service.DocDAO")
-async def test_find_all(mock_doc_dao_class):
+@patch("service.doc_service.PersonDAO")
+async def test_find_all(mock_person_dao, mock_doc_dao_class, mock_person):
     # GIVEN
     mock_doc_dao_instance = mock_doc_dao_class.return_value
+
+    mock_person_instance = mock_person.return_value
+    mock_person_instance.role = "SUPERVISEUR"
+
+    mock_person_dao_instance = mock_person_dao.return_value
+    mock_person_dao_instance.find_by_id = MagicMock()
 
     simulated_docs_list = [
         MagicMock(id=1, filename="file1.txt"),
@@ -61,18 +70,21 @@ async def test_find_all(mock_doc_dao_class):
     mock_doc_dao_instance.find_all.return_value = simulated_docs_list
 
     # WHEN
-    result = await DocService().find_all()
+    result = DocService().find_all(12)
 
     # THEN
     assert result is not None
     assert len(result) == len(simulated_docs_list)
     assert result[0].filename == "file1.txt"
     mock_doc_dao_instance.find_all.assert_called_once()
+    mock_person_dao_instance.find_by_id.assert_called_once_with(12)
 
 
 @pytest.mark.asyncio
 @patch("service.doc_service.DocDAO")
-async def test_find_by_id_ok(mock_doc_dao_class):
+@patch("business_object.person.Person")
+@patch("service.doc_service.PersonDAO")
+async def test_find_by_id_ok(mock_person_dao, mock_person, mock_doc_dao_class):
     # GIVEN
     doc_id = 1
     mock_doc_dao_instance = mock_doc_dao_class.return_value
@@ -83,26 +95,103 @@ async def test_find_by_id_ok(mock_doc_dao_class):
     fake_doc.filename = "mon_fichier.txt"
     mock_doc_dao_instance.find_by_id.return_value = fake_doc
 
+    mock_person_instance = mock_person.return_value
+    mock_person_instance.role = "SUPERVISEUR"
+
+    mock_person_dao_instance = mock_person_dao.return_value
+    mock_person_dao_instance.find_by_id = MagicMock()
+
     # WHEN
-    result = await DocService().find_by_id(doc_id)
+    result = DocService().find_by_id(doc_id, 12)
 
     # THEN
     assert result is not None
     assert result.id == doc_id
     assert result.filename == "mon_fichier.txt"
     mock_doc_dao_instance.find_by_id.assert_called_once_with(doc_id)
+    mock_person_dao_instance.find_by_id.assert_called_once_with(12)
 
 
 @pytest.mark.asyncio
 @patch("service.doc_service.DocDAO")
-async def test_find_by_id_not_found(mock_doc_dao_class):
+@patch("business_object.person.Person")
+@patch("service.doc_service.PersonDAO")
+async def test_find_by_id_not_found(mock_person_dao, mock_person, mock_doc_dao_class):
     # GIVEN
     doc_id = 999999999
     mock_doc_dao_instance = mock_doc_dao_class.return_value
     # Le DAO renvoie None si le document n'existe pas en BDD
     mock_doc_dao_instance.find_by_id.return_value = None
 
+    mock_person_instance = mock_person.return_value
+    mock_person_instance.role = "SUPERVISEUR"
+
+    mock_person_dao_instance = mock_person_dao.return_value
+    mock_person_dao_instance.find_by_id = MagicMock()
+
     # WHEN / THEN
-    with pytest.raises(ValueError):
-        result = await DocService().find_by_id(doc_id)
+    with pytest.raises(DocNotFound):
+        result = DocService().find_by_id(doc_id, 13)
         assert result is None
+
+@pytest.mark.asyncio
+@patch("service.doc_service.hash_any", return_value="hash_test")
+@patch("service.doc_service.DocDAO")
+@patch("service.doc_service.PersonDAO")
+@patch("service.doc_service.AnalyserFactory")
+@patch("service.doc_service.RedactedDoc")
+async def test_create_avec_vrai_mask_redactor(
+    mock_redacted_doc_class,
+    mock_analyser_factory_class,
+    mock_person_dao_class,
+    mock_doc_dao_class,
+    mock_hash
+):
+    # GIVEN
+    content = "Contact : noah@example.com"
+    sent_by = 1
+    params = {"detecteur": "regex"}
+
+    positions = {
+        Position(
+            indices=(10, 26),
+            PII=PII.email,
+            confidence=1.0,
+            analyser_source=AnalyserSource.Regex
+        )
+    }
+
+    # Simuler l'analyseur
+    mock_analyser = AsyncMock()
+    mock_analyser.analyse.return_value = positions
+
+    mock_analyser_factory_class.return_value.get_analyser.return_value = (
+        mock_analyser
+    )
+
+    # Simuler la récupération de l'auteur
+    mock_person_dao_class.return_value.find_by_id.return_value = (
+        MagicMock(email="test@example.com")
+    )
+
+    # WHEN
+    result = await DocService().create(
+        file=content,
+        sent_by=sent_by,
+        params=params
+    )
+
+    # THEN
+    mock_analyser.analyse.assert_awaited_once_with(content)
+
+    # Vérifier le texte transmis à RedactedDoc
+    arguments = mock_redacted_doc_class.call_args.args
+    assert arguments[6] == "Contact : [EMAIL_1]"
+    assert arguments[4] == positions
+
+    # Vérifier que le document est transmis au DAO
+    mock_doc_dao_class.return_value.register_document.assert_called_once_with(
+        result
+    )
+
+    mock_hash.assert_called_once_with(content)

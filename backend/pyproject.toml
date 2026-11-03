@@ -15,8 +15,8 @@ dependencies = [
     "requests",
     "regex",
     "uvicorn",
-    "pwdlib[argon2]>=0.3.1",
-    "python-multipart"
+    "python-multipart",
+    "openai"
 ]
 
 # Dependencies used only for development, not for runtime
