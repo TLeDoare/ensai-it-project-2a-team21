@@ -2,14 +2,16 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 
-from controller import doc_controller, login_controller
+from controller import doc_controller, login_controller, person_controller
 from utils.env_variables import load_environment_variables
-from utils.log_utils import get_logger
+from utils.log_utils import get_logger, LogMiddleware, initialize_logs
 from utils.reset_database import ResetDatabase
 
 logger = get_logger(__name__)
+initialize_logs("Anonymia Webservice")
 
 app = FastAPI(title="Anonymia Webservice")
+app.add_middleware(LogMiddleware)
 
 load_environment_variables()
 
@@ -47,6 +49,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 app.include_router(doc_controller.router, prefix="/doc", tags=["Doc"])
 app.include_router(login_controller.router, prefix="/login", tags=["Login"])
+app.include_router(person_controller.router, prefix="/person", tags=["Users"])
 
 if __name__ == "__main__":
     import os

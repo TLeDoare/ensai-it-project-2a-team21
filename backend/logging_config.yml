@@ -1,0 +1,20 @@
+version: 1
+formatters:
+  simple:
+    format: "%(asctime)s %(name)-25s %(levelname)-7s - %(message)s"
+    datefmt: "%d/%m/%Y %H:%M:%S"
+handlers:
+  file:
+    class: logging.handlers.TimedRotatingFileHandler
+    formatter: simple
+    filename: backend/logs/backend.log
+    when: midnight
+    encoding: utf8
+loggers:
+  simpleLogger:
+    level: INFO
+    handlers: [file]
+    propagate: no
+root:
+  level: INFO
+  handlers: [file]
