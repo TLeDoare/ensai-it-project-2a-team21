@@ -6,12 +6,12 @@ from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
 from utils.security import hash_any, verify_password
-from utils.exceptions import PersonNotFound, AuthError
+from utils.exceptions import PersonNotFound, AuthError, EmailAlreadyUsed
 
 
 class PersonService:
 
-    def create(self, email: str, password: str, role: Role) -> Person | None:
+    def create(self, email: str, password: str, role: Role, sent_by: int) -> Person | None:
         """Crée un nouvel utilisateur."""
 
         dao = PersonDAO()
@@ -27,11 +27,16 @@ class PersonService:
             password=hashed_password,
             role=role,
         )
+        
+        author = PersonDAO().find_by_id(sent_by)
 
-        try:
-            return dao.create(person)
-        except UniqueViolation:
-            return None
+        if author.role == Role.Administrateur:
+            try:
+                return dao.create(person)
+            except UniqueViolation as u:
+                raise EmailAlreadyUsed from u
+        else:
+            raise AuthError(Role.Administrateur)
 
     def find_all(self, sent_by: int):
         author = PersonDAO().find_by_id(sent_by)

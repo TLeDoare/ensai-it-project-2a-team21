@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from schema.person_model import PersonModel, RegisterModel
 from service.person_service import PersonService
-from business_object.person import Person
 from utils.log_utils import get_logger
 from utils.security import verify_token
 from utils.exceptions import AuthError, PersonNotFound
@@ -27,9 +26,9 @@ async def find_all_users(person_service=Depends(get_person_service), current_per
     try:
         return person_service.find_all(current_person.id)
     except PersonNotFound:
-        raise HTTPException(status_code=404, detail="user (id={id_user}) not found.")
+        raise HTTPException(status_code=404, detail="user (id={id_user}) not found.") from PersonNotFound
     except AuthError as a:
-        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.")
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
 
 # à voir la terminologie exacte user/person
 
@@ -49,31 +48,33 @@ async def user_by_id(id_user: int, person_service=Depends(get_person_service), c
     try:
         return person_service.find_by_id(id_user, current_person.id)
     except PersonNotFound:
-        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu")
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
     except AuthError as a:
-        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.")
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
 
 
 @router.post("/", response_model=PersonModel, tags=["Users"])
 def create_person(
     user: RegisterModel,
     person_service: PersonService = Depends(get_person_service),
+    current_person=Depends(verify_token)
 ):
     logger.info("Create a user")
 
-    person = person_service.create(
-        user.email,
-        user.password,
-        user.role,
-    )
 
-    if person is None:
-        raise HTTPException(
-            status_code=409,
-            detail="Email already used.",
+    try:
+        person = person_service.create(
+            user.email,
+            user.password,
+            user.role,
+            current_person.id
         )
-
-    return person
+        if person is None:
+            raise HTTPException(status_code=409, detail=f"Email {user.email} already used.")
+        else:
+            return person
+    except AuthError as a:
+        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum pour créer un compte.") from a
 
 
 @router.put("/{id_user}", response_model=PersonModel, tags=["Users"])
