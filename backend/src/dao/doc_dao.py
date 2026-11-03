@@ -1,34 +1,56 @@
 import json
 from ast import literal_eval
 
+import psycopg2
+
 from business_object.redacted_doc import RedactedDoc
+from utils.log_utils import get_logger
 from utils.singleton import Singleton
 
 from .db_connection import DBConnection
 
+logger = get_logger(__name__)
+
+class DocRegistrationError(Exception):
+    """Erreur métier levée quand l'enregistrement d'un document échoue."""
 
 class DocDAO(metaclass=Singleton):
     def register_document(self, doc: RedactedDoc) -> bool:
         """To register a document in the database"""
-        with DBConnection().connection as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, params, author_email)        "
-                    "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s, %(author)s)"
-                    "  RETURNING id;",
-                    {
-                        "filename": doc.hash,
-                        "upload_date": doc.upload_date,
-                        "pii_count": len(doc.details),
-                        "pii_positions": json.dumps(list(doc.details)),
-                        "params": json.dumps(doc.params),
-                        "author": doc.sent_by
-                    }
-                )
-                res = cursor.fetchone()
-                id_généré = res["id"]
-                doc.id = id_généré  # ajout à l'instance de classe
-        return res is not None
+        try:
+            with DBConnection().connection as connection:
+                with connection.cursor() as cursor:
+                        cursor.execute(
+                            "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, params, author_email)        "
+                            "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s, %(author)s)"
+                            "  RETURNING id;",
+                            {
+                                "filename": doc.hash,
+                                "upload_date": doc.upload_date,
+                                "pii_count": len(doc.details),
+                                "pii_positions": json.dumps(list(doc.details)),
+                                "params": json.dumps(doc.params),
+                                "author": doc.sent_by
+                            }
+                        )
+                        res = cursor.fetchone()
+                        id_généré = res["id"]
+                        doc.id = id_généré  # ajout à l'instance de classe
+
+        except psycopg2.Error as erreur:
+            logger.error(
+                "Échec de l'enregistrement du document '%s' : %s",
+                doc.filename, erreur,
+            )
+            raise DocRegistrationError(
+                "Impossible d'enregistrer le document en base."
+            ) from erreur
+
+        logger.info(
+            "Document '%s' enregistré (id=%s, %d PII)",
+            doc.filename, doc.id, len(doc.details),
+        )
+        return True
 
     def find_by_id(self, id: int) -> RedactedDoc:
         with DBConnection().connection as connection:

@@ -3,16 +3,14 @@ import os
 from pathlib import Path
 
 import pytest
-from dotenv import load_dotenv
 
 from dao.db_connection import DBConnection
 
 
 @pytest.fixture(scope="session")
 def connexion_test():
-    """Prépare une connexion et une table Person réservées aux tests."""
+    """Prépare une connexion et une table Person réservées aux tests"""
 
-    # GIVEN : charger la configuration locale
     backend_dir = Path(__file__).resolve().parents[2]
     env_path = backend_dir / ".env"
 
@@ -26,7 +24,6 @@ def connexion_test():
 
     connection = DBConnection().connection
 
-    # Vérifier la destination AVANT de modifier la BDD
     with connection.cursor() as cursor:
         cursor.execute("SELECT current_database() AS db")
         config = cursor.fetchone()
@@ -39,7 +36,6 @@ def connexion_test():
     if host != os.getenv("POSTGRES_HOST"):
         pytest.fail(f"La connexion PostgreSQL n'est pas locale; elle vaut {host}.")
 
-    # WHEN : préparer le schéma et la table de test
     with connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -60,7 +56,31 @@ def connexion_test():
                 )
             """)
 
-    # THEN : vérifier le schéma actif
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS project_test_dao.redacteddoc (
+                    id SERIAL PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    pii_count INT DEFAULT 0,
+                    pii_positions VARCHAR(1000),
+                    params VARCHAR(1000),
+                    hash_doc CHAR(64)
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS project_test_dao.traitement (
+                    id_person INT NOT NULL,
+                    id_doc INT NOT NULL,
+                    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id_person, id_doc),
+                    FOREIGN KEY (id_person)
+                        REFERENCES project_test_dao.person(id) ON DELETE CASCADE,
+                    FOREIGN KEY (id_doc)
+                        REFERENCES project_test_dao.redacteddoc(id) ON DELETE CASCADE
+                )
+            """)
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT current_schema() AS schema")
         result = cursor.fetchone()
