@@ -16,7 +16,8 @@ dependencies = [
     "regex",
     "uvicorn",
     "python-multipart",
-    "openai"
+    "openai",
+    "streamlit>=1.66.1",
 ]
 
 # Dependencies used only for development, not for runtime

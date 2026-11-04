@@ -1,0 +1,18 @@
+[theme]
+primaryColor = "#185ABD"
+backgroundColor = "#F5F8FD"
+secondaryBackgroundColor = "#E3ECFA"
+textColor = "#14223A"
+font = "sans serif"
+baseFontSize = 17
+baseRadius = "medium"
+
+[server]
+headless = true
+# Nécessaire derrière le proxy d'Onyxia (/proxy/8501), sinon l'envoi de fichiers échoue.
+# À réactiver en production.
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
