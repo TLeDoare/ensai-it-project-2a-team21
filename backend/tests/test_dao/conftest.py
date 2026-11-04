@@ -12,12 +12,6 @@ from utils.env_variables import load_environment_variables
 def connexion_test():
     """Prépare une connexion et une table Person réservées aux tests"""
 
-    backend_dir = Path(__file__).resolve().parents[2]
-    env_path = backend_dir / ".env"
-
-    if not env_path.is_file():
-        pytest.fail("Fichier backend/.env introuvable.")
-
     load_environment_variables()
 
     if os.getenv("POSTGRES_SCHEMA") != "project_test_dao":

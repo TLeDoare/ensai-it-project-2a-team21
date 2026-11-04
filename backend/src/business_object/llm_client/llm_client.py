@@ -1,11 +1,12 @@
 import os
 
-from dotenv import load_dotenv
 from openai import AsyncOpenAI
+
+from utils.env_variables import load_environment_variables
 
 from .prompt_templates import SYSTEM_PROMPT, build_user_message
 
-load_dotenv()
+load_environment_variables()
 
 client = AsyncOpenAI(
     base_url=os.environ["LLM_BASE_URL"],
