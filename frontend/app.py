@@ -170,7 +170,7 @@ def page_caviarder():
         texte_colle = st.text_area("Texte à caviarder", height=220)
 
     with st.expander("Options"):
-        st.radio("Stratégie", ["Masquage", "Pseudonymisation"], index=0)
+        strategie = st.radio("Stratégie", ["Masquage", "Pseudonymisation"], index=0)
         utiliser_llm = st.toggle("Utiliser le LLM (noms, adresses, lieux...)", value=True)
 
     if st.button("Caviarder", type="primary"):
@@ -186,7 +186,7 @@ def page_caviarder():
         debut = time.perf_counter()
         try:
             with st.spinner("Analyse en cours, cela peut prendre quelques secondes..."):
-                reponse = api.caviarder(st.session_state.utilisateur["token"], nom, contenu, utiliser_llm)
+                reponse = api.caviarder(st.session_state.utilisateur["token"], nom, contenu, utiliser_llm, masquer=(strategie == "Masquage"))
         except api.ApiError as erreur:
             st.error(f"Le caviardage a échoué ({erreur.status}) : {erreur.message}")
             return

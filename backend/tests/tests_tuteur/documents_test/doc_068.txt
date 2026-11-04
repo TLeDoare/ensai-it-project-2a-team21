@@ -1,0 +1,66 @@
+RAPPORT D'AUDIT INTERNE
+Traitement des demandes d'aide exceptionnelle — exercices 2024 et 2025
+Inspection générale des services de la métropole de Rouen Normandie
+
+Mission conduite de septembre à décembre 2025.
+Rapporteur : Anne-Claire Dufresne, inspectrice des services.
+
+SYNTHÈSE
+
+Le dispositif d'aide exceptionnelle fonctionne, au sens où les aides sont versées et où les bénéficiaires les reçoivent. Il fonctionne toutefois sur des bases fragiles : une doctrine d'attribution non écrite, une traçabilité partielle, et une dépendance forte à deux agents. Aucune irrégularité financière n'a été relevée. Les cinq recommandations formulées portent sur la sécurisation du dispositif, non sur sa remise en cause.
+
+1. PÉRIMÈTRE ET MÉTHODE
+
+L'audit a porté sur 1 840 demandes déposées entre le 1er janvier 2024 et le 30 juin 2025. Un échantillon de 120 dossiers a été examiné pièce à pièce, tiré de manière aléatoire mais stratifié par montant, pour que les aides supérieures à 800 € soient suffisamment représentées.
+
+Douze entretiens ont été conduits, dont sept avec des agents instructeurs et trois avec des partenaires associatifs. Les comptes rendus ont été soumis aux intéressés avant exploitation. Deux d'entre eux ont demandé des corrections, qui ont été intégrées.
+
+La mission n'a pas eu accès aux échanges de courriels antérieurs à mars 2024, effacés lors de la migration de la messagerie. C'est une limite réelle : elle interdit de vérifier a posteriori la motivation des décisions du premier trimestre 2024.
+
+2. CE QUI FONCTIONNE
+
+Les délais sont bons. Le délai médian entre la demande et le versement est de onze jours, et de dix-neuf jours au neuvième décile. Pour un dispositif d'urgence, c'est un résultat qui mérite d'être souligné, d'autant qu'il s'est maintenu pendant la montée en charge de 2024.
+
+Le taux d'erreur de liquidation est faible. Sur les 120 dossiers examinés, trois erreurs de montant ont été relevées, toutes inférieures à 40 € et toutes au détriment du bénéficiaire. Elles ont été régularisées en cours de mission.
+
+L'accueil des demandeurs est de qualité. Les entretiens avec les partenaires associatifs convergent sur ce point, y compris de la part d'interlocuteurs critiques sur d'autres aspects du dispositif.
+
+3. CE QUI NE FONCTIONNE PAS
+
+La doctrine d'attribution n'est pas écrite. Il existe un barème indicatif, diffusé en 2023, mais il ne couvre ni les situations de cumul avec d'autres aides, ni les demandes répétées. Ces cas — environ un quart du flux — sont tranchés par appréciation individuelle, sans référentiel opposable.
+
+La mission a pu reconstituer la pratique réelle, qui est cohérente et défendable. Mais elle repose sur la mémoire de deux agents. L'un d'eux part à la retraite en juin 2026. Sans formalisation d'ici là, la cohérence des décisions sera perdue, et les écarts de traitement deviendront difficiles à défendre devant le juge administratif.
+
+La motivation des refus est insuffisante. Sur les 28 refus de l'échantillon, 19 comportent une motivation stéréotypée qui ne permet pas de comprendre le raisonnement suivi. Un seul recours contentieux a été formé sur la période, et il a été perdu pour ce motif.
+
+La traçabilité des pièces est partielle. Les justificatifs sont numérisés, mais la date de réception n'est pas horodatée de manière fiable : elle est saisie à la main, parfois plusieurs jours après. Sur onze dossiers de l'échantillon, la chronologie reconstituée est incohérente avec les dates saisies.
+
+4. UN CAS RÉVÉLATEUR
+
+Le dossier n°2024-3391 illustre à lui seul trois des constats précédents.
+
+La demande, déposée par Mme Fatoumata Sylla, portait sur une aide au maintien de la fourniture d'électricité. Elle a été refusée une première fois en avril 2024, au motif d'un cumul avec une aide du fonds de solidarité pour le logement, sans que la règle de non-cumul invoquée figure dans un texte quelconque. La décision a été notifiée par courrier à 15 rue Jean Jaurès, 76600 Le Havre avec une motivation d'une ligne.
+
+Mme Sylla a rappelé le service, a obtenu un réexamen par téléphone, et l'aide a été accordée trois semaines plus tard. Rien, au dossier, n'explique ce qui a changé entre les deux décisions. L'agent interrogé par la mission se souvient parfaitement du dossier et de sa motivation ; celle-ci n'a simplement jamais été écrite.
+
+Ce cas n'est pas isolé. Il est cité parce qu'il est documenté de bout en bout, ce qui est rare.
+
+5. RECOMMANDATIONS
+
+Recommandation 1. Formaliser la doctrine d'attribution avant le 30 juin 2026, en y intégrant les règles de cumul et de récurrence effectivement appliquées. Le document doit être soumis à l'assemblée délibérante, faute de quoi il restera dépourvu de portée.
+
+Recommandation 2. Remplacer la motivation stéréotypée des refus par une motivation de fait, même brève. Un modèle à trous, construit à partir des motifs réellement utilisés, suffirait.
+
+Recommandation 3. Horodater automatiquement la réception des pièces, fonctionnalité déjà présente dans l'applicatif mais non activée.
+
+Recommandation 4. Organiser le transfert de compétence avant le départ en retraite de juin 2026, par un doublonnage effectif de trois mois et non par une simple note de passation.
+
+Recommandation 5. Mettre en place un contrôle interne annuel sur un échantillon de trente dossiers, conduit par un agent extérieur au service.
+
+6. RÉPONSE DU SERVICE AUDITÉ
+
+Le service partage l'essentiel des constats. Il conteste la recommandation 5, qu'il juge disproportionnée au regard des effectifs, et propose un contrôle biennal. La mission maintient sa recommandation : la fragilité relevée au point 3 justifie une fréquence annuelle au moins pendant la période de transition.
+
+Le service souligne par ailleurs que l'absence de doctrine écrite tient d'abord à l'absence d'arbitrage politique sur le niveau d'exigence attendu. La mission en prend acte et suggère que la recommandation 1 soit portée à ce niveau.
+
+Rapport transmis au directeur général des services et au président. Contact rapporteur : ac.dufresne@metropole-test.fr, 02 11 15 22 36.

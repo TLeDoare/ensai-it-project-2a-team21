@@ -1,0 +1,1 @@
+Exemple de sortie attendue : {"spans": []}. Document : Pierre Dupont vit à Lyon.

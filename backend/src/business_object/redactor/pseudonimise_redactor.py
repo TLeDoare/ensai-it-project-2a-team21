@@ -6,6 +6,7 @@ from ..types import Positions, PII
 from .redactor_strategy import RedactorStrategy
 
 
+
 class PseudonimiseRedactor(RedactorStrategy):
 
     def __init__(self, pseudonymes: dict[PII, list[str]]):

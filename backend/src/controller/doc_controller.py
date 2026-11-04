@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException
 
 from schema.doc_model import DocModel
 from service.doc_service import DocService
-from utils.exceptions import AuthError, DocNotFound, DocRegistrationError
+from utils.exceptions import AuthError, DocNotFound, DocRegistrationError, PseudonymisationImpossible
 from utils.security import verify_token
 
 router = APIRouter()
@@ -30,6 +30,11 @@ async def televerser_doc(
         raise HTTPException(status_code=500, detail="Le document téléversé est trop lourd.") from DocRegistrationError
     except UnicodeDecodeError:
         raise HTTPException(status_code=500, detail="Le document est dans un format inconnu. Veuillez téléverser un document de format .md ou .txt et valide au sens unicode.") from DocRegistrationError
+    except PseudonymisationImpossible as erreur:
+        raise HTTPException(
+            status_code=409,
+            detail=str(erreur)
+        ) from erreur
 
 @router.post("/find_by_id", response_model=DocModel, tags=["Doc"])
 async def find_by_id(id: int, doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
