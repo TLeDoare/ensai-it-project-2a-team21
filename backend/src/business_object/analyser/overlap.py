@@ -1,7 +1,7 @@
 # Pour éviter les chevauchements de spans, on fusionne les spans qui se chevauchent en un seul par zone.
 
-from backend.src.business_object.types import Position, Position, Positions
-from validators import VALIDATORS
+from ..types import Position, Positions
+from .validators import VALIDATORS
 
 
 def resoudre_chevauchements(positions: Positions, content: str) -> Positions:

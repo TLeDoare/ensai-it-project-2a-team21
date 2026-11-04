@@ -33,6 +33,7 @@ class PII(IntEnum):
     ethnicity = auto()
     gender = auto()
     address = auto()
+    name = auto()
 
     def __str__(self):
         return f"PII.{self.name}"

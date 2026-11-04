@@ -9,3 +9,5 @@ class DocNotFound(Exception):
 
 class PersonNotFound(Exception):
     """Erreur levée quand une ou plusieurs personnes ne sont pas trouvées."""
+class EmailAlreadyUsed(Exception):
+    """L'adresse e-mail est déjà utilisée par un autre compte."""

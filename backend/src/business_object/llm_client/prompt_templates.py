@@ -1,8 +1,7 @@
 from ..types import PII
 
 LLM_PII_TYPES = [
-    PII.first_name,
-    PII.last_name,
+    PII.name,
     PII.address,
     PII.birthdate,
     PII.place,
@@ -34,6 +33,7 @@ Types autorisés : """ + TYPES_TEXTE + """
 - Ne signale pas les personnalités publiques citées dans leurs fonctions, ni les zones géographiques larges (région, pays).
 - Une commune de moins de 10 000 habitants est un lieu (place) à signaler.
 - Si le document est vide ou ne contient aucune donnée personnelle, renvoie {"spans": []}.
+- Pour une personne, signale son nom complet en un seul bloc (name), tel qu'il apparaît dans le texte (par exemple "Jean Martin" ou "M. Martin" sans la civilité).
 """
 
 

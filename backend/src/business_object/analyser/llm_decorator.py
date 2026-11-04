@@ -12,8 +12,7 @@ class LLMDecorator(AnalyserDecorator):
         try:
             raw = await detect_pii(content)
             return OutputVerifier().verify(raw, content)
-        except Exception as erreur:
-            print ("Mode dégradé :", repr(erreur))
+        except Exception:
             return set()
 
     async def analyse(self, content: str) -> set:

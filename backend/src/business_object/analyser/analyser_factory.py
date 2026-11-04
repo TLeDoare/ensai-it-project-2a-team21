@@ -1,5 +1,6 @@
 from .analyser import Analyser
 from .empty_analyser import EmptyAnalyser
+from .llm_decorator import LLMDecorator
 from .regex_decorator import RegexDecorator
 
 
@@ -10,5 +11,8 @@ class AnalyserFactory:
         analyser = EmptyAnalyser()
 
         analyser = RegexDecorator(analyser, params)
+
+        if params.get("llm", True):
+            analyser = LLMDecorator(analyser, params)
 
         return analyser
