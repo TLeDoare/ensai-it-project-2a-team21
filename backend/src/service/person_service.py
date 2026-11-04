@@ -5,6 +5,7 @@ from psycopg2.errors import UniqueViolation
 from business_object.person import Person
 from business_object.types import Access, Role
 from dao.person_dao import PersonDAO
+from utils.exceptions import WrongCredError
 from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
 from utils.security import hash_any, verify_password
 
@@ -84,10 +85,11 @@ class PersonService:
         person = PersonDAO().find_by_email(email)
 
         if person is None:
-            return None
+            raise WrongCredError
 
         if not verify_password(password, person.password, person.email):
-            return None
+            raise WrongCredError
+
         access_token = secrets.token_urlsafe(32)
 
         PersonDAO().update_access_token(person.id, access_token)

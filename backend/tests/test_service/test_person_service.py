@@ -8,7 +8,7 @@ from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
-from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
+from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound, WrongCredError
 
 person_list = [
     Person(id=1, email="admin@mail.fr", password="1234", role=Role.Administrateur),
@@ -251,11 +251,9 @@ def test_login_email_not_found():
     dao.find_by_email = MagicMock(return_value=None)
 
     with patch("service.person_service.PersonDAO", return_value=dao):
-        # WHEN
-        res = PersonService().login("unknown@mail.fr", "1234")
-
-    # THEN
-    assert res is None
+        # WHEN / THEN
+        with pytest.raises(WrongCredError):
+            res = PersonService().login("unknown@mail.fr", "1234")
 
 
 @patch("service.person_service.verify_password", return_value=False)
@@ -269,9 +267,8 @@ def test_login_wrong_password(mock_verify):
     dao.update_access_token = MagicMock()
 
     with patch("service.person_service.PersonDAO", return_value=dao):
-        # WHEN
-        res = PersonService().login(person.email, "wrong_password")
+        # WHEN/THEN
+        with pytest.raises(WrongCredError):
+            res = PersonService().login(person.email, "wrong_password")
 
-    # THEN
-    assert res is None
     dao.update_access_token.assert_not_called()

@@ -13,8 +13,8 @@ class PersonNotFound(Exception):
 class EmailAlreadyUsed(Exception):
     """L'adresse e-mail est déjà utilisée par un autre compte."""
 
-class LLMParseError(Exception):
-    """Erreur levée quand le LLM renvoie une chaîne JSON non valide."""
-    
 class PseudonymisationImpossible(Exception):
     """Erreur levée lorsque la pseudonymisation ne peut pas être effectuée."""
+
+class WrongCredError(Exception):
+    """Erreur levée lorsque l'email ou le mot de passe utilisé pour le login sont mauvais"""
