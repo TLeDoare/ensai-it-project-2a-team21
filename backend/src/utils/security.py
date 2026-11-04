@@ -12,9 +12,9 @@ def hash_any(text: str, salt: str = "") -> str:
     return hash_object.hexdigest()
 
 
-def verify_password(password: str, hashed_password: str) -> bool:
-    """Vérifie qu'un mot de passe correspond au hash stocké."""
-    return hash_any(password) == hashed_password
+def verify_password(password: str, hashed_password: str, email: str) -> bool:
+    """Vérifie qu'un mot de passe correspond au hash stocké (sel = e-mail)."""
+    return hash_any(password, email) == hashed_password
 
 
 def verify_token(x_auth_token=Header(None)) -> Person:

@@ -20,16 +20,25 @@ class RegexDecorator(AnalyserDecorator):
     # et au moins deux lettres
     EMAIL_PATTERN = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 
-    # Numéro de téléphone : +33 ou 0, puis un chiffre entre 0 et 9,
-    # puis 4 groupes de 2 chiffres séparés ou non par un espace, un point ou un tiret
-    TEL_PATTERN = r"\b(?:\+33|0)[1-9](?:[\s.-]*\d{2}){4}\b"
+        # Numéro de téléphone français, au format national ou international :
+    # indicatif +33 ou 0033 (suivi ou non d'un séparateur) ou simple 0,
+    # puis un chiffre de 1 à 9 et quatre groupes de deux chiffres,
+    # séparés ou non par un espace, un point ou un tiret.
+    # Exemples reconnus : 07 81 57 14 83, 0781571483, 07.81.57.14.83,
+    # +33781571483, +33 7 81 57 14 83, 0033 7 81 57 14 83.
+    # On utilise (?<!\w) au lieu de \b en début de motif : \b ne marche pas
+    # devant le signe +, qui n'est ni une lettre ni un chiffre.
+    TEL_PATTERN = r"(?<!\w)(?:(?:\+|00)33[\s.-]?|0)[1-9](?:[\s.-]?\d{2}){4}\b"
 
-    # Numéro de la CNI : 2 types possibles (ancien et nouveau format)
+        # Numéro de la CNI : 2 types possibles (ancien et nouveau format)
     # Ancien format : 2 chiffres pour l'année, 2 chiffres pour le mois, 3 lettres ou
     # chiffres, et 5 chiffres
-    EX_NUM_CNI_PATTERN = r"\b[0-9]{2}(0[1-9]|1[0-2])[A-Z0-9]{3}\d{5}\b"
-    # Nouveau format : 9 caractères alphanumériques (majuscules)
-    NV_NUM_CNI_PATTERN = r"\b[A-Z0-9]{9}\b"
+    EX_NUM_CNI_PATTERN = r"\b[0-9]{2}(?:0[1-9]|1[0-2])[A-Z0-9]{3}\d{5}\b"
+    # Nouveau format (depuis 2021) : 9 caractères, lettres majuscules et chiffres mêlés.
+    # Exemple reconnu : X4RTBPFW4.
+    # On exige au moins une lettre ET au moins un chiffre, sinon le motif attrape
+    # des mots en majuscules (IMPORTANT) et tous les nombres de 9 chiffres (SIREN).
+    NV_NUM_CNI_PATTERN = r"\b(?=[A-Z0-9]*[A-Z])(?=[A-Z0-9]*\d)[A-Z0-9]{9}\b"
 
     # Numéro de compte principal PAN : 12 à 19 chiffres, éventuellement séparés par
     # des espaces ou des tirets

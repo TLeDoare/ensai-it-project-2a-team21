@@ -20,7 +20,7 @@ class PersonService:
         if dao.find_by_email(email) is not None:
             return None
 
-        hashed_password = hash_any(password)
+        hashed_password = hash_any(password, email)
 
         person = Person(
             email=email,
@@ -68,9 +68,8 @@ class PersonService:
         if person is None:
             return None
 
-        if not verify_password(password, person.password):
+        if not verify_password(password, person.password, person.email):
             return None
-
         access_token = secrets.token_urlsafe(32)
 
         PersonDAO().update_access_token(person.id, access_token)
