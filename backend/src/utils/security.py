@@ -12,7 +12,7 @@ def hash_any(text: str, salt: str = "") -> str:
     return hash_object.hexdigest()
 
 
-def verify_password(password: str, hashed_password: str, email: str) -> bool:
+def verify_password(password: str, hashed_password: str, email: str = "") -> bool:
     """Vérifie qu'un mot de passe correspond au hash stocké (sel = e-mail)."""
     return hash_any(password, email) == hashed_password
 
