@@ -69,6 +69,10 @@ def connexion_test():
                 )
             """)
 
+            cursor.execute("DELETE FROM redacteddoc;")
+            cursor.execute("DELETE FROM person;")
+
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT current_schema() AS schema")
         result = cursor.fetchone()

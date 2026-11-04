@@ -2,18 +2,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from business_object.types import PII, Analyser, Position, Role
 from service.doc_service import DocService
+from utils.exceptions import DocNotFound
 
 
 @pytest.mark.asyncio
 @patch("business_object.person.Person")
 @patch("service.doc_service.DocDAO")
 @patch("service.doc_service.PersonDAO")
-@patch("service.doc_service.AnalyserFactory")
-@patch("service.doc_service.MaskRedactor")
 async def test_create_ok(
-    mock_mask_redactor_class,
-    mock_analyser_factory_class,
     mock_person_dao_class,
     mock_doc_dao_class,
     mock_person
@@ -26,17 +24,8 @@ async def test_create_ok(
     # 1. Mock de PersonDAO pour retourner un faux utilisateur avec un email
     mock_person_dao_instance = mock_person_dao_class.return_value
     mock_person_instance = mock_person.return_value
-    mock_person_instance.email = "a@a.com"
+    mock_person_instance.email = "test@nexistepas.com"
     mock_person_dao_instance.find_by_id = mock_person_instance
-
-    # 2. Mock de l'analyseur (AnalyserFactory)
-    mock_analyser = AsyncMock()
-    mock_analyser.analyse.return_value = [{"start": 26, "end": 37, "type": "name"}]
-    mock_analyser_factory_class.return_value.get_analyser.return_value = mock_analyser
-
-    # 3. Mock du rédacteur (MaskRedactor)
-    mock_redactor = mock_mask_redactor_class.return_value
-    mock_redactor.redact.return_value = "Ceci est un texte avec le nom [MASQUÉ]."
 
     # WHEN
     result = await DocService().create(file=file_content, sent_by=sent_by_id, params=params)
@@ -58,10 +47,10 @@ async def test_find_all(mock_person_dao, mock_doc_dao_class, mock_person):
     mock_doc_dao_instance = mock_doc_dao_class.return_value
 
     mock_person_instance = mock_person.return_value
-    mock_person_instance.role = "SUPERVISEUR"
+    mock_person_instance.role = Role.Superviseur
 
     mock_person_dao_instance = mock_person_dao.return_value
-    mock_person_dao_instance.find_by_id = MagicMock()
+    mock_person_dao_instance.find_by_id = MagicMock(return_value=mock_person_instance)
 
     simulated_docs_list = [
         MagicMock(id=1, filename="file1.txt"),
@@ -96,10 +85,10 @@ async def test_find_by_id_ok(mock_person_dao, mock_person, mock_doc_dao_class):
     mock_doc_dao_instance.find_by_id.return_value = fake_doc
 
     mock_person_instance = mock_person.return_value
-    mock_person_instance.role = "SUPERVISEUR"
+    mock_person_instance.role = Role.Superviseur
 
     mock_person_dao_instance = mock_person_dao.return_value
-    mock_person_dao_instance.find_by_id = MagicMock()
+    mock_person_dao_instance.find_by_id = MagicMock(return_value=mock_person_instance)
 
     # WHEN
     result = DocService().find_by_id(doc_id, 12)
@@ -124,10 +113,10 @@ async def test_find_by_id_not_found(mock_person_dao, mock_person, mock_doc_dao_c
     mock_doc_dao_instance.find_by_id.return_value = None
 
     mock_person_instance = mock_person.return_value
-    mock_person_instance.role = "SUPERVISEUR"
+    mock_person_instance.role = Role.Superviseur
 
     mock_person_dao_instance = mock_person_dao.return_value
-    mock_person_dao_instance.find_by_id = MagicMock()
+    mock_person_dao_instance.find_by_id = MagicMock(return_value=mock_person_instance)
 
     # WHEN / THEN
     with pytest.raises(DocNotFound):
@@ -157,7 +146,7 @@ async def test_create_avec_vrai_mask_redactor(
             indices=(10, 26),
             PII=PII.email,
             confidence=1.0,
-            analyser_source=AnalyserSource.Regex
+            analyser_source=Analyser.Regex
         )
     }
 

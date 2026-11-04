@@ -22,9 +22,8 @@ def id_person_test(connexion_test):
 
     yield id_person
 
-    connexion_test.rollback()     # éfviter les transactions qui restent ouvertes
+    connexion_test.rollback()     # éviter les transactions qui restent ouvertes
     with connexion_test.cursor() as cursor:
-        cursor.execute("DELETE FROM traitement;")
         cursor.execute("DELETE FROM redacteddoc;")
         cursor.execute("DELETE FROM person;")
     connexion_test.commit()
