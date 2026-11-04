@@ -66,3 +66,11 @@ def caviarder(token: str, nom_fichier: str, contenu: bytes, utiliser_llm: bool =
         timeout=TIMEOUT_LLM,
     )
     return _lire(reponse)
+    ############################################ADMIN#######
+
+def historique(token: str) -> list:
+    reponse = requests.post(f"{API_URL}/doc/find_all", headers={"x-auth-token": token}, timeout=TIMEOUT)
+    # L'API répond 404 quand aucun document n'a encore été traité : ce n'est pas une erreur ici.
+    if reponse.status_code == 404:
+        return []
+    return _lire(reponse)

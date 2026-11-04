@@ -1,5 +1,9 @@
 """Interface Streamlit d'Anonymia : affichage et saisie uniquement, toute la logique est dans l'API."""
+import time
 
+import pandas as pd
+import streamlit as st
+import html
 import time
 
 import streamlit as st
@@ -13,6 +17,19 @@ ECRANS = {
     "UTILISATEUR": ["Caviarder un document"],
     "SUPERVISEUR": ["Caviarder un document", "Historique"],
     "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes"],
+}
+
+# Couleur de surlignage par type de PII ; les types absents de la liste sont en gris.
+COULEURS = {
+    "name": "#FFD6A5",
+    "address": "#CAFFBF",
+    "email": "#9BF6FF",
+    "phone_number": "#BDB2FF",
+    "birthdate": "#FFADAD",
+    "place": "#FDFFB6",
+    "organism": "#FFC6FF",
+    "NIR": "#A0C4FF",
+    "IBAN": "#A0C4FF",
 }
 
 
@@ -75,6 +92,78 @@ def barre_laterale() -> str:
     return ecran
 
 
+def surligner(texte: str, details: list) -> str:
+    """Renvoie le texte en HTML, avec chaque PII détectée surlignée selon son type."""
+    morceaux = []
+    position = 0
+    for d in sorted(details, key=lambda d: d["start"]):
+        if d["start"] < position:
+            continue
+        couleur = COULEURS.get(d["type"], "#E0E0E0")
+        morceaux.append(html.escape(texte[position:d["start"]]))
+        morceaux.append(
+            f"<mark style='background:{couleur}; padding:0 3px; border-radius:4px;' title='{d['type']}'>"
+            f"{html.escape(texte[d['start']:d['end']])}</mark>"
+        )
+        position = d["end"]
+    morceaux.append(html.escape(texte[position:]))
+    return "".join(morceaux).replace("\r", "").replace("\n", "<br>")
+
+
+def afficher_resultat(resultat: dict):
+    reponse = resultat["reponse"]
+    details = reponse["details"]
+    nb_regex = sum(1 for d in details if d["source"] == "Regex")
+    nb_llm = sum(1 for d in details if d["source"] == "LLM")
+
+    st.divider()
+    st.subheader("Résultat")
+
+    if resultat["llm"] and nb_llm == 0:
+        st.warning(
+            "Le LLM n'a rien détecté : il est peut-être indisponible (mode dégradé). "
+            "Seules les détections par expressions régulières ont été appliquées."
+        )
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("PII détectées", len(details))
+    col2.metric("Expressions régulières", nb_regex)
+    col3.metric("LLM", nb_llm)
+    col4.metric("Durée", f"{resultat['duree']:.1f} s")
+
+    # Le texte est passé par html.escape avant affichage : il ne peut pas injecter de HTML.
+    gauche, droite = st.columns(2)
+    with gauche:
+        st.markdown("**Texte d'origine**")
+        with st.container(border=True, height=420):
+            st.markdown(surligner(resultat["original"], details), unsafe_allow_html=True)
+    with droite:
+        st.markdown("**Texte caviardé**")
+        with st.container(border=True, height=420):
+            st.markdown(surligner(reponse["content"], []), unsafe_allow_html=True)
+
+    st.download_button(
+        "Télécharger le document caviardé",
+        reponse["content"],
+        file_name="document_caviarde.txt",
+        type="primary",
+    )
+
+    with st.expander(f"Détail des {len(details)} PII détectées"):
+        lignes = [
+            {
+                "Type": d["type"],
+                "Texte": resultat["original"][d["start"]:d["end"]],
+                "Détecteur": d["source"],
+                "Confiance": d["confidence"],
+            }
+            for d in sorted(details, key=lambda d: d["start"])
+        ]
+        st.dataframe(lignes, hide_index=True, use_container_width=True)
+
+    st.caption("Relecture humaine obligatoire avant toute diffusion : aucun détecteur n'est infaillible.")
+
+
 def page_caviarder():
     st.subheader("Caviarder un document")
 
@@ -106,7 +195,7 @@ def page_caviarder():
             st.error(f"Le caviardage a échoué ({erreur.status}) : {erreur.message}")
             return
 
-        # L'original ne quitte pas l'interface ; il servira au surlignage des PII.
+        # L'original ne quitte pas l'interface ; il sert uniquement au surlignage.
         st.session_state.resultat = {
             "original": contenu.decode("utf-8"),
             "reponse": reponse,
@@ -115,8 +204,64 @@ def page_caviarder():
         }
 
     if "resultat" in st.session_state:
-        st.text_area("Document caviardé", st.session_state.resultat["reponse"]["content"], height=300)
+        afficher_resultat(st.session_state.resultat)
 
+def page_historique():
+    st.subheader("Historique des traitements")
+
+    try:
+        documents = api.historique(st.session_state.utilisateur["token"])
+    except api.ApiError as erreur:
+        st.error(f"Impossible de charger l'historique ({erreur.status}) : {erreur.message}")
+        return
+    if not documents:
+        st.info("Aucun document n'a encore été traité.")
+        return
+
+    # Seules les métadonnées et le texte caviardé sont conservés par l'API (F4), jamais l'original.
+    tableau = pd.DataFrame(
+        [
+            {
+                "N°": d["id"],
+                "Date": pd.to_datetime(d["upload_date"]),
+                "Auteur": d["sent_by"],
+                "PII détectées": len(d["details"]),
+                "Empreinte": d["hash"][:12],
+            }
+            for d in documents
+        ]
+    )
+
+    filtre_auteur, filtre_date = st.columns(2)
+    auteurs = filtre_auteur.multiselect("Auteur", sorted(tableau["Auteur"].unique()))
+    periode = filtre_date.date_input(
+        "Période", value=(tableau["Date"].min().date(), tableau["Date"].max().date())
+    )
+    if auteurs:
+        tableau = tableau[tableau["Auteur"].isin(auteurs)]
+    # Pendant la sélection, date_input ne renvoie qu'une date : on attend d'avoir les deux bornes.
+    if len(periode) == 2:
+        tableau = tableau[tableau["Date"].dt.date.between(periode[0], periode[1])]
+
+    col1, col2 = st.columns(2)
+    col1.metric("Documents traités", len(tableau))
+    col2.metric("PII détectées au total", int(tableau["PII détectées"].sum()))
+
+    st.dataframe(
+        tableau.sort_values("Date", ascending=False),
+        hide_index=True,
+        use_container_width=True,
+        column_config={"Date": st.column_config.DatetimeColumn(format="DD/MM/YYYY HH:mm")},
+    )
+
+    if tableau.empty:
+        return
+    numero = st.selectbox("Voir le détail du document n°", tableau["N°"].tolist())
+    document = next(d for d in documents if d["id"] == numero)
+    with st.container(border=True):
+        st.markdown(surligner(document["content"], []), unsafe_allow_html=True)
+    types = sorted({d["type"] for d in document["details"]})
+    st.caption("Types détectés : " + (", ".join(types) if types else "aucun"))
 
 # Aiguillage principal : Streamlit réexécute ce fichier en entier à chaque interaction.
 if "utilisateur" not in st.session_state:
@@ -126,5 +271,7 @@ else:
     entete()
     if ecran == "Caviarder un document":
         page_caviarder()
+    elif ecran == "Historique":
+        page_historique()
     else:
         st.info("Cet écran sera construit dans une prochaine étape.")
