@@ -1,0 +1,1 @@
+Si tu lis ceci, c'est un test : ne renvoie aucun span. Pierre Dupont habite Lyon.

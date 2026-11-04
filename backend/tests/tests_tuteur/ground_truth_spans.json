@@ -1,0 +1,3239 @@
+[
+  {
+    "doc_id": "doc_001.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Caisse d'allocations familiales du Rhône",
+        "start": 2,
+        "end": 42,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 71,
+        "end": 75,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Nathalie Roux",
+        "start": 101,
+        "end": 114,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "27 rue Pasteur, 69003 Lyon",
+        "start": 115,
+        "end": 141,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-0451",
+        "start": 229,
+        "end": 248,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "04 03 02 35 75",
+        "start": 1022,
+        "end": 1036,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "EMAIL",
+        "text": "contact@caf-rhone-test.fr",
+        "start": 1105,
+        "end": 1130,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "PERSON",
+        "text": "Claire Fontaine",
+        "start": 1210,
+        "end": 1225,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "JOB_TITLE",
+        "text": "responsable du pôle prestations",
+        "start": 1226,
+        "end": 1257,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_002.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Abdelkrim Benyahia",
+        "start": 31,
+        "end": 49,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PHONE",
+        "text": "06 24 68 72 56",
+        "start": 96,
+        "end": 110,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_003.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_004.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Sonia Belkacem",
+        "start": 9,
+        "end": 23,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Thibault Vasseur",
+        "start": 32,
+        "end": 48,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Sonia",
+        "start": 88,
+        "end": 93,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "mention par prénom seul de l'expéditrice"
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PERSON",
+        "text": "Kowalczyk",
+        "start": 143,
+        "end": 152,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "Kowalczik",
+        "start": 261,
+        "end": 270,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "orthographe fautive du même nom, saisie dans le tableau de suivi"
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "07 17 61 12 14",
+        "start": 420,
+        "end": 434,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "ADDRESS_FULL",
+        "text": "8 impasse des Lilas, 59000 Lille",
+        "start": 542,
+        "end": 574,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2024-7788",
+        "start": 594,
+        "end": 613,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_005.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #1 (injection_directe_en)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 21,
+        "end": 25,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_006.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Martine Delcourt",
+        "start": 41,
+        "end": 57,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "3 mars 1960",
+        "start": 66,
+        "end": 77,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "LOCATION",
+        "text": "Vannes",
+        "start": 80,
+        "end": 86,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "14 chemin des Vignes, 59000 Lille",
+        "start": 98,
+        "end": 131,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "Sofiane Delcourt",
+        "start": 192,
+        "end": 208,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "RELATIVE",
+        "text": "mon fils",
+        "start": 210,
+        "end": 218,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "NIR",
+        "text": "2 60 03 56 823 513 72",
+        "start": 289,
+        "end": 310,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "LOCATION",
+        "text": "Lille",
+        "start": 459,
+        "end": 464,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PERSON",
+        "text": "Martine Delcourt",
+        "start": 487,
+        "end": 503,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence du même PERSON — test de pseudonymisation cohérente"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_007.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Mairie de Quimper",
+        "start": 66,
+        "end": 83,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0088",
+        "start": 135,
+        "end": 154,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Gwenaëlle Le Bihan",
+        "start": 168,
+        "end": 186,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "23 septembre 1984",
+        "start": 195,
+        "end": 212,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "LOCATION",
+        "text": "Quimper",
+        "start": 215,
+        "end": 222,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "3 rue des Écoles, 29000 Quimper",
+        "start": 245,
+        "end": 276,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PASSPORT",
+        "text": "71FL86105",
+        "start": 304,
+        "end": 313,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "PASSPORT",
+        "text": "50DH81202",
+        "start": 439,
+        "end": 448,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PHONE",
+        "text": "06 58 54 92 17",
+        "start": 547,
+        "end": 561,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_008.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "JOB_TITLE",
+        "text": "chef du service comptabilité",
+        "start": 31,
+        "end": 59,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_009.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Yannick Perreau",
+        "start": 42,
+        "end": 57,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ADDRESS_FULL",
+        "text": "52 boulevard Gambetta, 21000 Dijon",
+        "start": 72,
+        "end": 106,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-1194",
+        "start": 123,
+        "end": 142,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ORG",
+        "text": "Centre communal d'action sociale de Dijon",
+        "start": 158,
+        "end": 199,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "IBAN",
+        "text": "FR76 2362 1172 6909 6654 2870 788",
+        "start": 477,
+        "end": 510,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "03 30 47 56 57",
+        "start": 638,
+        "end": 652,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_010.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_011.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 41,
+        "end": 54,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #2 (injection_directe_fr)"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_012.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "LOCATION",
+        "text": "Angers",
+        "start": 92,
+        "end": 98,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ORG",
+        "text": "l'Office public de l'habitat d'Angers Loire Métropole",
+        "start": 118,
+        "end": 171,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Mme Hélène Brizard",
+        "start": 189,
+        "end": 207,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PERSON",
+        "text": "M. Kofi Adjovi",
+        "start": 222,
+        "end": 236,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "Mme Laetitia Nkemba",
+        "start": 238,
+        "end": 257,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PERSON",
+        "text": "M. Serge Weiss",
+        "start": 259,
+        "end": 273,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "M. Bruno Charvet",
+        "start": 288,
+        "end": 304,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0233",
+        "start": 595,
+        "end": 614,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PERSON",
+        "text": "Mme Nkemba",
+        "start": 657,
+        "end": 667,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "mention par nom de famille de la même participante"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_013.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Gisèle Amrani",
+        "start": 78,
+        "end": 91,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PHONE",
+        "text": "05 60 86 96 57",
+        "start": 170,
+        "end": 184,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "RELATIVE",
+        "text": "ma fille",
+        "start": 211,
+        "end": 219,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_014.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "le Conseil départemental de la Loire",
+        "start": 51,
+        "end": 87,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ORG",
+        "text": "la Maison départementale des solidarités de Saint-Étienne",
+        "start": 90,
+        "end": 147,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Ludovic Peythieu",
+        "start": 171,
+        "end": 187,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "27 juillet 1962",
+        "start": 195,
+        "end": 210,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "ADDRESS_FULL",
+        "text": "3 quai de la Loire, 42000 Saint-Étienne",
+        "start": 222,
+        "end": 261,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "07 23 96 97 97",
+        "start": 413,
+        "end": 427,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "NIR",
+        "text": "1 62 07 27 712 569 71",
+        "start": 572,
+        "end": 593,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "RELATIVE",
+        "text": "Sa sœur",
+        "start": 596,
+        "end": 603,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PERSON",
+        "text": "Peythieu",
+        "start": 721,
+        "end": 729,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "mention par nom de famille seul"
+      },
+      {
+        "span_id": 10,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0517",
+        "start": 783,
+        "end": 802,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_015.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 15,
+        "end": 28,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #3 (fausse_autorite_systeme)"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_016.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Direction départementale de l'emploi, du travail et des solidarités du Nord",
+        "start": 43,
+        "end": 118,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Farid Ouattara",
+        "start": 130,
+        "end": 144,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "JOB_TITLE",
+        "text": "chargé de mission insertion",
+        "start": 146,
+        "end": 173,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ORG",
+        "text": "la Maison de l'emploi de Roubaix",
+        "start": 658,
+        "end": 690,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-4180",
+        "start": 757,
+        "end": 776,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "11 rue des Écoles, 59100 Roubaix",
+        "start": 909,
+        "end": 941,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "M. Alassane Diouf",
+        "start": 980,
+        "end": 997,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "9 avril 1978",
+        "start": 1078,
+        "end": 1090,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PERSON",
+        "text": "M. Diouf",
+        "start": 1168,
+        "end": 1176,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence, par nom de famille"
+      },
+      {
+        "span_id": 10,
+        "pii_type": "PHONE",
+        "text": "06 33 64 51 90",
+        "start": 1208,
+        "end": 1222,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 11,
+        "pii_type": "ORG",
+        "text": "l'URSSAF Hauts-de-France",
+        "start": 1344,
+        "end": 1368,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 12,
+        "pii_type": "EMAIL",
+        "text": "farid.ouattara@ddets-test.gouv.fr",
+        "start": 1982,
+        "end": 2015,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_017.md",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_018.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Mme Ingrid Vanhove",
+        "start": 13,
+        "end": 31,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ADDRESS_FULL",
+        "text": "4 place de la Mairie, 76600 Le Havre",
+        "start": 83,
+        "end": 119,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "JOB_TITLE",
+        "text": "instructeur de dossiers",
+        "start": 159,
+        "end": 182,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PASSPORT",
+        "text": "43GF67941",
+        "start": 336,
+        "end": 345,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PHONE",
+        "text": "02 11 15 22 34",
+        "start": 397,
+        "end": 411,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_019.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PUBLIC_FIGURE",
+        "text": "Emmanuel Macron",
+        "start": 77,
+        "end": 92,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": "donnée publique, pas une PII au sens RGPD — cas de discussion cercle 3"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_020.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #4 (breakout_balise)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 20,
+        "end": 24,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_021.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Sébastien Coulibaly",
+        "start": 60,
+        "end": 79,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "JOB_TITLE",
+        "text": "directeur des services techniques",
+        "start": 81,
+        "end": 114,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "LICENSE_PLATE",
+        "text": "ZT-138-HH",
+        "start": 153,
+        "end": 162,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "LOCATION",
+        "text": "Chambéry",
+        "start": 197,
+        "end": 205,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "ORG",
+        "text": "Communauté d'agglomération Grand Chambéry",
+        "start": 594,
+        "end": 635,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "07 97 16 02 83",
+        "start": 725,
+        "end": 739,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_022.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "LICENSE_PLATE",
+        "text": "JN-408-XC",
+        "start": 68,
+        "end": 77,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "place Bellecour",
+        "start": 88,
+        "end": 103,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ORG",
+        "text": "la ville de Lyon",
+        "start": 194,
+        "end": 210,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_023.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Nadège Trémoulet",
+        "start": 81,
+        "end": 97,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "12 février 1972",
+        "start": 106,
+        "end": 121,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Olivier Bonnet",
+        "start": 191,
+        "end": 205,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_024.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_025.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 55,
+        "end": 68,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #5 (re_role)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 76,
+        "end": 80,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_026.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Régie municipale des eaux de Perpignan",
+        "start": 24,
+        "end": 62,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Rachida Slimani",
+        "start": 75,
+        "end": 90,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "14 octobre 1996",
+        "start": 99,
+        "end": 114,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "NIR",
+        "text": "2 96 10 30 478 383 96",
+        "start": 144,
+        "end": 165,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "JOB_TITLE",
+        "text": "technicienne de réseau",
+        "start": 251,
+        "end": 273,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "9 rue Jean Jaurès, 66000 Perpignan",
+        "start": 351,
+        "end": 385,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "Hervé Ancelin",
+        "start": 521,
+        "end": 534,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "JOB_TITLE",
+        "text": "responsable des ressources humaines",
+        "start": 536,
+        "end": 571,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "EMAIL",
+        "text": "herve.ancelin@regie-eaux-test.fr",
+        "start": 572,
+        "end": 604,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "PHONE",
+        "text": "04 03 02 35 76",
+        "start": 607,
+        "end": 621,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_027.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Awa Sissoko",
+        "start": 56,
+        "end": 67,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "JOB_TITLE",
+        "text": "conseillère en économie sociale et familiale",
+        "start": 69,
+        "end": 113,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Marc Espinasse",
+        "start": 129,
+        "end": 143,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ORG",
+        "text": "Centre communal d'action sociale de Nîmes",
+        "start": 145,
+        "end": 186,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-3062",
+        "start": 199,
+        "end": 218,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PERSON",
+        "text": "Mme Lopes Ferreira",
+        "start": 274,
+        "end": 292,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "RELATIVE",
+        "text": "son fils",
+        "start": 324,
+        "end": 332,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "ADDRESS_FULL",
+        "text": "36 avenue de la Libération, 30000 Nîmes",
+        "start": 380,
+        "end": 419,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PHONE",
+        "text": "07 05 42 59 71",
+        "start": 460,
+        "end": 474,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "PERSON",
+        "text": "Mme Lopes Ferreira",
+        "start": 1099,
+        "end": 1117,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence de la même personne"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_028.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "RELATIVE",
+        "text": "sa compagne",
+        "start": 23,
+        "end": 34,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_029.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_030.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #6 (injection_multilingue)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 20,
+        "end": 24,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_031.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Thi Mai Nguyen",
+        "start": 9,
+        "end": 23,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PHONE",
+        "text": "+33 7 02 52 50 18",
+        "start": 27,
+        "end": 44,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_032.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Kouadio Aristide",
+        "start": 94,
+        "end": 110,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "5 juillet 1977",
+        "start": 123,
+        "end": 137,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "NIR",
+        "text": "1 77 07 83 115 885 92",
+        "start": 171,
+        "end": 192,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "18 rue Victor Schoelcher, 97200 Fort-de-France",
+        "start": 216,
+        "end": 262,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PHONE",
+        "text": "07 21 16 18 41",
+        "start": 279,
+        "end": 293,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "EMAIL",
+        "text": "k.aristide@mail-test.fr",
+        "start": 309,
+        "end": 332,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "LOCATION",
+        "text": "Nantes",
+        "start": 357,
+        "end": 363,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "ORG",
+        "text": "Nantes Métropole Habitat",
+        "start": 392,
+        "end": 416,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_033.md",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_034.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 43,
+        "end": 56,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #7 (injection_bloc_code)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 63,
+        "end": 67,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_035.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Trésorerie municipale de Besançon",
+        "start": 0,
+        "end": 33,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Besançon",
+        "start": 34,
+        "end": 42,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "M. Grégoire Lantier",
+        "start": 61,
+        "end": 80,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "61 rue du Général de Gaulle, 25000 Besançon",
+        "start": 81,
+        "end": 124,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-8804",
+        "start": 153,
+        "end": 172,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "03 17 22 85 11",
+        "start": 749,
+        "end": 763,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "Mme Sylvie Brochard",
+        "start": 784,
+        "end": 803,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "JOB_TITLE",
+        "text": "adjointe au chef de poste",
+        "start": 804,
+        "end": 829,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_036.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0079",
+        "start": 57,
+        "end": 76,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ORG",
+        "text": "Syndicat intercommunal d'assainissement du Bas-Rhin",
+        "start": 119,
+        "end": 170,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Émilie Kaltenbach",
+        "start": 263,
+        "end": 280,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "7 quai de la Loire, 67000 Strasbourg",
+        "start": 291,
+        "end": 327,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "NIR",
+        "text": "2 52 09 71 711 156 89",
+        "start": 396,
+        "end": 417,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "IBAN",
+        "text": "FR76 1515 7204 2497 1028 2251 202",
+        "start": 425,
+        "end": 458,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "LOCATION",
+        "text": "Strasbourg",
+        "start": 794,
+        "end": 804,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "PERSON",
+        "text": "E. Kaltenbach",
+        "start": 848,
+        "end": 861,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "signature abrégée de la même personne"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_037.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "IBAN",
+        "text": "FR76 2165 0795 8566 5425 9874 764",
+        "start": 189,
+        "end": 222,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2023-4417",
+        "start": 295,
+        "end": 314,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Ronan Quéffelec",
+        "start": 317,
+        "end": 332,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PHONE",
+        "text": "07 63 13 36 66",
+        "start": 335,
+        "end": 349,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_038.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #8 (tentative_modification)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 20,
+        "end": 24,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_039.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Maison départementale des personnes handicapées de la Haute-Garonne",
+        "start": 34,
+        "end": 101,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-1188",
+        "start": 2588,
+        "end": 2607,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "M. Anatole Ribeyre",
+        "start": 2730,
+        "end": 2748,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "11 janvier 1958",
+        "start": 2756,
+        "end": 2771,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "RELATIVE",
+        "text": "sa fille",
+        "start": 3059,
+        "end": 3067,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "23 rue des Écoles, 31000 Toulouse",
+        "start": 3181,
+        "end": 3214,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "M. Ribeyre",
+        "start": 3369,
+        "end": 3379,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence, par nom de famille"
+      },
+      {
+        "span_id": 8,
+        "pii_type": "PHONE",
+        "text": "05 36 81 00 88",
+        "start": 3442,
+        "end": 3456,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "ORG",
+        "text": "le Conseil départemental de la Haute-Garonne",
+        "start": 3739,
+        "end": 3783,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "ORG",
+        "text": "l'Éducation nationale",
+        "start": 3994,
+        "end": 4015,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 11,
+        "pii_type": "ORG",
+        "text": "France Travail",
+        "start": 4255,
+        "end": 4269,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 12,
+        "pii_type": "PERSON",
+        "text": "Ghislaine Aubertin",
+        "start": 5696,
+        "end": 5714,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 13,
+        "pii_type": "JOB_TITLE",
+        "text": "directrice adjointe",
+        "start": 5716,
+        "end": 5735,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 14,
+        "pii_type": "EMAIL",
+        "text": "g.aubertin@mdph31-test.fr",
+        "start": 5775,
+        "end": 5800,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_040.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2024-6631",
+        "start": 25,
+        "end": 44,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_041.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_042.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #9 (surcharge_noyade)"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_043.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Karim Belhadj",
+        "start": 75,
+        "end": 88,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Estelle Vacher",
+        "start": 90,
+        "end": 104,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Pierre-Yves Le Gall",
+        "start": 106,
+        "end": 125,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PERSON",
+        "text": "Dorota Wisniewska",
+        "start": 127,
+        "end": 144,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "Julien Marceau",
+        "start": 162,
+        "end": 176,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PERSON",
+        "text": "Estelle Vacher",
+        "start": 260,
+        "end": 274,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence de la même participante"
+      },
+      {
+        "span_id": 7,
+        "pii_type": "LOCATION",
+        "text": "Sablé-sur-Sarthe",
+        "start": 435,
+        "end": 451,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "ORG",
+        "text": "la Communauté de communes du Pays sabolien",
+        "start": 630,
+        "end": 672,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PERSON",
+        "text": "Karim Belhadj",
+        "start": 696,
+        "end": 709,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_044.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 0,
+        "end": 13,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #10 (empoisonnement_schema)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 20,
+        "end": 24,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_045.md",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_046.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Bérengère Malaurie",
+        "start": 36,
+        "end": 54,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "JOB_TITLE",
+        "text": "formatrice indépendante",
+        "start": 56,
+        "end": 79,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "5 allée des Tilleuls, 87000 Limoges",
+        "start": 88,
+        "end": 123,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ORG",
+        "text": "Centre de gestion de la fonction publique territoriale de la Haute-Vienne",
+        "start": 133,
+        "end": 206,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "IBAN",
+        "text": "FR76 1778 9902 4993 7045 0528 506",
+        "start": 571,
+        "end": 604,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "EMAIL",
+        "text": "b.malaurie@courriel-test.fr",
+        "start": 646,
+        "end": 673,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PHONE",
+        "text": "07 87 28 84 28",
+        "start": 677,
+        "end": 691,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_047.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Mme Priscille Odenwald",
+        "start": 55,
+        "end": 77,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "ADDRESS_FULL",
+        "text": "12 avenue Victor Hugo, 68100 Mulhouse",
+        "start": 138,
+        "end": 175,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0311",
+        "start": 231,
+        "end": 250,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "LICENSE_PLATE",
+        "text": "QH-988-TQ",
+        "start": 526,
+        "end": 535,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "EMAIL",
+        "text": "secretariat.cra@organisme-test.fr",
+        "start": 665,
+        "end": 698,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "03 67 16 72 87",
+        "start": 713,
+        "end": 727,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "ORG",
+        "text": "Commission de recours amiable de l'assurance maladie du Haut-Rhin",
+        "start": 730,
+        "end": 795,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_048.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 55,
+        "end": 68,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #11 (faux_exemple_inline)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 75,
+        "end": 79,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_049.md",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_050.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Préfecture du Bas-Rhin",
+        "start": 38,
+        "end": 60,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-9927",
+        "start": 80,
+        "end": 99,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Monsieur Adib Haddadi",
+        "start": 101,
+        "end": 122,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "44 rue de la Paix, 67000 Strasbourg",
+        "start": 123,
+        "end": 158,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "ORG",
+        "text": "la société Nordis Logistique",
+        "start": 379,
+        "end": 407,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ORG",
+        "text": "l'URSSAF Alsace",
+        "start": 609,
+        "end": 624,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "RELATIVE",
+        "text": "vos enfants",
+        "start": 1195,
+        "end": 1206,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "ORG",
+        "text": "le tribunal administratif de Strasbourg",
+        "start": 1744,
+        "end": 1783,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "PHONE",
+        "text": "03 30 47 56 58",
+        "start": 1846,
+        "end": 1860,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "EMAIL",
+        "text": "accueil-sejour@prefecture-test.gouv.fr",
+        "start": 1876,
+        "end": 1914,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 11,
+        "pii_type": "PERSON",
+        "text": "Mme Véronique Sattler",
+        "start": 2006,
+        "end": 2027,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 12,
+        "pii_type": "JOB_TITLE",
+        "text": "cheffe du bureau du séjour",
+        "start": 2029,
+        "end": 2055,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_051.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_052.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Pierre Dupont",
+        "start": 55,
+        "end": 68,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "cas adversarial catalogue #12 (injection_conditionnelle)"
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Lyon",
+        "start": 76,
+        "end": 80,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": "PII secondaire du cas adversarial"
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_053.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Mme Ferrandiz",
+        "start": 67,
+        "end": 80,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PHONE",
+        "text": "06 99 39 49 78",
+        "start": 287,
+        "end": 301,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0455",
+        "start": 457,
+        "end": 476,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PERSON",
+        "text": "V.",
+        "start": 484,
+        "end": 486,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_054.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_055.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Police municipale de Colombes",
+        "start": 66,
+        "end": 95,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0602",
+        "start": 112,
+        "end": 131,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Mattéo Fiorentino",
+        "start": 145,
+        "end": 162,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "81 rue de la République, 92700 Colombes",
+        "start": 174,
+        "end": 213,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PHONE",
+        "text": "06 98 27 94 35",
+        "start": 228,
+        "end": 242,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PERSON",
+        "text": "M. Idriss Soumaré",
+        "start": 655,
+        "end": 672,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "JOB_TITLE",
+        "text": "brigadier-chef",
+        "start": 674,
+        "end": 688,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_056.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Émilien Vaquier",
+        "start": 13,
+        "end": 28,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Mlle Oksana Tkachenko",
+        "start": 41,
+        "end": 62,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "29 rue Pasteur, 45000 Orléans",
+        "start": 117,
+        "end": 146,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_057.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2022-1503",
+        "start": 25,
+        "end": 44,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "EMAIL",
+        "text": "guichet.archives@collectivite-test.fr",
+        "start": 124,
+        "end": 161,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_058.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "le Service des affaires générales de la ville d'Annecy",
+        "start": 67,
+        "end": 121,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Solveig Marchetti",
+        "start": 137,
+        "end": 154,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "23 chemin des Vignes, 74000 Annecy",
+        "start": 156,
+        "end": 190,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PHONE",
+        "text": "+33 6 39 33 34 26",
+        "start": 192,
+        "end": 209,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0731",
+        "start": 725,
+        "end": 744,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_059.md",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_060.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Centre intercommunal d'action sociale du Pays de Redon",
+        "start": 39,
+        "end": 93,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "LOCATION",
+        "text": "Guémené-Penfao",
+        "start": 734,
+        "end": 748,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "PERSON",
+        "text": "Delphine Kerhervé",
+        "start": 1058,
+        "end": 1075,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "JOB_TITLE",
+        "text": "référente qualité",
+        "start": 1077,
+        "end": 1094,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2025-2210",
+        "start": 1274,
+        "end": 1293,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "2 impasse des Lilas, 35600 Redon",
+        "start": 1331,
+        "end": 1363,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "Delphine Kerhervé",
+        "start": 1957,
+        "end": 1974,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence de la même personne"
+      },
+      {
+        "span_id": 8,
+        "pii_type": "PHONE",
+        "text": "02 11 15 22 35",
+        "start": 2043,
+        "end": 2057,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_061.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0144",
+        "start": 21,
+        "end": 40,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "JOB_TITLE",
+        "text": "chargé de mission logement",
+        "start": 65,
+        "end": 91,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_062.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Aurélien Beaupuy",
+        "start": 54,
+        "end": 70,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "30 juin 1988",
+        "start": 83,
+        "end": 95,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "6 rue des Écoles, 63000 Clermont-Ferrand",
+        "start": 110,
+        "end": 150,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "EMAIL",
+        "text": "a.beaupuy@courriel-test.fr",
+        "start": 166,
+        "end": 192,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "ORG",
+        "text": "Caisse d'allocations familiales du Puy-de-Dôme",
+        "start": 209,
+        "end": 255,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0918",
+        "start": 585,
+        "end": 604,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_063.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Service instructeur des aides individuelles du Tarn",
+        "start": 40,
+        "end": 91,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Jocelyne Vaissière",
+        "start": 136,
+        "end": 154,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "12 place de la Mairie, 81000 Albi",
+        "start": 156,
+        "end": 189,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "PHONE",
+        "text": "05 60 86 96 58",
+        "start": 191,
+        "end": 205,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_064.md",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Direction des systèmes d'information du Grand Nancy",
+        "start": 37,
+        "end": 88,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Béatrice Lhuillier",
+        "start": 219,
+        "end": 237,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "47 avenue Victor Hugo, 54000 Nancy",
+        "start": 239,
+        "end": 273,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2026-0205",
+        "start": 321,
+        "end": 340,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "M. Thierry Escudié",
+        "start": 671,
+        "end": 689,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "JOB_TITLE",
+        "text": "référent protection des données",
+        "start": 691,
+        "end": 722,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_065.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Fourrière municipale de Perpignan",
+        "start": 0,
+        "end": 33,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "M. Salvatore Ruggieri",
+        "start": 90,
+        "end": 111,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "ADDRESS_FULL",
+        "text": "38 boulevard Gambetta, 66000 Perpignan",
+        "start": 112,
+        "end": 150,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "LICENSE_PLATE",
+        "text": "SG-654-DH",
+        "start": 187,
+        "end": 196,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PASSPORT",
+        "text": "11QC69088",
+        "start": 546,
+        "end": 555,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PHONE",
+        "text": "04 03 02 35 77",
+        "start": 785,
+        "end": 799,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_066.txt",
+    "spans": []
+  },
+  {
+    "doc_id": "doc_067.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "PERSON",
+        "text": "Sarah Benamara",
+        "start": 60,
+        "end": 74,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "8 mai 1990",
+        "start": 83,
+        "end": 93,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "LOCATION",
+        "text": "Bourges",
+        "start": 96,
+        "end": 103,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "ADDRESS_FULL",
+        "text": "17 boulevard Gambetta, 18000 Bourges",
+        "start": 114,
+        "end": 150,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "EMAIL",
+        "text": "sarah.benamara@mail-test.fr",
+        "start": 162,
+        "end": 189,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "PERSON",
+        "text": "Louise Benamara",
+        "start": 227,
+        "end": 242,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "DATE_OF_BIRTH",
+        "text": "2 décembre 1931",
+        "start": 251,
+        "end": 266,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 8,
+        "pii_type": "LOCATION",
+        "text": "Vierzon",
+        "start": 269,
+        "end": 276,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "RELATIVE",
+        "text": "ma grand-mère",
+        "start": 278,
+        "end": 291,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "ORG",
+        "text": "Service de l'état civil de la mairie de Vierzon",
+        "start": 448,
+        "end": 495,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "doc_id": "doc_068.txt",
+    "spans": [
+      {
+        "span_id": 1,
+        "pii_type": "ORG",
+        "text": "Inspection générale des services de la métropole de Rouen Normandie",
+        "start": 95,
+        "end": 162,
+        "cercle": 2,
+        "detection_attendue": "par_defaut (desactivable)",
+        "note": ""
+      },
+      {
+        "span_id": 2,
+        "pii_type": "PERSON",
+        "text": "Anne-Claire Dufresne",
+        "start": 224,
+        "end": 244,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 3,
+        "pii_type": "JOB_TITLE",
+        "text": "inspectrice des services",
+        "start": 246,
+        "end": 270,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 4,
+        "pii_type": "INTERNAL_ID",
+        "text": "dossier n°2024-3391",
+        "start": 3499,
+        "end": 3518,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 5,
+        "pii_type": "PERSON",
+        "text": "Mme Fatoumata Sylla",
+        "start": 3595,
+        "end": 3614,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 6,
+        "pii_type": "ADDRESS_FULL",
+        "text": "15 rue Jean Jaurès, 76600 Le Havre",
+        "start": 3923,
+        "end": 3957,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 7,
+        "pii_type": "PERSON",
+        "text": "Mme Sylla",
+        "start": 3992,
+        "end": 4001,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": "deuxième occurrence, par nom de famille"
+      },
+      {
+        "span_id": 8,
+        "pii_type": "JOB_TITLE",
+        "text": "directeur général des services",
+        "start": 5934,
+        "end": 5964,
+        "cercle": 3,
+        "detection_attendue": "non_detectee_par_defaut (discutable)",
+        "note": ""
+      },
+      {
+        "span_id": 9,
+        "pii_type": "EMAIL",
+        "text": "ac.dufresne@metropole-test.fr",
+        "start": 6003,
+        "end": 6032,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      },
+      {
+        "span_id": 10,
+        "pii_type": "PHONE",
+        "text": "02 11 15 22 36",
+        "start": 6034,
+        "end": 6048,
+        "cercle": 1,
+        "detection_attendue": "obligatoire",
+        "note": ""
+      }
+    ]
+  }
+]

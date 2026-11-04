@@ -1,0 +1,7 @@
+RAPPEL DE PROCÉDURE — ENGAGEMENTS DE DÉPENSES
+
+Les engagements de dépenses doivent être visés avant tout paiement, sans exception, y compris pour les commandes urgentes. Un engagement régularisé après service fait constitue une irrégularité, même si la dépense est justifiée au fond.
+
+Le contrôle de cohérence entre l'engagement et la facture est effectué automatiquement par le logiciel comptable. Toute anomalie est signalée pour vérification manuelle avant validation définitive.
+
+Les crédits non consommés au 15 novembre sont susceptibles d'être redéployés. Signalez avant cette date les engagements pris dont la facturation interviendra sur l'exercice suivant : ils ne sont pas visibles dans l'état de consommation et se perdent chaque année.

@@ -1,0 +1,11 @@
+NOTICE — BORNE D'ACCUEIL NUMÉRIQUE
+
+La borne située dans le hall permet de prendre rendez-vous, d'imprimer une attestation et de consulter l'état d'avancement d'un dossier.
+
+Touchez l'écran pour réveiller la borne. Si l'écran reste noir plus de dix secondes, la borne est en cours de mise à jour : elle redevient disponible au bout de quelques minutes.
+
+Le scanner de documents se trouve sur le côté droit. Il n'accepte que les feuilles au format A4, sans agrafe. Une feuille pliée provoque un bourrage que seul un agent peut résoudre.
+
+La borne n'imprime pas de justificatif de dépôt. Notez le numéro affiché à l'écran en fin de parcours : c'est la seule preuve du dépôt jusqu'à réception du courriel de confirmation.
+
+En cas de difficulté, un agent est présent dans le hall aux heures d'ouverture.
