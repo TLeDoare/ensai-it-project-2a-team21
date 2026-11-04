@@ -28,7 +28,7 @@ class DocDAO(metaclass=Singleton):
                                 "upload_date": doc.upload_date,
                                 "pii_count": len(doc.details),
                                 "pii_positions": json.dumps(list(doc.details)),
-                                "params": json.dumps(doc.params),
+                                "params": str(doc.params),
                                 "author": doc.sent_by
                             }
                         )
