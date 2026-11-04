@@ -21,13 +21,3 @@ class LLMDecorator(AnalyserDecorator):
             self._detect_llm(content),
         )
         return positions | positions_llm
-
-
-if __name__ == "__main__":
-
-    class Vide:
-        async def analyse(self, content):
-            return set()
-
-    texte = "Monsieur Pierre Dupont, domicilié 12 rue de la Paix, 75002 Paris."
-    print(asyncio.run(LLMDecorator(Vide(), {}).analyse(texte)))

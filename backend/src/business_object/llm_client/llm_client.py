@@ -26,11 +26,3 @@ async def detect_pii(document: str) -> str | None:
         response_format={"type": "json_object"},
     )
     return response.choices[0].message.content
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    exemple = ("Monsieur Pierre Dupont, domicilié 12 rue de la Paix, 75002 Paris, "
-               "a déposé sa demande le 3 mars 2025.")
-    print(asyncio.run(detect_pii(exemple)))

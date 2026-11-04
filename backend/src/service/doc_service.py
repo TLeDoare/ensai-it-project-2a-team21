@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
+from business_object.analyser.overlap import resoudre_chevauchements
 from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.types import Role
@@ -9,7 +10,6 @@ from dao.person_dao import PersonDAO
 from utils.exceptions import AuthError, DocNotFound
 from utils.log_utils import log
 from utils.security import hash_any
-from business_object.analyser.overlap import resoudre_chevauchements
 
 
 class DocService:
@@ -35,7 +35,6 @@ class DocService:
     @log
     def find_by_id(self, id: int, sent_by: id) -> RedactedDoc | None:
         author = PersonDAO().find_by_id(sent_by)
-        print(author.role)
         if author.role == Role.Administrateur or author.role == Role.Superviseur:
             doc = DocDAO().find_by_id(id)
             if doc is None:

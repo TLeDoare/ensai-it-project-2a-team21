@@ -33,7 +33,7 @@ def luhn_valide(numero: str) -> bool:
 def nir_valide(numero: str) -> bool:
     """Validation NIR : vrai si la clé de contrôle est correcte (clé = 97 - N mod 97)"""
     texte = numero.strip().upper()
-    # Cas de la Corse : transformer les lettres en chiffres 
+    # Cas de la Corse : transformer les lettres en chiffres
     texte_num = texte.replace("2A", "19").replace("2B", "18")
     chiffres = _chiffres(texte_num)
     if len(chiffres) != 15: # 13 chiffres + 2 chiffres de clé
