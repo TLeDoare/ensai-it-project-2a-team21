@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schema.person_model import PersonModel, RegisterModel
+from schema.person_model import PersonModel, RegisterModel, UpdateModel
 from service.person_service import PersonService
-from utils.exceptions import AuthError, PersonNotFound
+from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
 from utils.log_utils import get_logger
 from utils.security import verify_token
 
@@ -24,13 +24,11 @@ async def find_all_users(person_service=Depends(get_person_service), current_per
     """
     logger.info("List all users")
     try:
-        return person_service.find_all(current_person.id)
+        return person_service.find_all(current_person)
     except PersonNotFound:
         raise HTTPException(status_code=404, detail="user (id={id_user}) not found.") from PersonNotFound
     except AuthError:
         raise HTTPException(status_code=401, detail="Accès non autorisé.") from AuthError
-
-# à voir la terminologie exacte user/person
 
 
 @router.get("/{id_user}", response_model=PersonModel, tags=["Users"])
@@ -46,7 +44,7 @@ async def user_by_id(id_user: int, person_service=Depends(get_person_service), c
     """
     logger.info("Find a user by id")
     try:
-        return person_service.find_by_id(id_user, current_person.id)
+        return person_service.find_by_id(id_user, current_person)
     except PersonNotFound:
         raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
     except AuthError:
@@ -61,24 +59,22 @@ def create_person(
 ):
     logger.info("Create a user")
 
-
     try:
         person = person_service.create(
             user.email,
             user.password,
             user.role,
-            current_person.id
+            current_person
         )
-        if person is None:
-            raise HTTPException(status_code=409, detail=f"Email {user.email} already used.")
-        else:
-            return person
-    except AuthError as a:
-        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum pour créer un compte.") from a
+        return person
+    except EmailAlreadyUsed:
+        raise HTTPException(status_code=409, detail=f"Email {user.email} already used.") from EmailAlreadyUsed
+    except AuthError:
+        raise HTTPException(status_code=401, detail="Accès non autorisé.") from AuthError
 
 
 @router.put("/{id_user}", response_model=PersonModel, tags=["Users"])
-async def update_user(id_user: int, user: PersonModel, person_service=Depends(get_person_service)):
+async def update_user(user: UpdateModel, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
     """Update an existing user's information.
     Args:
         id_user (int)
@@ -91,17 +87,13 @@ async def update_user(id_user: int, user: PersonModel, person_service=Depends(ge
         HTTPException: 500 error if the update process fails.
     """
     logger.info("Update a user")
-    u = person_service.find_by_id(id_user)
-    if not u:
-        raise HTTPException(status_code=404, detail="User (id={id_user}) not found.")
+    try:
+        u = person_service.find_by_id(user.id)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail="User (id={id_user}) not found.") from PersonNotFound
 
     u.email = user.email
     u.password = user.password
-    u.role = user.role
 
-    u = person_service.update(u)
-    if not u:
-        raise HTTPException(status_code=500, detail="Error while updating u (user).")
-
-    return u
+    return person_service.update(u, current_person)
 

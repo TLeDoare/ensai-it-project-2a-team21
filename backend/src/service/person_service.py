@@ -5,15 +5,16 @@ from psycopg2.errors import UniqueViolation
 from business_object.person import Person
 from business_object.types import Access, Role
 from dao.person_dao import PersonDAO
-from utils.exceptions import WrongCredError
-from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
+from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound, WrongCredError
 from utils.security import hash_any, verify_password
 
 
 class PersonService:
 
-    def create(self, email: str, password: str, role: Role, sent_by: int) -> Person | None:
+    def create(self, email: str, password: str, role: Role, sent_by: Person) -> Person | None:
         """Crée un nouvel utilisateur."""
+
+        self.grant_auth(sent_by, Access.CreatePerson)
 
         dao = PersonDAO()
 
@@ -29,17 +30,12 @@ class PersonService:
             role=role,
         )
 
-        author = PersonDAO().find_by_id(sent_by)
+        try:
+            return dao.create(person)
+        except UniqueViolation as u:
+            raise EmailAlreadyUsed from u
 
-        if author.role == Role.Administrateur:
-            try:
-                return dao.create(person)
-            except UniqueViolation as u:
-                raise EmailAlreadyUsed from u
-        else:
-            raise AuthError(Role.Administrateur)
-
-    def find_all(self, sent_by: int):
+    def find_all(self, sent_by: Person):
         self.grant_auth(sent_by, Access.ReadPerson)
         persons = PersonDAO().find_all()
         if persons == []:
@@ -47,17 +43,25 @@ class PersonService:
         else:
             return persons
 
-    def find_by_id(self, id: int, sent_by: int):
-        self.grant_auth(sent_by, Access.ReadPerson)
+    def find_by_id(self, id: int, sent_by: Person | None = None):
+        # Si cette fonction est éxecutée par le serveur et non par une personne tierce, alors son auteur est None. Sinon,
+        # on vérifie si l'auteur a le droit d'accéder aux utilisateurs.
+        if sent_by is not None:
+            self.grant_auth(sent_by, Access.ReadPerson)
         person = PersonDAO().find_by_id(id)
         if person is None:
             raise PersonNotFound
         else:
             return person
 
-    def grant_auth(self, id: int, req: Access) -> None:
+    def update(self, person: Person, sent_by: Person):
+        self.grant_auth(sent_by, Access.UpdatePerson, person)
+        person.password = hash_any(person.password, person.email)
+        PersonDAO().update(person)
+        return person
+
+    def grant_auth(self, who: Person, req: Access, third_p = None) -> None:
         access = False
-        who = PersonDAO().find_by_id(id)
         if req == Access.ReadDoc:
             access = who.role in (Role.Administrateur, Role.Superviseur)
         elif req == Access.CreateDoc:
@@ -67,7 +71,7 @@ class PersonService:
         elif req == Access.CreatePerson:
             access = who.role == Role.Administrateur
         elif req == Access.UpdatePerson:
-            access = who.role == Role.Administrateur
+            access = who.id == third_p.id
         elif req == Access.DeletePerson:
             access = who.role == Role.Administrateur
         else:

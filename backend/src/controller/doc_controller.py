@@ -24,7 +24,7 @@ async def televerser_doc(
         current_person=Depends(verify_token)):
     # L'objet req contient le fichier et les paramètres (stratégie, etc.)
     try:
-        doc_traite = await doc_service.create(file.decode("utf-8"), current_person.id, literal_eval(params))
+        doc_traite = await doc_service.create(file.decode("utf-8"), current_person, literal_eval(params))
         return doc_traite
     except DocRegistrationError:
         raise HTTPException(status_code=500, detail="Le document téléversé est trop lourd.") from DocRegistrationError
@@ -34,7 +34,7 @@ async def televerser_doc(
 @router.post("/find_by_id", response_model=DocModel, tags=["Doc"])
 async def find_by_id(id: int, doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
     try:
-        return DocService().find_by_id(id, current_person.id)
+        return DocService().find_by_id(id, current_person)
     except DocNotFound:
         raise HTTPException(status_code=404, detail="Ce document n'existe pas") from DocNotFound
     except AuthError:
@@ -43,7 +43,7 @@ async def find_by_id(id: int, doc_service=Depends(get_doc_service), current_pers
 @router.post("/find_all", response_model=list[DocModel], tags=["Doc"])
 async def find_all(doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
     try:
-        return DocService().find_all(current_person.id)
+        return DocService().find_all(current_person)
     except DocNotFound:
         raise HTTPException(status_code=404, detail="Ce document n'existe pas") from DocNotFound
     except AuthError:

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
 from business_object.analyser.overlap import resoudre_chevauchements
+from business_object.person import Person
 from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
@@ -17,7 +18,7 @@ from utils.security import hash_any
 
 class DocService:
     @log
-    async def create(self, file: str, sent_by: int, params: dict) -> RedactedDoc:
+    async def create(self, file: str, sent_by: Person, params: dict) -> RedactedDoc:
         PersonService().grant_auth(sent_by, Access.CreateDoc)
 
         text = file
@@ -43,7 +44,7 @@ class DocService:
         return redacted_doc
 
     @log
-    def find_by_id(self, id: int, sent_by: id) -> RedactedDoc:
+    def find_by_id(self, id: int, sent_by: Person) -> RedactedDoc:
         PersonService().grant_auth(sent_by, Access.ReadDoc)
         doc = DocDAO().find_by_id(id)
         if doc is None:
@@ -52,7 +53,7 @@ class DocService:
             return doc
 
     @log
-    def find_all(self, sent_by: int):
+    def find_all(self, sent_by: Person):
         PersonService().grant_auth(sent_by, Access.ReadDoc)
         docs = DocDAO().find_all()
         if docs == []:

@@ -29,7 +29,6 @@ def test_create_ok(mock_hash):
     email = "new@mail.fr"
     password = "1234"
     role = Role.Utilisateur
-    sent_by = 1
 
     dao = PersonDAO()
     dao.find_by_email = MagicMock(return_value=None)
@@ -43,7 +42,7 @@ def test_create_ok(mock_hash):
 
     # WHEN
     with patch("service.person_service.PersonDAO", return_value=dao):
-        person = PersonService().create(email, password, role, sent_by)
+        person = PersonService().create(email, password, role, person_list[0])
 
     # THEN
     assert person is not None
@@ -62,7 +61,7 @@ def test_create_fail_email_already_used():
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN
         person = PersonService().create(
-            "admin@mail.fr", "1234", Role.Utilisateur, 1
+            "admin@mail.fr", "1234", Role.Utilisateur, person_list[0]
         )
 
     # THEN
@@ -81,7 +80,7 @@ def test_create_fail_auth():
         # WHEN / THEN
         with pytest.raises(AuthError):
             PersonService().create(
-                "new@mail.fr", "1234", Role.Utilisateur, 3
+                "new@mail.fr", "1234", Role.Utilisateur, person_list[2]
             )
 
 
@@ -98,7 +97,7 @@ def test_create_email_already_used_exception():
         # WHEN / THEN
         with pytest.raises(EmailAlreadyUsed):
             PersonService().create(
-                "new@mail.fr", "1234", Role.Utilisateur, 1
+                "new@mail.fr", "1234", Role.Utilisateur, person_list[0]
             )
 
 
@@ -116,7 +115,7 @@ def test_find_all_admin():
 
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN
-        res = PersonService().find_all(sent_by=1)
+        res = PersonService().find_all(sent_by=person_list[0])
 
     # THEN
     assert len(res) == 3
@@ -132,7 +131,7 @@ def test_find_all_supervisor():
 
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN
-        res = PersonService().find_all(sent_by=2)
+        res = PersonService().find_all(sent_by=person_list[1])
 
     # THEN
     assert len(res) == 3
@@ -149,7 +148,7 @@ def test_find_all_empty():
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN / THEN
         with pytest.raises(PersonNotFound):
-            PersonService().find_all(sent_by=1)
+            PersonService().find_all(sent_by=person_list[0])
 
 
 def test_find_all_unauthorized():
@@ -162,7 +161,7 @@ def test_find_all_unauthorized():
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN / THEN
         with pytest.raises(AuthError):
-            PersonService().find_all(sent_by=3)
+            PersonService().find_all(sent_by=person_list[2])
 
 
 # -------------------------
@@ -174,14 +173,11 @@ def test_find_by_id_ok():
 
     # GIVEN
     dao = PersonDAO()
-    dao.find_by_id = MagicMock(side_effect=[
-        person_list[0],
-        person_list[1]
-    ])
+    dao.find_by_id = MagicMock(return_value=person_list[1])
 
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN
-        person = PersonService().find_by_id(id=2, sent_by=1)
+        person = PersonService().find_by_id(id=2, sent_by=person_list[0])
 
     # THEN
     assert person.email == "superviseur@mail.fr"
@@ -192,15 +188,12 @@ def test_find_by_id_not_found():
 
     # GIVEN
     dao = PersonDAO()
-    dao.find_by_id = MagicMock(side_effect=[
-        person_list[0],
-        None
-    ])
+    dao.find_by_id = MagicMock(return_value=None)
 
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN / THEN
         with pytest.raises(PersonNotFound):
-            PersonService().find_by_id(id=99, sent_by=1)
+            PersonService().find_by_id(id=99, sent_by=person_list[0])
 
 
 def test_find_by_id_unauthorized():
@@ -213,7 +206,7 @@ def test_find_by_id_unauthorized():
     with patch("service.person_service.PersonDAO", return_value=dao):
         # WHEN / THEN
         with pytest.raises(AuthError):
-            PersonService().find_by_id(id=1, sent_by=3)
+            PersonService().find_by_id(id=1, sent_by=person_list[2])
 
 
 # -------------------------

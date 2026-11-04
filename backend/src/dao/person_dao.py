@@ -144,7 +144,7 @@ class PersonDAO:
                         "email": person.email,
                         "access_token": person.access_token,
                         "id": person.id,
-                        "role": person.role.name.lower()
+                        "role": person.role.name
                     },
                 )
                 nb_affected_rows = cursor.rowcount

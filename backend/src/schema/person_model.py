@@ -19,3 +19,8 @@ class RegisterModel(BaseModel):
     password: str
     role: Role
 
+
+class UpdateModel(BaseModel):
+    id: int
+    email: EmailStr
+    password: str
