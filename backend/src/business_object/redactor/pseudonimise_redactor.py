@@ -1,13 +1,9 @@
 
 from secrets import choice
 
+from utils.exceptions import PseudonymisationImpossible
 from ..types import Positions, PII
 from .redactor_strategy import RedactorStrategy
-
-
-class PseudonymisationImpossible(ValueError):
-    """Erreur lorsque la pseudonymisation ne peut pas être effectuée."""
-    pass
 
 
 class PseudonimiseRedactor(RedactorStrategy):

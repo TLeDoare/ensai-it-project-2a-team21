@@ -15,3 +15,6 @@ class EmailAlreadyUsed(Exception):
 
 class LLMParseError(Exception):
     """Erreur levée quand le LLM renvoie une chaîne JSON non valide."""
+    
+class PseudonymisationImpossible(Exception):
+    """Erreur levée lorsque la pseudonymisation ne peut pas être effectuée."""
