@@ -4,6 +4,8 @@ from business_object.analyser.analyser_factory import AnalyserFactory
 from business_object.analyser.overlap import resoudre_chevauchements
 from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
+from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
+from business_object.redactor.redactorcontext import RedactorContext
 from business_object.types import Role
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
@@ -22,8 +24,13 @@ class DocService:
         positions = resoudre_chevauchements(positions, text)
         doc_hash = hash_any(file)
 
-        redactor = MaskRedactor()
-        redacted_content = redactor.redact(text, positions)
+        redactor_context = RedactorContext()
+        if params.get("mask", True):
+            redactor_context.set_strategy(MaskRedactor())
+        else:
+            redactor_context.set_strategy(PseudonimiseRedactor())
+
+        redacted_content = redactor_context.execute_strategy(file, positions)
 
         author = PersonDAO().find_by_id(sent_by)
 
