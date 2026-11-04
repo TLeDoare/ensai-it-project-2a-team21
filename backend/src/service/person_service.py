@@ -5,8 +5,8 @@ from psycopg2.errors import UniqueViolation
 from business_object.person import Person
 from business_object.types import Role
 from dao.person_dao import PersonDAO
+from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
 from utils.security import hash_any, verify_password
-from utils.exceptions import PersonNotFound, AuthError, EmailAlreadyUsed
 
 
 class PersonService:
@@ -27,7 +27,7 @@ class PersonService:
             password=hashed_password,
             role=role,
         )
-        
+
         author = PersonDAO().find_by_id(sent_by)
 
         if author.role == Role.Administrateur:
