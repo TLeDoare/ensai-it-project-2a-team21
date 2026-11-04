@@ -181,6 +181,7 @@ def test_find_by_id_ok():
 
     # THEN
     assert person.email == "superviseur@mail.fr"
+    dao.find_by_id.assert_called_once_with(2)
 
 
 def test_find_by_id_not_found():
@@ -194,6 +195,7 @@ def test_find_by_id_not_found():
         # WHEN / THEN
         with pytest.raises(PersonNotFound):
             PersonService().find_by_id(id=99, sent_by=person_list[0])
+    dao.find_by_id.assert_called_once_with(99)
 
 
 def test_find_by_id_unauthorized():
