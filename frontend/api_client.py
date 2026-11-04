@@ -55,9 +55,9 @@ def role(id_person: int, token: str) -> str:
     return "UTILISATEUR"
 
 
-def caviarder(token: str, nom_fichier: str, contenu: bytes, utiliser_llm: bool = True) -> dict:
+def caviarder(token: str, nom_fichier: str, contenu: bytes, utiliser_llm: bool = True, masquer: bool = True) -> dict:
     # L'API lit params avec ast.literal_eval : il faut une écriture Python (True/False), pas du JSON.
-    params = repr({"llm": utiliser_llm})
+    params = repr({"llm": utiliser_llm, "mask": masquer})
     reponse = requests.post(
         f"{API_URL}/doc/redact/",
         headers={"x-auth-token": token},
