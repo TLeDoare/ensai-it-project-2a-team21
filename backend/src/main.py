@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from controller import doc_controller, login_controller, person_controller
 from utils.env_variables import load_environment_variables
-from utils.log_utils import get_logger, LogMiddleware, initialize_logs
+from utils.log_utils import LogMiddleware, get_logger, initialize_logs
 from utils.reset_database import ResetDatabase
 
 logger = get_logger(__name__)

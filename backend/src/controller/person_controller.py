@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from schema.person_model import PersonModel, RegisterModel
 from service.person_service import PersonService
+from utils.exceptions import AuthError, PersonNotFound
 from utils.log_utils import get_logger
 from utils.security import verify_token
-from utils.exceptions import AuthError, PersonNotFound
 
 router = APIRouter()
 

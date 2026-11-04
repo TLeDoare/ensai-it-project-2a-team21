@@ -25,7 +25,7 @@ async def test_regex_decorator_detects_email():
 
     assert position.PII == PII.email
     assert position.analyser_source == AnalyserSource.Regex
-    assert position.confiance == 1.0
+    assert position.confidence == 1.0
     # Vérification que les indices extraits correspondent bien à l'email dans le texte
     start, end = position.indices
     assert text[start:end] == "test.user@example.com"
