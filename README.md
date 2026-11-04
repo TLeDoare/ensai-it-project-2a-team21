@@ -1,80 +1,81 @@
-# Anonymia (Projet info 2A, ENSAI, équipe 21)
+# Anonymia (2A computer science project, ENSAI, Team 21)
 
-Application de caviardage de données personnelles dans des documents administratifs.
-Deux détecteurs travaillent en parallèle : des expressions régulières pour les formats fixes
-(NIR, IBAN, e-mail, téléphone...) et un LLM pour les formats libres (noms, adresses, lieux...).
-L'API est écrite avec FastAPI, l'interface avec Streamlit.
+An application for redacting personal data from administrative documents.
 
-## Prérequis
+Two detectors work in parallel: regular expressions for fixed formats (social security numbers, IBANs, email addresses, phone numbers, etc.) and an LLM for free-form data (names, addresses, locations, etc.).
 
-- un service VS Code Python sur Onyxia (SSPCloud), avec ce dépôt cloné dans `~/work` ;
-- un service PostgreSQL lancé sur Onyxia ;
-- une clé personnelle pour l'API LLM de SSPCloud.
+The API is built with FastAPI, and the user interface with Streamlit.
+
+## Requirements
+
+- A Python VS Code service on Onyxia (SSPCloud), with this repository cloned into `~/work`;
+- A PostgreSQL service running on Onyxia;
+- A personal API key for the SSPCloud LLM API.
 
 ## Configuration
 
-Copier le modèle de configuration, puis le compléter :
+Copy the configuration template, then fill it in:
 
 ```bash
 cp .env.example .env
 ```
 
-Le fichier `.env` (jamais versionné) doit contenir :
+The `.env` file (never committed to version control) must contain:
 
-| Variable | Valeur |
+| Variable | Value |
 |---|---|
 | `LLM_BASE_URL` | `https://llm.lab.sspcloud.fr/api` |
-| `SSPCLOUD_API_KEY` | votre clé personnelle |
+| `SSPCLOUD_API_KEY` | Your personal API key |
 | `LLM_MODEL` | `gemma4-26b-moe` |
-| `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DATABASE`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | voir le README du service PostgreSQL sur Onyxia |
-| `POSTGRES_SCHEMA` | un nom au choix, par exemple `anonymia` |
+| `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DATABASE`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | See the PostgreSQL service README on Onyxia |
+| `POSTGRES_SCHEMA` | Any name of your choice, e.g. `anonymia` |
 
 ## Installation
 
-Depuis la racine du dépôt :
+From the repository root:
 
 ```bash
 uv sync --project backend --all-extras
 ```
 
-## Lancer l'API
+## Running the API
 
 ```bash
 uv run --project backend uvicorn main:app --app-dir backend/src --port 5000 --root-path /proxy/5000
 ```
 
-L'option `--root-path /proxy/5000` est nécessaire sur Onyxia : sans elle, la page de documentation
-ne se charge pas (« Failed to load API definition »).
+The `--root-path /proxy/5000` option is required on Onyxia; otherwise, the documentation page will fail to load ("Failed to load API definition").
 
-La documentation interactive est ensuite accessible depuis l'onglet **Ports** de VS Code (port 5000),
-en ajoutant `/docs` à l'adresse. À la première utilisation, appeler `GET /reset_database`
-pour créer les tables et les comptes de test.
+The interactive documentation is then accessible from the **Ports** tab in VS Code (port 5000), by appending `/docs` to the URL.
 
-## Lancer l'interface
+On first use, call `GET /reset_database` to create the tables and test accounts.
 
-Dans un second terminal, l'API tournant toujours dans le premier :
+## Running the user interface
+
+In a second terminal, while the API is still running in the first one:
 
 ```bash
 cd frontend
 uv run --project ../backend streamlit run app.py --server.port 8501
 ```
 
-L'interface est accessible depuis l'onglet **Ports** de VS Code (port 8501).
+The user interface is accessible from the **Ports** tab in VS Code (port 8501).
 
-## Comptes de test
+## Test accounts
 
-| E-mail | Mot de passe | Rôle |
+| Email | Password | Role |
 |---|---|---|
-| `a@a.com` | `a` | Utilisateur |
-| `b@b.com` | à demander au groupe | Administrateur |
+| `a@a.com` | `a` | User |
+| `b@b.com` | Ask the group | Administrator |
 
-## Lancer les tests
+## Running the tests
 
 ```bash
 uv run --project backend pytest backend/tests -v
 ```
 
-## Avertissement
+## Disclaimer
 
-Aucun détecteur n'a un rappel de 100 % : des données personnelles peuvent ne pas être détectées.
-Une relecture humaine reste obligatoire avant toute diffusion d'un document caviardé.
+Neither detector has 100% recall: some personal data may go undetected.
+
+Human review remains mandatory before distributing any redacted document.
