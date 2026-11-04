@@ -12,13 +12,15 @@ from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
 from utils.exceptions import DocNotFound
-from utils.log_utils import log
+from utils.log_utils import log, get_logger
 from utils.security import hash_any
+
+logger = get_logger(__name__)
 
 
 class DocService:
-    @log
     async def create(self, file: str, sent_by: Person, params: dict) -> RedactedDoc:
+        logger.info(f"{sent_by.email} caviarde un document avec les paramètres {params}")
         PersonService().grant_auth(sent_by, Access.CreateDoc)
 
         text = file
@@ -36,7 +38,7 @@ class DocService:
 
         redacted_content = redactor_context.execute_strategy(file, positions)
 
-        author = PersonDAO().find_by_id(sent_by)
+        author = PersonDAO().find_by_id(sent_by.id)
 
         redacted_doc = RedactedDoc(doc_hash, datetime.now(), author.email, params, positions, None, redacted_content)
         DocDAO().register_document(redacted_doc)
