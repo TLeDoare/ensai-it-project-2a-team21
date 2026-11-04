@@ -28,7 +28,7 @@ class RegexDecorator(AnalyserDecorator):
     # +33781571483, +33 7 81 57 14 83, 0033 7 81 57 14 83.
     # On utilise (?<!\w) au lieu de \b en début de motif : \b ne marche pas
     # devant le signe +, qui n'est ni une lettre ni un chiffre.
-    TEL_PATTERN = r"(?<!\w)(?:(?:\+|00)33[\s.-]?|0)[1-9](?:[\s.-]?\d{2}){4}\b"
+    TEL_PATTERN = r"(?<!\w)(?:(?:\+|00)33[\s.-]?|0|(?:\+|00)33\s\(0\))[1-9](?:[\s.-]?\d{2}){4}\b"
 
         # Numéro de la CNI : 2 types possibles (ancien et nouveau format)
     # Ancien format : 2 chiffres pour l'année, 2 chiffres pour le mois, 3 lettres ou
