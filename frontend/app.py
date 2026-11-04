@@ -1,14 +1,10 @@
 """Interface Streamlit d'Anonymia : affichage et saisie uniquement, toute la logique est dans l'API."""
-import time
-
-import pandas as pd
-import streamlit as st
 import html
 import time
 
-import streamlit as st
-
 import api_client as api
+import pandas as pd
+import streamlit as st
 
 st.set_page_config(page_title="Anonymia", layout="wide")
 
@@ -174,7 +170,7 @@ def page_caviarder():
         texte_colle = st.text_area("Texte à caviarder", height=220)
 
     with st.expander("Options"):
-        st.radio("Stratégie", ["Masquage"], help="La pseudonymisation sera disponible prochainement.")
+        st.radio("Stratégie", ["Masquage", "Pseudonymisation"], index=0)
         utiliser_llm = st.toggle("Utiliser le LLM (noms, adresses, lieux...)", value=True)
 
     if st.button("Caviarder", type="primary"):
