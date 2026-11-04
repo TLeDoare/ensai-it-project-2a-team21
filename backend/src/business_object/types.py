@@ -51,3 +51,11 @@ class Role(StrEnum):
     Utilisateur = "UTILISATEUR"
     Superviseur = "SUPERVISEUR"
     Administrateur = "ADMINISTRATEUR"
+
+class Access(IntEnum):
+    ReadDoc = auto()
+    CreateDoc = auto()
+    ReadPerson = auto()
+    CreatePerson = auto()
+    UpdatePerson = auto()
+    DeletePerson = auto()

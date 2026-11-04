@@ -27,8 +27,8 @@ async def find_all_users(person_service=Depends(get_person_service), current_per
         return person_service.find_all(current_person.id)
     except PersonNotFound:
         raise HTTPException(status_code=404, detail="user (id={id_user}) not found.") from PersonNotFound
-    except AuthError as a:
-        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
+    except AuthError:
+        raise HTTPException(status_code=401, detail="Accès non autorisé.") from AuthError
 
 # à voir la terminologie exacte user/person
 
@@ -49,8 +49,8 @@ async def user_by_id(id_user: int, person_service=Depends(get_person_service), c
         return person_service.find_by_id(id_user, current_person.id)
     except PersonNotFound:
         raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
-    except AuthError as a:
-        raise HTTPException(status_code=401, detail=f"Accès non autorisé; vous devez être {a} au minimum.") from a
+    except AuthError:
+        raise HTTPException(status_code=401, detail="Accès non autorisé.") from AuthError
 
 
 @router.post("/", response_model=PersonModel, tags=["Users"])

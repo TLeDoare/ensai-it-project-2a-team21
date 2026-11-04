@@ -6,10 +6,11 @@ from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
 from business_object.redactor.redactorcontext import RedactorContext
-from business_object.types import Role
+from business_object.types import Access
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
-from utils.exceptions import AuthError, DocNotFound
+from service.person_service import PersonService
+from utils.exceptions import DocNotFound
 from utils.log_utils import log
 from utils.security import hash_any
 
@@ -17,6 +18,8 @@ from utils.security import hash_any
 class DocService:
     @log
     async def create(self, file: str, sent_by: int, params: dict) -> RedactedDoc:
+        PersonService().grant_auth(sent_by, Access.CreateDoc)
+
         text = file
 
         analyser = AnalyserFactory().get_analyser(params)
@@ -40,25 +43,19 @@ class DocService:
         return redacted_doc
 
     @log
-    def find_by_id(self, id: int, sent_by: id) -> RedactedDoc | None:
-        author = PersonDAO().find_by_id(sent_by)
-        if author.role == Role.Administrateur or author.role == Role.Superviseur:
-            doc = DocDAO().find_by_id(id)
-            if doc is None:
-                raise DocNotFound
-            else:
-                return doc
+    def find_by_id(self, id: int, sent_by: id) -> RedactedDoc:
+        PersonService().grant_auth(sent_by, Access.ReadDoc)
+        doc = DocDAO().find_by_id(id)
+        if doc is None:
+            raise DocNotFound
         else:
-            raise AuthError(Role.Superviseur)
+            return doc
 
     @log
     def find_all(self, sent_by: int):
-        author = PersonDAO().find_by_id(sent_by)
-        if author.role == Role.Administrateur or author.role == Role.Superviseur:
-            docs = DocDAO().find_all()
-            if docs == []:
-                raise DocNotFound
-            else:
-                return docs
+        PersonService().grant_auth(sent_by, Access.ReadDoc)
+        docs = DocDAO().find_all()
+        if docs == []:
+            raise DocNotFound
         else:
-            raise AuthError(Role.Superviseur)
+            return docs
