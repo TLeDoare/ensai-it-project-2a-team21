@@ -96,7 +96,7 @@ async def test_create_avec_vrai_mask_redactor(
     # GIVEN
     content = "Contact : noah@example.com"
     sent_by = 1
-    params = {"detecteur": "regex"}
+    params = {'llm': False}
 
     positions = {
         Position(

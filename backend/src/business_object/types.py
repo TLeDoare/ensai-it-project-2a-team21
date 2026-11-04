@@ -35,22 +35,17 @@ class PII(IntEnum):
     address = auto()
     name = auto()
 
-    def __str__(self):
-        return f"PII.{self.name}"
-
 
 class Analyser(IntEnum):
     Regex = auto()
     LLM = auto()
-
-    def __str__(self):
-        return f"Analyser.{self.name}"
 
 
 class Role(StrEnum):
     Utilisateur = "UTILISATEUR"
     Superviseur = "SUPERVISEUR"
     Administrateur = "ADMINISTRATEUR"
+
 
 class Access(IntEnum):
     ReadDoc = auto()
