@@ -1,8 +1,8 @@
-# Installer les dépendances
+# Installer dependencies
 `uv sync --project backend --all-extras`
 
-# Lancer l'API
+# Launch the API
 `uv run --project backend python backend/src/main.py`
 
-# Lancer les tests
+# Launch tests
 `uv run --project backend pytest backend/tests -v`
