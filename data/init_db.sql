@@ -16,7 +16,7 @@ CREATE TABLE RedactedDoc (
   filename VARCHAR(255) NOT NULL,
   upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pii_count INT DEFAULT 0,
-  pii_positions VARCHAR(1000),
+  pii_positions TEXT,
   author_email VARCHAR(100),
   params VARCHAR(1000) -- chemin d'enregistrement du document caviarde
 );
