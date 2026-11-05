@@ -1,8 +1,14 @@
 from collections import namedtuple
 from enum import IntEnum, StrEnum, auto
 
+
+class AnalysisFail:
+    def __init__(self, exception: Exception, source: str):
+        self.exception = exception
+        self.source = source
+
 Position = namedtuple("Position", ["indices", "PII", "confidence", "analyser_source"])
-type Positions = set[Position]
+type Positions = set[Position | AnalysisFail]
 
 class PII(IntEnum):
     last_name = auto()

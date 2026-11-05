@@ -16,6 +16,9 @@ class PositionModel(BaseModel):
     confidence: float
     source: str
 
+class AnalysisFailModel(BaseModel):
+    source: str
+
 
 class DocModel(BaseModel):
     hash: str
@@ -25,6 +28,7 @@ class DocModel(BaseModel):
     params: dict
     details: list[PositionModel]
     content: str | None
+    analysis_fail_source: str | None
 
     @field_validator("details", mode="before")
     @classmethod

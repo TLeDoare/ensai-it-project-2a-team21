@@ -7,7 +7,7 @@ from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
 from business_object.redactor.redactorcontext import RedactorContext
-from business_object.types import Access
+from business_object.types import Access, AnalysisFail
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
@@ -27,7 +27,17 @@ class DocService:
 
         analyser = AnalyserFactory().get_analyser(params)
         positions = await analyser.analyse(text)
-        positions = resoudre_chevauchements(positions, text)
+
+        # On s'assure ici que l'analyse n'a pas rencontré de problème
+        analysis_fail = None
+        positions_filtrees = set()
+        for pos in positions:
+            if isinstance(pos, AnalysisFail):
+                analysis_fail = pos
+            else:
+                positions_filtrees.add(pos)
+
+        positions_filtrees = resoudre_chevauchements(positions_filtrees, text)
         doc_hash = hash_any(file)
 
         redactor_context = RedactorContext()
@@ -36,11 +46,13 @@ class DocService:
         else:
             redactor_context.set_strategy(PseudonimiseRedactor())
 
-        redacted_content = redactor_context.execute_strategy(file, positions)
+        redacted_content = redactor_context.execute_strategy(file, positions_filtrees)
 
         author = PersonDAO().find_by_id(sent_by.id)
 
-        redacted_doc = RedactedDoc(doc_hash, datetime.now(), author.email, params, positions, None, redacted_content)
+        # Si l'analyse a recontré un problème, on ne regarde que la source de l'erreur (llm ou regex ou llm as a judge s'il est implémenté apr exemple).
+        # Il serait possible de détailler l'erreur, mais par simplicité l'utilisateur est seulement prévenu d'où se trouve la première erreur recontré.
+        redacted_doc = RedactedDoc(doc_hash, datetime.now(), author.email, params, positions_filtrees, None, redacted_content, analysis_fail.source if analysis_fail is not None else None)
         DocDAO().register_document(redacted_doc)
 
         return redacted_doc
