@@ -8,6 +8,7 @@ from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
 from business_object.redactor.redactorcontext import RedactorContext
 from business_object.types import Access, AnalysisFail
+from business_object.redactor.pseudonymes import PSEUDO_VALUES
 from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
@@ -44,7 +45,7 @@ class DocService:
         if params.get("mask", True):
             redactor_context.set_strategy(MaskRedactor())
         else:
-            redactor_context.set_strategy(PseudonimiseRedactor())
+            redactor_context.set_strategy(PseudonimiseRedactor(PSEUDO_VALUES))
 
         redacted_content = redactor_context.execute_strategy(file, positions_filtrees)
 
