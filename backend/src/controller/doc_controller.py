@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException
 
 from schema.doc_model import DocModel
 from service.doc_service import DocService
-from utils.exceptions import AuthError, DocNotFound, DocRegistrationError, PseudonymisationImpossible
+from utils.exceptions import (
+    AuthError,
+    DocNotFound,
+    DocRegistrationError,
+    PseudonymisationImpossible,
+)
 from utils.security import verify_token
 
 router = APIRouter()

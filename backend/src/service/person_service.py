@@ -45,7 +45,9 @@ class PersonService:
 
     def find_by_id(self, id: int, sent_by: Person | None = None):
         # Si cette fonction est éxecutée par le serveur et non par une personne tierce, alors son auteur est None. Sinon,
-        # on vérifie si l'auteur a le droit d'accéder aux utilisateurs.
+        # on vérifie si l'auteur a le droit d'accéder aux utilisateurs. Ce n'est pas un problème car toute requête faite par un
+        # utilisateur passe par le contrôleur, et le contrôleur fait appel à verify_token pour authentifier l'utilisateur qui ne
+        # renvoie jamais None, seulement une erreur 401.
         if sent_by is not None:
             self.grant_auth(sent_by, Access.ReadPerson)
         person = PersonDAO().find_by_id(id)
