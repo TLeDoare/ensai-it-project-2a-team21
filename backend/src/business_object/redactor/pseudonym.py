@@ -14,7 +14,7 @@ Les autres types (noms, adresses, etc.) sont des valeurs réalistes.
 """
 
 PSEUDO_VALUES = {
-    "NIR": [
+    PII.NIR: [
         "1 03 12 36 251 229 92",
         "1 94 02 87 759 914 93",
         "1 75 07 05 031 096 77",
@@ -222,7 +222,7 @@ PSEUDO_VALUES = {
         "959 953 424",
         "836 440 892"
     ],
-    "email": [
+    PII.email: [
         "emma.david@test.net",
         "manon.bernard@societe-demo.com",
         "leo.vincent@societe-demo.com",
