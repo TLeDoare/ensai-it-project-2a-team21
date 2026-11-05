@@ -15,11 +15,25 @@ app.add_middleware(LogMiddleware)
 
 load_environment_variables()
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Intercepts Pydantic 422 errors to log them.
+    """
+    logger.error("Validation Error.")
+
+    # On renvoie une réponse à l'utilisateur, mais l'erreur précise est cachée des logs.
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors()},
+    )
+
+
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
     """Redirect to the API documentation"""
     return RedirectResponse(url="/docs")
-
 
 
 @app.get("/reset_database", tags=["Misc"])
@@ -29,22 +43,6 @@ async def reset_database():
     success = ResetDatabase().run()
 
     return {"message": f"Database re-initialization - {'SUCCESS' if success else 'FAILURE'}"}
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Intercepts Pydantic 422 errors to log them.
-    """
-    body = await request.body()
-    body_str = body.decode() if body else "empty body"
-
-    logger.error(f"Validation Error\nErrors: {exc.errors()}\nBody: {body_str}")
-
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors(), "body": body_str},
-    )
 
 
 app.include_router(doc_controller.router, prefix="/doc", tags=["Doc"])
@@ -58,6 +56,6 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host=os.getenv("UVICORN_HOST", "127.0.0.1"),
+        host=os.getenv("UVICORN_HOST", "0.0.0.0"),
         port=int(os.getenv("UVICORN_PORT", "5000")),
     )

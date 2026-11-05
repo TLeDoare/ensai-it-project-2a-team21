@@ -1,6 +1,14 @@
-from pydantic import BaseModel, EmailStr
+import re
+
+from pydantic import BaseModel, EmailStr, Field
 
 from business_object.types import Role
+
+PASSWORD_REGEX = re.compile(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+    r'(?=.*[!@#$%^&*(),.?":{}|<>_\-+=])'
+    r'[A-Za-z\d!@#$%^&*(),.?":{}|<>_\-+=]{8,}$'
+)
 
 
 class PersonModel(BaseModel):
@@ -16,7 +24,7 @@ class LoginModel(BaseModel):
 
 class RegisterModel(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128, pattern=PASSWORD_REGEX)
     role: Role
 
 
