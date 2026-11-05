@@ -12,7 +12,6 @@ class LLMDecorator(AnalyserDecorator):
 
     async def _detect_llm(self, content: str) -> set:
         try:
-            raise Exception
             raw = await detect_pii(content)
             return OutputVerifier().verify(raw, content)
         except Exception as e:
