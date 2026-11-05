@@ -22,7 +22,7 @@ class PersonService:
         if dao.find_by_email(email) is not None:
             return None
 
-        hashed_password = hash_any(password, email)
+        hashed_password = hash_any(password)
 
         person = Person(
             email=email,
@@ -56,7 +56,7 @@ class PersonService:
 
     def update(self, person: Person, sent_by: Person):
         self.grant_auth(sent_by, Access.UpdatePerson, person)
-        person.password = hash_any(person.password, person.email)
+        person.password = hash_any(person.password)
         PersonDAO().update(person)
         return person
 
@@ -91,7 +91,7 @@ class PersonService:
         if person is None:
             raise WrongCredError
 
-        if not verify_password(password, person.password, person.email):
+        if not verify_password(password, person.password):
             raise WrongCredError
 
         access_token = secrets.token_urlsafe(32)
