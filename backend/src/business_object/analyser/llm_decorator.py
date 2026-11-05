@@ -1,5 +1,7 @@
 import asyncio
 
+from business_object.types import AnalysisFail
+
 from ..llm_client.llm_client import detect_pii
 from ..llm_client.output_verifier import OutputVerifier
 from .analyser_decorator import AnalyserDecorator
@@ -10,10 +12,11 @@ class LLMDecorator(AnalyserDecorator):
 
     async def _detect_llm(self, content: str) -> set:
         try:
+            raise Exception
             raw = await detect_pii(content)
             return OutputVerifier().verify(raw, content)
-        except Exception:
-            return set()
+        except Exception as e:
+            return {AnalysisFail(e, "LLM")}
 
     async def analyse(self, content: str) -> set:
         positions, positions_llm = await asyncio.gather(

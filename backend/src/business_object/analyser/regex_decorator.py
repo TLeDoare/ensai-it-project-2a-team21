@@ -93,6 +93,7 @@ class RegexDecorator(AnalyserDecorator):
         ]
 
     async def analyse(self, content: str) -> Positions:
+        # Note: on part du principe que le regex, par son déterminisme, ne recontrera pas d'erreur, contrairement au LLM.
         taches = [super().analyse(content)]
         taches += [self._detect(content, t, p) for t, p in self.PATTERNS.items()]
         resultats = await asyncio.gather(*taches)

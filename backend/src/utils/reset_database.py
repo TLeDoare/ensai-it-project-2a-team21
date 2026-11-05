@@ -63,7 +63,7 @@ class ResetDatabase(metaclass=Singleton):
         # Apply password hashing to all players
         for p in PersonDAO().find_all():
             #p.password = hash_password(p.password, p.email)
-            p.password = hash_any(p.password, p.email)
+            p.password = hash_any(p.password)
             PersonDAO().update(p)
 
         return True
