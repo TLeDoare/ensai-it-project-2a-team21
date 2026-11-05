@@ -1,3 +1,13 @@
+import json
+import re
+
+from ..types import Analyser as AnalyserSource
+from ..types import Position
+from .prompt_templates import LLM_PII_TYPES
+
+TYPES = {pii.name: pii for pii in LLM_PII_TYPES}
+
+
 class OutputVerifier:
     """Vérifie la sortie du LLM, gère les omissions et journalise les suspicions."""
 
