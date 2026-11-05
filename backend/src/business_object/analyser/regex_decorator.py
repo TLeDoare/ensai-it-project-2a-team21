@@ -12,7 +12,7 @@ class RegexDecorator(AnalyserDecorator):
     # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 10 chiffres
     # (avec éventuellement des espaces)
     NIR_PATTERN = r"\b[12]\s?\d{2}\s?(0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(\s?\d{2})?\b"
-    
+
     # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres avec des espaces possibles
     IBAN_PATTERN = r"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){11,30}\b"
 
@@ -63,7 +63,7 @@ class RegexDecorator(AnalyserDecorator):
     # Coordonnées GPS : système DMS (sexagésimal)
     # Exemple : 48°51'29.99"N 2°17'40.98"E
     GPS_PATTERN = r"\d{1,3}[\°\s\.]\d{1,2}[\s\'\.]\d{1,2}(?:\.\d+)?[\"\.\s][NSEWO]"
-    
+
 
     PATTERNS: dict[PII, str] = {
         PII.NIR: NIR_PATTERN,

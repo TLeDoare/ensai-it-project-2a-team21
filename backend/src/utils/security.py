@@ -1,6 +1,5 @@
-from pwdlib import PasswordHash
-
 from fastapi import Header, HTTPException
+from pwdlib import PasswordHash
 
 from business_object.person import Person
 from dao.person_dao import PersonDAO

@@ -12,7 +12,7 @@ from dao.doc_dao import DocDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
 from utils.exceptions import DocNotFound
-from utils.log_utils import log, get_logger
+from utils.log_utils import get_logger, log
 from utils.security import hash_any
 
 logger = get_logger(__name__)

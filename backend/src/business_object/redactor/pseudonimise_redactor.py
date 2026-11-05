@@ -2,9 +2,9 @@
 from secrets import choice
 
 from utils.exceptions import PseudonymisationImpossible
-from ..types import Positions, PII
-from .redactor_strategy import RedactorStrategy
 
+from ..types import PII, Positions
+from .redactor_strategy import RedactorStrategy
 
 
 class PseudonimiseRedactor(RedactorStrategy):

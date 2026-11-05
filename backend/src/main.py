@@ -24,6 +24,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.error("Validation Error.")
 
     # On renvoie une réponse à l'utilisateur, mais l'erreur précise est cachée des logs.
+    # Si cela pose un problème de sécurité, c'est que l'utilisateur est sur un réseau non sécurisé, donc qu'il a déjà
+    # fait fuiter son mot de passe par sa requête de login.
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"detail": exc.errors()},
