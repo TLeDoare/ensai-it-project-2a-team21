@@ -62,7 +62,7 @@ class RegexDecorator(AnalyserDecorator):
 
     # Coordonnées GPS : système DMS (sexagésimal)
     # Exemple : 48°51'29.99"N 2°17'40.98"E
-    GPS_PATTERN = r"\d{1,3}[°\s]\d{1,2}'\d{1,2}(?:\.\d+)?[NSEWO]"
+    GPS_PATTERN = r"\d{1,3}[\°\s\.]\d{1,2}[\s\'\.]\d{1,2}(?:\.\d+)?[\"\.\s][NSEWO]"
     
 
     PATTERNS: dict[PII, str] = {

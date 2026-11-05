@@ -19,6 +19,7 @@ dependencies = [
     "openai",
     "pwdlib[argon2]",
     "streamlit>=1.66.1",
+    "scikit-learn>=1.9.1",
 ]
 
 # Dependencies used only for development, not for runtime
