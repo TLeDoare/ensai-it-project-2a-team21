@@ -2,6 +2,7 @@ from datetime import datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
 from business_object.analyser.overlap import resoudre_chevauchements
+from business_object.llm_client.injection_filter import InjectionFilter
 from business_object.person import Person
 from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
@@ -10,6 +11,7 @@ from business_object.redactor.pseudonymes import PSEUDO_VALUES
 from business_object.redactor.redactorcontext import RedactorContext
 from business_object.types import Access, AnalysisFail
 from dao.doc_dao import DocDAO
+from dao.injection_attempt_dao import InjectionAttemptDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
 from utils.exceptions import DocNotFound
@@ -23,6 +25,14 @@ class DocService:
     async def create(self, file: str, sent_by: Person, params: dict) -> RedactedDoc:
         logger.info(f"{sent_by.email} caviarde un document avec les paramètres {params}")
         PersonService().grant_auth(sent_by, Access.CreateDoc)
+        # Détection d'injection
+        injection_filter = InjectionFilter()
+        if injection_filter.detect_injection(file):
+            doc_hash = hash_any(file)
+            logger.warning(f"!!! TENTATIVE D'INJECTION DE PROMPT DETECTEE !!! Par: {sent_by.email} (Hash: {doc_hash})")
+            InjectionAttemptDAO().register_attempt(sent_by.email, doc_hash, "Pattern matching")
+            # On peut décider de lever une exception ici pour bloquer le processus
+            # raise SecurityException("Tentative d'injection détectée")
 
         text = file
 
