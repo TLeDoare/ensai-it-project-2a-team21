@@ -20,7 +20,7 @@ class PersonService:
 
         # L'email doit être unique
         if dao.find_by_email(email) is not None:
-            return None
+            raise EmailAlreadyUsed
 
         hashed_password = hash_any(password)
 
