@@ -48,7 +48,7 @@ def test_create_ok(mock_hash):
     assert person is not None
     assert person.email == email
     assert person.role == role
-    mock_hash.assert_called_once_with(password, email)
+    mock_hash.assert_called_once_with(password)
 
 
 def test_create_fail_email_already_used():
@@ -59,14 +59,11 @@ def test_create_fail_email_already_used():
     dao.find_by_email = MagicMock(return_value=person_list[0])
 
     with patch("service.person_service.PersonDAO", return_value=dao):
-        # WHEN
-        person = PersonService().create(
-            "admin@mail.fr", "1234", Role.Utilisateur, person_list[0]
-        )
-
-    # THEN
-    assert person is None
-
+        # WHEN / THEN
+        with pytest.raises(EmailAlreadyUsed):
+            PersonService().create(
+                "admin@mail.fr", "1234", Role.Utilisateur, person_list[0]
+            )
 
 def test_create_fail_auth():
     """Fail to create a Person because the author is not an administrator"""

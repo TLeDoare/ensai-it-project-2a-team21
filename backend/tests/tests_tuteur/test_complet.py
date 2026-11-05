@@ -1,20 +1,22 @@
-import os
 import json
-import pytest
+import os
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Any, Tuple
+import pytest
 from sklearn.metrics import classification_report, confusion_matrix
 
 # Importer votre service de traitement complet (à adapter selon votre structure exacte)
-# Ex: from backend.src.service.doc_service import DocService
+from business_object.person import Person
+from service.doc_service import DocService
 
 
 def load_ground_truth(json_path: str) -> Dict[str, List[Dict[str, Any]]]:
     """Charge le fichier JSON contenant la vérité terrain des PII."""
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    return data
+    return {el["doc_id"]: el["spans"] for el in data}
 
 
 def overlap(span1: Tuple[int, int], span2: Tuple[int, int]) -> bool:
@@ -92,9 +94,46 @@ def test_evaluer_pipeline_pii():
     all_y_true = []
     all_y_pred = []
     
-    # doc_service = DocService() # Instanciez votre service de pipeline ici
+    doc_service = DocService() # Instanciez votre service de pipeline ici
 
     print("\n--- Début du test du pipeline complet ---")
+    import asyncio
+
+    from business_object.analyser.analyser_factory import AnalyserFactory
+    from business_object.types import PII, AnalysisFail
+
+    conversion_pii = {
+        PII.last_name: "PERSON",
+        PII.first_name: "PERSON",
+        PII.birthdate: "DATE_OF_BIRTH",
+        PII.NIR: "NIR",
+        PII.IBAN: "IBAN",
+        PII.email: "EMAIL",
+        PII.phone_number: "PHONE",
+        PII.CNI: "INTERNAL_ID",
+        PII.EX_CNI: "INTERNAL_ID",
+        PII.PAN: "IBAN",
+        PII.postal_code: "LOCATION",
+        PII.immatriculation: "LICENSE_PLATE",
+        PII.IP_V4: "LOCATION",
+        PII.IP_V6: "LOCATION",
+        PII.SIREN: "ORG",
+        PII.cadastre: "LOCATION",
+        PII.GPS: "LOCATION",
+        PII.place: "LOCATION",
+        PII.organism: "ORG",
+        PII.job: "JOB_TITLE",
+        PII.family_relationships: "RELATIVE",
+        PII.private_life: "PERSON",
+        PII.judiciary_situation: "PERSON",
+        PII.income: "PERSON",
+        PII.medical: "PERSON",
+        PII.ethnicity: "PERSON",
+        PII.gender: "PERSON",
+        PII.address: "ADDRESS_FULL",
+        PII.name: "PERSON"
+    }
+
     
     for filename, gt_spans in ground_truth.items():
         doc_file_path = os.path.join(docs_dir, filename)
@@ -108,8 +147,10 @@ def test_evaluer_pipeline_pii():
             
         # 2. Exécution du pipeline complet sur le contenu
         # Remplacez cette simulation par votre véritable fonction d'analyse :
-        # predicted_spans = doc_service.analyze(content)
-        predicted_spans = [] # Ex: [{'type': 'NOM', 'start': 12, 'end': 20}]
+        analyser = AnalyserFactory().get_analyser({})
+        predicted_spans = asyncio.run(analyser.analyse(content))
+        predicted_spans = [{'start': span.indices[0], 'end': span.indices[1], 'type': conversion_pii[span.PII]} for span in list(predicted_spans) if not isinstance(span, AnalysisFail)]
+        # predicted_spans = [] # Ex: [{'type': 'NOM', 'start': 12, 'end': 20}]
         
         # 3. Évaluation comparative
         res = evaluate_predictions(predicted_spans, gt_spans, strict_position=False)

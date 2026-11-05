@@ -2,7 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from business_object.types import PII, Access, Analyser, Position, Role
+from business_object.person import Person
+from business_object.types import PII, Access, Analyser, Position
 from service.doc_service import DocService
 from utils.exceptions import DocNotFound
 
@@ -95,7 +96,7 @@ async def test_create_avec_vrai_mask_redactor(
 ):
     # GIVEN
     content = "Contact : noah@example.com"
-    sent_by = 1
+    sent_by = Person("test@a.com", "####", "UTILISATEUR")
     params = {'llm': False}
 
     positions = {
@@ -132,40 +133,40 @@ async def test_create_avec_vrai_mask_redactor(
         result
     )
 
+    mock_person_service_instance.grant_auth.assert_called_once_with(sent_by, Access.CreateDoc)
+
     mock_hash.assert_called_once_with(content)
 
 
 @pytest.mark.asyncio
-@patch("business_object.person.Person")
 @patch("service.doc_service.DocDAO")
 @patch("service.doc_service.PersonDAO")
 @patch("service.doc_service.PersonService")
 async def test_create_ok(
     mock_person_service,
     mock_person_dao_class,
-    mock_doc_dao_class,
-    mock_person
+    mock_doc_dao_class
 ):
     # GIVEN
     file_content = "Ceci est un texte avec le nom Jean Dupont."
-    sent_by_id = 1
-    params = {"detecteur": "regex"}
+    sent_by = Person("test@a.com", "####", "UTILISATEUR")
+    params = {'llm': True}
 
     # 1. Mock de PersonDAO pour retourner un faux utilisateur avec un email
+    mock_person_instance = Person("test@nexistepas.com", "####", "UTILISATEUR", id=12)
+
     mock_person_dao_instance = mock_person_dao_class.return_value
-    mock_person_instance = mock_person.return_value
-    mock_person_instance.email = "test@nexistepas.com"
-    mock_person_dao_instance.find_by_id = mock_person_instance
+    mock_person_dao_instance.find_by_id = MagicMock(return_value=mock_person_instance)
 
     mock_person_service_instance = mock_person_service.return_value
     mock_person_service_instance.grant_auth = MagicMock(return_value=None)
 
     # WHEN
-    result = await DocService().create(file=file_content, sent_by=sent_by_id, params=params)
+    result = await DocService().create(file=file_content, sent_by=sent_by, params=params)
 
     # THEN
     assert result is not None
     # Vérifie que l'auteur a bien été recherché en BDD via son ID
-    mock_person_dao_instance.find_by_id.assert_called_once_with(sent_by_id)
+    mock_person_service_instance.grant_auth.assert_called_once_with(sent_by, Access.CreateDoc)
     # Vérifie que le document caviardé a bien été enregistré via le DAO
     mock_doc_dao_class.return_value.register_document.assert_called_once()
