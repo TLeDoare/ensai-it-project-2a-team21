@@ -4,19 +4,14 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 from business_object.types import PII, Analyser
 
-
-class UploadDocModel(BaseModel):
-    params: str
-
+# Il n'y a pas d'UploadDocModel car dès lors qu'un formulaire requiert le téléversement d'un fichier, il semble y avoir des problèmes
+# de validation.
 
 class PositionModel(BaseModel):
     start: int
     end: int
     type: str
     confidence: float
-    source: str
-
-class AnalysisFailModel(BaseModel):
     source: str
 
 
