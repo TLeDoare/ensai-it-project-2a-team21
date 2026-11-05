@@ -6,7 +6,7 @@ from business_object.person import Person
 from business_object.redacted_doc import RedactedDoc
 from business_object.redactor.mask_redactor import MaskRedactor
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
-from business_object.redactor.pseudonym import PSEUDO_VALUES
+from business_object.redactor.pseudonymes import PSEUDO_VALUES
 from business_object.redactor.redactorcontext import RedactorContext
 from business_object.types import Access, AnalysisFail
 from dao.doc_dao import DocDAO
