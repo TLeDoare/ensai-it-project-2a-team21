@@ -18,3 +18,9 @@ class PseudonymisationImpossible(Exception):
 
 class WrongCredError(Exception):
     """Erreur levée lorsque l'email ou le mot de passe utilisé pour le login sont mauvais"""
+
+class LLMInjectionError(Exception):
+    """Erreur levée lors de tentative d'injection"""
+
+class LLMParseError(Exception):
+    """Erreur levée lors de tentative d'injection"""

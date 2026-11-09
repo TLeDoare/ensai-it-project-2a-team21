@@ -1,6 +1,8 @@
 import json
 import re
 
+from utils.exceptions import LLMParseError
+
 from ..types import Analyser as AnalyserSource
 from ..types import Position
 from .prompt_templates import LLM_PII_TYPES
@@ -17,7 +19,7 @@ class OutputVerifier:
             parsed = json.loads(raw)
             spans = parsed.get("spans", [])
         except json.JSONDecodeError:
-            pass  # Format invalide
+            raise LLMParseError from json.JSONDecodeError
 
         llm_positions = set()
         for span in spans:
