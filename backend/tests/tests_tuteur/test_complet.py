@@ -1,25 +1,22 @@
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
-import numpy as np
 import pandas as pd
 import pytest
 from sklearn.metrics import classification_report, confusion_matrix
 
 # Importer votre service de traitement complet (à adapter selon votre structure exacte)
-from business_object.person import Person
-from service.doc_service import DocService
 
 
-def load_ground_truth(json_path: str) -> Dict[str, List[Dict[str, Any]]]:
+def load_ground_truth(json_path: str) -> dict[str, list[dict[str, Any]]]:
     """Charge le fichier JSON contenant la vérité terrain des PII."""
-    with open(json_path, 'r', encoding='utf-8') as f:
+    with open(json_path, encoding='utf-8') as f:
         data = json.load(f)
     return {el["doc_id"]: el["spans"] for el in data}
 
 
-def overlap(span1: Tuple[int, int], span2: Tuple[int, int]) -> bool:
+def overlap(span1: tuple[int, int], span2: tuple[int, int]) -> bool:
     """Vérifie si deux intervalles (start, end) se chevauchent."""
     start1, end1 = span1
     start2, end2 = span2
@@ -27,57 +24,57 @@ def overlap(span1: Tuple[int, int], span2: Tuple[int, int]) -> bool:
 
 
 def evaluate_predictions(
-    predicted_spans: List[Dict[str, Any]], 
-    gt_spans: List[Dict[str, Any]],
+    predicted_spans: list[dict[str, Any]],
+    gt_spans: list[dict[str, Any]],
     strict_position: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compare les prédictions du pipeline avec la vérité terrain pour un document.
     Retourne la liste des TP, FP, FN pour la matrice de confusion.
     """
     y_true = []
     y_pred = []
-    
+
     matched_gt = set()
-    
+
     for pred in predicted_spans:
         pred_type = str(pred.get("type", "UNKNOWN")).upper()
         pred_start = pred.get("start", -1)
         pred_end = pred.get("end", -1)
-        
+
         match_found = False
         for idx, gt in enumerate(gt_spans):
             if idx in matched_gt:
                 continue
-                
-            gt_type = str(gt.get("type", "UNKNOWN")).upper()
+
+            gt_type = str(gt.get("pii_type", "UNKNOWN")).upper()
             gt_start = gt.get("start", -1)
             gt_end = gt.get("end", -1)
-            
+
             # Vérification du type
             if pred_type == gt_type:
                 # Vérification de la position (recouvrement ou égalité stricte)
                 pos_match = (pred_start == gt_start and pred_end == gt_end) if strict_position else overlap((pred_start, pred_end), (gt_start, gt_end))
-                
+
                 if pos_match:
                     y_true.append(gt_type)
                     y_pred.append(pred_type)
                     matched_gt.add(idx)
                     match_found = True
                     break
-        
+
         # PII détectée mais absente/incohérente -> Faux Positif (prédit PII, était Hors-PII/Autre)
         if not match_found:
             y_true.append("NO_PII")
             y_pred.append(pred_type)
-            
+
     # PII attendues mais non détectées -> Faux Négatifs
     for idx, gt in enumerate(gt_spans):
         if idx not in matched_gt:
-            gt_type = str(gt.get("type", "UNKNOWN")).upper()
+            gt_type = str(gt.get("pii_type", "UNKNOWN")).upper()
             y_true.append(gt_type)
             y_pred.append("NO_PII")
-            
+
     return {"y_true": y_true, "y_pred": y_pred}
 
 
@@ -86,15 +83,13 @@ def test_evaluer_pipeline_pii():
     base_dir = os.path.dirname(__file__)
     docs_dir = os.path.join(base_dir, "documents_test")
     gt_path = os.path.join(base_dir, "ground_truth_spans.json")
-    
+
     # 1. Chargement de la Vérité Terrain
     assert os.path.exists(gt_path), f"Fichier non trouvé : {gt_path}"
     ground_truth = load_ground_truth(gt_path)
-    
+
     all_y_true = []
     all_y_pred = []
-    
-    doc_service = DocService() # Instanciez votre service de pipeline ici
 
     print("\n--- Début du test du pipeline complet ---")
     import asyncio
@@ -134,24 +129,24 @@ def test_evaluer_pipeline_pii():
         PII.name: "PERSON"
     }
 
-    
+
     for filename, gt_spans in ground_truth.items():
         doc_file_path = os.path.join(docs_dir, filename)
-        
+
         if not os.path.exists(doc_file_path):
             print(f"Attention: Le document {filename} n'existe pas dans {docs_dir}")
             continue
-            
-        with open(doc_file_path, "r", encoding="utf-8") as f:
+
+        with open(doc_file_path, encoding="utf-8") as f:
             content = f.read()
-            
+
         # 2. Exécution du pipeline complet sur le contenu
         # Remplacez cette simulation par votre véritable fonction d'analyse :
         analyser = AnalyserFactory().get_analyser({})
         predicted_spans = asyncio.run(analyser.analyse(content))
         predicted_spans = [{'start': span.indices[0], 'end': span.indices[1], 'type': conversion_pii[span.PII]} for span in list(predicted_spans) if not isinstance(span, AnalysisFail)]
         # predicted_spans = [] # Ex: [{'type': 'NOM', 'start': 12, 'end': 20}]
-        
+
         # 3. Évaluation comparative
         res = evaluate_predictions(predicted_spans, gt_spans, strict_position=False)
         all_y_true.extend(res["y_true"])
@@ -163,9 +158,9 @@ def test_evaluer_pipeline_pii():
 
     labels = sorted(list(set(all_y_true + all_y_pred)))
     cm = confusion_matrix(all_y_true, all_y_pred, labels=labels)
-    
-    df_cm = pd.DataFrame(cm, index=[f"Vrai_{l}" for l in labels], columns=[f"Pred_{l}" for l in labels])
-    
+
+    df_cm = pd.DataFrame(cm, index=[f"Vrai_{lab}" for lab in labels], columns=[f"Pred_{lab}" for lab in labels])
+
     print("\n================ MATRICE DE CONFUSION ================")
     print(df_cm)
     print("\n================ RAPPORT DE PERFORMANCE ================")
