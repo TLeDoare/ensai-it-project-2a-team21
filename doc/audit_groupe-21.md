@@ -11,7 +11,7 @@
 |-|---|-|
 | ER1-01 | le texte intégral de chaque document est écrit en clair dans le fichier de log | Fixé |
 | ER1-02 | mode dégradé silencieux (fail-open) | Fixé |
-| ER1-03 | le prompt demande des types que le vérificateur rejette | ... |
+| ER1-03 | le prompt demande des types que le vérificateur rejette | Fixé |
 | ER1-04 | le gestionnaire d'erreur 422 renvoie et journalise le corps brut des requêtes | Fixé |
 | ER1-05 | surface web, documentation et protections frontend désactivées | ... |
 | ER2-01 | consommation non bornée, atteignable sans compte légitime | Fixé |
@@ -23,8 +23,8 @@
 | ER3-05 | liste complète des utilisateurs exposée au rôle superviseur | Justifié |
 | INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | Fixé |
 | INJ-02 | aucun jeu adversarial exécuté, aucune CI | Fixé, et justifié |
-| INJ-03 | la vérification de sortie ne peut pas détecter une omission | ... |
-| INJ-04 | délimitation contournable et prompt contradictoire | ... |
+| INJ-03 | la vérification de sortie ne peut pas détecter une omission | Fixé |
+| INJ-04 | délimitation contournable et prompt contradictoire | Fixé |
 | INJ-05 | aucune trace des tentatives d'injection dans la journalisation F4 | Fixé |
 | INJ-06 | sur-caviardage et consommation pilotables par le document | Justifié |
 | GEN-01 | le flux principal de caviardage est cassé à ce commit | Fixé |

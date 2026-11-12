@@ -9,7 +9,6 @@ from .prompt_templates import SYSTEM_PROMPT, build_user_message
 load_environment_variables()
 
 
-
 async def detect_pii(document: str) -> str | None:
     client = AsyncOpenAI(
         base_url=os.environ["LLM_BASE_URL"],
