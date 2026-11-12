@@ -29,9 +29,9 @@
 | INJ-06 | sur-caviardage et consommation pilotables par le document | Justifié |
 | GEN-01 | le flux principal de caviardage est cassé à ce commit | Fixé |
 | GEN-02 | architecture et asynchronisme | ... |
-| GEN-03 | qualité de la détection | ... |
-| GEN-04 | tests et CI | ... |
+| GEN-03 | qualité de la détection | Fixé à 20% |
+| GEN-04 | tests et CI | En cours de réglage et justifié |
 | GEN-05 | robustesse et validation des entrées | ... |
 | GEN-06 | dépendances | ... |
-| GEN-07 | reproductibilité et configuration | ... |
-| GEN-08 | empreinte du document original | ... |
+| GEN-07 | reproductibilité et configuration | ne comprends pas |
+| GEN-08 | empreinte du document original | Fixé ? |
