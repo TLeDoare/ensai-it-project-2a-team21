@@ -8,6 +8,7 @@
 | Faible | 4 |
 
 | Code audit | Description | Réaction |
+|-|---|-|
 | ER1-01 | le texte intégral de chaque document est écrit en clair dans le fichier de log | Fixé |
 | ER1-02 | mode dégradé silencieux (fail-open) | Fixé |
 | ER1-03 | le prompt demande des types que le vérificateur rejette | ... |
