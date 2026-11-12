@@ -21,7 +21,7 @@
 | ER3-03 | jetons de session permanents, stockés en clair, sans révocation | ... |
 | ER3-04 | aucune protection contre la force brute, aucune politique de mot de passe | Justifié |
 | ER3-05 | liste complète des utilisateurs exposée au rôle superviseur | Justifié |
-| INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | ... |
+| INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | Fixé |
 | INJ-02 | aucun jeu adversarial exécuté, aucune CI | Fixé, et justifié |
 | INJ-03 | la vérification de sortie ne peut pas détecter une omission | ... |
 | INJ-04 | délimitation contournable et prompt contradictoire | ... |
