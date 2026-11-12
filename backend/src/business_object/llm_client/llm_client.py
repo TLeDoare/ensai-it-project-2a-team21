@@ -8,14 +8,15 @@ from .prompt_templates import SYSTEM_PROMPT, build_user_message
 
 load_environment_variables()
 
-client = AsyncOpenAI(
-    base_url=os.environ["LLM_BASE_URL"],
-    api_key=os.environ["SSPCLOUD_API_KEY"],
-    timeout=60.0,
-)
 
 
 async def detect_pii(document: str) -> str | None:
+    client = AsyncOpenAI(
+        base_url=os.environ["LLM_BASE_URL"],
+        api_key=os.environ["SSPCLOUD_API_KEY"],
+        timeout=60.0,
+    )
+
     response = await client.chat.completions.create(
         model=os.getenv("LLM_MODEL", "qwen3-6-35b-moe"),
         messages=[

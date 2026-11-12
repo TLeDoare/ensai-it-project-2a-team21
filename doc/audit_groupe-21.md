@@ -15,7 +15,7 @@
 | ER1-04 | le gestionnaire d'erreur 422 renvoie et journalise le corps brut des requêtes | Fixé |
 | ER1-05 | surface web, documentation et protections frontend désactivées | ... |
 | ER2-01 | consommation non bornée, atteignable sans compte légitime | Fixé |
-| ER2-02 | la clé est obligatoire pour démarrer, même sans LLM | Justifié |
+| ER2-02 | la clé est obligatoire pour démarrer, même sans LLM | Justifié/50% Fixé |
 | ER3-01 | réinitialisation de la base sans authentification et comptes par défaut commités | Justifié |
 | ER3-02 | hachage de mot de passe inadapté | Fixé |
 | ER3-03 | jetons de session permanents, stockés en clair, sans révocation | ... |
