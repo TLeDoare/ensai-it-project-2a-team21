@@ -1,10 +1,11 @@
 import pytest
 
-
 from business_object.redactor.mask_redactor import MaskRedactor
-from business_object.types import Position, PII, Analyser as AnalyserSource
 from business_object.redactor.pseudonimise_redactor import PseudonimiseRedactor
+from business_object.types import PII, Position
+from business_object.types import Analyser as AnalyserSource
 from utils.exceptions import PseudonymisationImpossible
+
 
 def creer_position(content: str, valeur: str, pii: PII, occurrence: int = 0) -> Position:
     """Crée une Position correspondant à une occurrence dans le texte."""
@@ -109,17 +110,14 @@ def test_pseudonimisation_simple():
     positions = {
         creer_position(content, "Jean", PII.first_name)
     }
-    pseudonymes = {
-        PII.first_name: ["Lucas"]
-    }
 
     # WHEN
-    result = PseudonimiseRedactor(pseudonymes).redact(
+    result = PseudonimiseRedactor().redact(
         content, positions
     )
 
     # THEN
-    assert result == "Bonjour Lucas"
+    assert result[8:] != "Jean"
 
 
 def test_pseudonimisation_repetition():
@@ -129,20 +127,17 @@ def test_pseudonimisation_repetition():
         creer_position(content, "Jean", PII.first_name, 0),
         creer_position(content, "Jean", PII.first_name, 1),
     }
-    pseudonymes = {
-        PII.first_name: ["Lucas", "Thomas"]
-    }
 
     # WHEN
-    result = PseudonimiseRedactor(pseudonymes).redact(
+    result = PseudonimiseRedactor().redact(
         content, positions
     )
 
     # THEN
-    assert result in {
-        "Lucas parle avec Lucas",
-        "Thomas parle avec Thomas",
-    }
+    liste_res = result.split(" ")
+    assert liste_res[0] != "Jean"
+    assert liste_res[-1] != "Jean"
+    assert liste_res[0] == liste_res[-1]
 
 
 def test_pseudonimisation_valeurs_differentes():
@@ -152,37 +147,16 @@ def test_pseudonimisation_valeurs_differentes():
         creer_position(content, "Jean", PII.first_name),
         creer_position(content, "Pierre", PII.first_name),
     }
-    pseudonymes = {
-        PII.first_name: ["Lucas", "Thomas"]
-    }
 
     # WHEN
-    result = PseudonimiseRedactor(pseudonymes).redact(
+    result = PseudonimiseRedactor().redact(
         content, positions
     )
 
     # THEN
-    assert result in {
-        "Lucas et Thomas",
-        "Thomas et Lucas",
-    }
 
-
-def test_pseudonimisation_liste_vide():
-    # GIVEN
-    content = "Bonjour Jean"
-    positions = {
-        creer_position(content, "Jean", PII.first_name)
-    }
-    pseudonymes = {
-        PII.first_name: []
-    }
-
-    # WHEN / THEN
-    with pytest.raises(PseudonymisationImpossible):
-        PseudonimiseRedactor(pseudonymes).redact(
-            content, positions
-        )
+    liste_res = result.split(" ")
+    assert liste_res[0] != liste_res[2]
 
 
 def test_pseudonimisation_valeur_originale_exclue():
@@ -192,44 +166,46 @@ def test_pseudonimisation_valeur_originale_exclue():
         creer_position(content, "Jean", PII.first_name),
         creer_position(content, "Marc", PII.first_name),
     }
-    pseudonymes = {
-        PII.first_name: ["Marc", "Lucas", "Thomas"]
-    }
 
     # WHEN
-    result = PseudonimiseRedactor(pseudonymes).redact(
+    result = PseudonimiseRedactor().redact(
         content, positions
     )
 
     # THEN
-    assert result in {
-        "Lucas et Thomas",
-        "Thomas et Lucas",
-    }
+
+    liste_res = result.split(" ")
+    liste_content = content.split(" ")
+    assert liste_res[0] != liste_content[0] and liste_res[0] != liste_content[2] or liste_res[2] != liste_content[0] and liste_res[2] != liste_content[2]
 
 
-def test_pseudonimisation_documents_independants():
+def test_fusion_chevauchement_PII_differentes():
     # GIVEN
-    pseudonymes = {
-        PII.first_name: ["Lucas"]
+    # Contenu : "0123456789 48.8584"
+    # On veut créer un chevauchement sur les chiffres "456789"
+    content = "0123456789 48.8584"
+
+    positions = {
+        # Le numéro de téléphone (index 0 à 10)
+        Position(
+            indices=(0, 10),
+            PII=PII.phone_number,
+            confidence=1.0,
+            analyser_source=AnalyserSource.Regex,
+        ),
+        # Une coordonnée GPS qui commence au milieu du téléphone (index 5 à 15)
+        Position(
+            indices=(5, 15),
+            PII=PII.GPS,
+            confidence=1.0,
+            analyser_source=AnalyserSource.Regex,
+        ),
     }
-    redactor = PseudonimiseRedactor(pseudonymes)
 
-    document1 = "Bonjour Jean"
-    positions1 = {
-        creer_position(document1, "Jean", PII.first_name)
-    }
+    # WHEN / THEN
+    # L'algorithme de fusion va rencontrer l'intervalle (5, 15) alors qu'il traite (0, 10).
+    # Comme 5 < 10, il fusionne mais voit que PII.phone_number != PII.GPS
+    with pytest.raises(PseudonymisationImpossible) as excinfo:
+        PseudonimiseRedactor().redact(content, positions)
 
-    document2 = "Bonjour Pierre"
-    positions2 = {
-        creer_position(document2, "Pierre", PII.first_name)
-    }
-
-    # WHEN
-    resultat1 = redactor.redact(document1, positions1)
-    resultat2 = redactor.redact(document2, positions2)
-
-    # THEN
-    assert resultat1 == "Bonjour Lucas"
-    assert resultat2 == "Bonjour Lucas"
-    assert pseudonymes[PII.first_name] == ["Lucas"]
+    assert "Chevauchement de types de PII différents" in str(excinfo.value)
