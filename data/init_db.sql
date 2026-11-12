@@ -14,7 +14,7 @@ CREATE TABLE Person (
 -- Table des documents traites (RedactedDoc)
 CREATE TABLE RedactedDoc (
   id SERIAL PRIMARY KEY,
-  filename VARCHAR(255) NOT NULL,
+  doc_hash VARCHAR(255) NOT NULL,
   upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pii_count INT DEFAULT 0,
   pii_positions TEXT,
