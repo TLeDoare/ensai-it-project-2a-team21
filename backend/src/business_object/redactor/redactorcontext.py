@@ -1,3 +1,5 @@
+from utils.exceptions import RedactorError
+
 from ..types import Positions
 from .redactor_strategy import RedactorStrategy
 
@@ -7,4 +9,7 @@ class RedactorContext:
         self.redactor_strategy = redactor_strategy
 
     def execute_strategy(self, content: str, positions: Positions) -> str:
-        return self.redactor_strategy.redact(content, positions)
+        try:
+            return self.redactor_strategy.redact(content, positions)
+        except Exception as err:
+            raise RedactorError from err

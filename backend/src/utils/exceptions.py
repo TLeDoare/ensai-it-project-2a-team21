@@ -24,3 +24,6 @@ class LLMInjectionError(Exception):
 
 class LLMParseError(Exception):
     """Erreur levée lors de tentative d'injection"""
+
+class RedactorError(Exception):
+    """Erreur levée lorsque le caviardeur rencontre un problème."""

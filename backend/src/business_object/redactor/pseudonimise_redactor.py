@@ -1,16 +1,17 @@
 
 from secrets import choice
 
+from business_object.redactor.pseudonymes import PSEUDO_VALUES
 from utils.exceptions import PseudonymisationImpossible
 
-from ..types import PII, Positions
+from ..types import Positions
 from .redactor_strategy import RedactorStrategy
 
 
 class PseudonimiseRedactor(RedactorStrategy):
 
-    def __init__(self, pseudonymes: dict[PII, list[str]]):
-        self.pseudonymes = pseudonymes
+    def __init__(self):
+        self.pseudonymes = PSEUDO_VALUES
 
     def redact(self, content: str, positions: Positions) -> str:
 

@@ -7,6 +7,11 @@ class AnalysisFail:
         self.exception = exception
         self.source = source
 
+    def to_str_tuple(self) -> tuple[str, str]:
+        return (self.source, str(self.exception))
+
+type AnalysisFails = list[tuple[str, str]]
+
 Position = namedtuple("Position", ["indices", "PII", "confidence", "analyser_source"])
 type Positions = set[Position | AnalysisFail]
 

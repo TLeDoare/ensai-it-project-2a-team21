@@ -10,6 +10,7 @@ from utils.exceptions import (
     DocNotFound,
     DocRegistrationError,
     PseudonymisationImpossible,
+    RedactorError
 )
 from utils.security import verify_token
 
@@ -35,6 +36,8 @@ async def televerser_doc(
         raise HTTPException(status_code=500, detail="Le document téléversé est trop lourd.") from DocRegistrationError
     except UnicodeDecodeError:
         raise HTTPException(status_code=500, detail="Le document est dans un format inconnu. Veuillez téléverser un document de format .md ou .txt et valide au sens unicode.") from DocRegistrationError
+    except RedactorError:
+        raise HTTPException(status_code=500, detail="Le processus de caviardage a recontré un problème.") from RedactorError
     except PseudonymisationImpossible as erreur:
         raise HTTPException(
             status_code=409,
