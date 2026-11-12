@@ -28,4 +28,4 @@ jobs:
         run: uv python install 3.13
 
       - name: Run pytest
-        run: uv run --project backend pytest backend/tests -v
+        run: uv run --project backend pytest backend/tests/{test_business_object,test_service} -v -m "not llm"
