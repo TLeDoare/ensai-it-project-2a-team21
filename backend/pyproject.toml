@@ -3,17 +3,14 @@ name = "Anonymia"
 version = "0.0.1"
 description = "Caviardage professionnel"
 authors = [{ name = "ALVES Ryan" }, { name = "HAUET Noah" }, { name = "KUATE Cabrel" }, { name = "LE BESNERAIS Tom" }, { name = "LE DOARÉ Tanguy" }]
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 
 dependencies = [
     "fastapi",
-    "inquirerPy",
     "psycopg2-binary",
     "python-dotenv",
     "pydantic[email]",
     "PyYAML",
-    "requests",
-    "regex",
     "uvicorn",
     "python-multipart",
     "openai",

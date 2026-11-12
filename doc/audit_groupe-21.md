@@ -32,6 +32,6 @@
 | GEN-03 | qualité de la détection | Fixé à 20% |
 | GEN-04 | tests et CI | En cours de réglage et justifié |
 | GEN-05 | robustesse et validation des entrées | ... |
-| GEN-06 | dépendances | ... |
+| GEN-06 | dépendances | Fixé ? |
 | GEN-07 | reproductibilité et configuration | ne comprends pas |
 | GEN-08 | empreinte du document original | Fixé ? |
