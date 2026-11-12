@@ -21,7 +21,7 @@
 | ER3-03 | jetons de session permanents, stockés en clair, sans révocation | ... |
 | ER3-04 | aucune protection contre la force brute, aucune politique de mot de passe | Justifié |
 | ER3-05 | liste complète des utilisateurs exposée au rôle superviseur | Justifié |
-| INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | ... |
+| INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | Fixé |
 | INJ-02 | aucun jeu adversarial exécuté, aucune CI | Fixé, et justifié |
 | INJ-03 | la vérification de sortie ne peut pas détecter une omission | ... |
 | INJ-04 | délimitation contournable et prompt contradictoire | ... |
@@ -29,9 +29,9 @@
 | INJ-06 | sur-caviardage et consommation pilotables par le document | Justifié |
 | GEN-01 | le flux principal de caviardage est cassé à ce commit | Fixé |
 | GEN-02 | architecture et asynchronisme | ... |
-| GEN-03 | qualité de la détection | ... |
-| GEN-04 | tests et CI | ... |
+| GEN-03 | qualité de la détection | Fixé à 20% |
+| GEN-04 | tests et CI | En cours de réglage et justifié |
 | GEN-05 | robustesse et validation des entrées | ... |
 | GEN-06 | dépendances | ... |
-| GEN-07 | reproductibilité et configuration | ... |
-| GEN-08 | empreinte du document original | ... |
+| GEN-07 | reproductibilité et configuration | ne comprends pas |
+| GEN-08 | empreinte du document original | Fixé ? |
