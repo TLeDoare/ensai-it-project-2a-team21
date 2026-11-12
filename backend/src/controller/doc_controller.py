@@ -10,7 +10,7 @@ from utils.exceptions import (
     DocNotFound,
     DocRegistrationError,
     PseudonymisationImpossible,
-    RedactorError
+    RedactorError,
 )
 from utils.security import verify_token
 
@@ -30,8 +30,12 @@ async def televerser_doc(
         current_person=Depends(verify_token)):
     # L'objet req contient le fichier et les paramètres (stratégie, etc.)
     try:
-        doc_traite = await doc_service.create(file.decode("utf-8"), current_person, literal_eval(params))
-        return doc_traite
+        fichier = file.decode("utf-8")
+        if len(fichier) < 20000:
+            doc_traite = await doc_service.create(fichier, current_person, literal_eval(params))
+            return doc_traite
+        else:
+            raise HTTPException(status_code=500, detail="Le fichier est trop volumineux.")
     except DocRegistrationError:
         raise HTTPException(status_code=500, detail="Le document téléversé est trop lourd.") from DocRegistrationError
     except UnicodeDecodeError:
