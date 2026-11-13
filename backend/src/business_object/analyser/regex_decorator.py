@@ -11,10 +11,13 @@ class RegexDecorator(AnalyserDecorator):
 
     # NIR : 1 ou 2, 2 chiffres pour l'année, 2 chiffres pour le mois, puis 10 chiffres
     # (avec éventuellement des espaces)
-    NIR_PATTERN = r"\b[12]\s?\d{2}\s?(0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(\s?\d{2})?\b"
+    # modif faite : le mois est pas forcément entre 1 et 12 (par ex si le mois de naissance est inconnu
+    # l'insee peut mettre 20) + prendre en compte 2A et 2B pour la Corse dans les départements
+    NIR_PATTERN = r"\b[12]\s?\d{2}\s?\d{2}\s?(\d{2}|2[AB])\s?\d{3}\s?\d{3}(\s?\d{2})?\b"
 
     # IBAN : 2 lettres majuscules pour le pays + 11 à 30 chiffres avec des espaces possibles
-    IBAN_PATTERN = r"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){11,30}\b"
+    # modif faite : on accepte les minuscules
+    IBAN_PATTERN = r"\b[A-Za-z]{2}\d{2}(?:\s?[A-Za-z0-9]){11,30}\b"
 
     # Adresse mail : des symboles, puis un @, puis des symboles, puis un point
     # et au moins deux lettres
@@ -57,8 +60,11 @@ class RegexDecorator(AnalyserDecorator):
     # SIREN : 9 chiffres, éventuellement séparés par des espaces
     SIREN_PATTERN = r"\b\d{3}\s?\d{3}\s?\d{3}\b"
 
-    # Référence cadastrale :
-    REF_CADASTR_PATTERN = r"\b\d{1,5}[A-Z]{1,2}\s?\d{1,4}\s?\d{1,4}\b"
+    # Référence cadastrale : 14 caractères (identifiant national)
+    # 5 chiffres pour le code INSEE de la commune + 3 chiffres pour le préfixe de section +
+    # section + numéro de parcelle (ex : 000AD0250)
+
+    REF_CADASTR_PATTERN = r"\b\d{3}[A-Z0-9]{2}\d{4}\b"
 
     # Coordonnées GPS : système DMS (sexagésimal)
     # Exemple : 48°51'29.99"N 2°17'40.98"E

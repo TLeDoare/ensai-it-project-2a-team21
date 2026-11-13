@@ -65,4 +65,5 @@ VALIDATORS = {
     PII.PAN: luhn_valide,
     PII.NIR: nir_valide,
     PII.IBAN: iban_valide,
+    PII.SIREN: luhn_valide,
 }
