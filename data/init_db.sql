@@ -8,7 +8,9 @@ CREATE TABLE Person (
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(25) NOT NULL, -- 'utilisateur', 'superviseur', 'administrateur'
-  access_token VARCHAR(50)
+  access_token VARCHAR(50),
+  access_token_hash VARCHAR(64),
+  access_token_expires_at TIMESTAMPTZ
 );
 
 -- Table des documents traites (RedactedDoc)
