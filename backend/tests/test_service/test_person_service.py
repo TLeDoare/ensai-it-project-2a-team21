@@ -9,6 +9,7 @@ from business_object.types import Role
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
 from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound, WrongCredError
+from datetime import datetime, timedelta, timezone
 
 person_list = [
     Person(id=1, email="admin@mail.fr", password="1234", role=Role.Administrateur),
@@ -212,27 +213,45 @@ def test_find_by_id_unauthorized():
 # LOGIN
 # -------------------------
 
+
 @patch("service.person_service.verify_password", return_value=True)
 @patch("service.person_service.secrets.token_urlsafe", return_value="fake_token")
 def test_login_ok(mock_token, mock_verify):
-    """Successfully authenticate a Person"""
+    """Vérifie la création d'un jeton valable 24 heures."""
 
     # GIVEN
-    person = person_list[0]
-    dao = PersonDAO()
-    dao.find_by_email = MagicMock(return_value=person)
-    dao.update_access_token = MagicMock()
+    person = Person(
+        id=1,
+        email="admin@mail.fr",
+        password="hashed_password",
+        role=Role.Administrateur,
+    )
 
+    dao = MagicMock()
+    dao.find_by_email.return_value = person
+
+    # WHEN
     with patch("service.person_service.PersonDAO", return_value=dao):
-        # WHEN
-        res = PersonService().login(person.email, "1234")
+        avant = datetime.now(timezone.utc)
+        resultat = PersonService().login(person.email, "1234")
+        apres = datetime.now(timezone.utc)
 
     # THEN
-    assert res == person
-    assert res.access_token == "fake_token"
-    dao.update_access_token.assert_called_once_with(
-        person.id, "fake_token"
+    assert resultat.access_token == "fake_token"
+
+    dao.update_access_token.assert_called_once()
+
+    person_id, token, expiration = (
+        dao.update_access_token.call_args.args
     )
+
+    assert person_id == person.id
+    assert token == "fake_token"
+
+    # Le jeton expire bien 24 heures après sa création.
+    assert avant + timedelta(hours=24) <= expiration
+    assert expiration <= apres + timedelta(hours=24)
+
 
 
 def test_login_email_not_found():
@@ -264,3 +283,24 @@ def test_login_wrong_password(mock_verify):
             res = PersonService().login(person.email, "wrong_password")
 
     dao.update_access_token.assert_not_called()
+
+
+# -------------------------
+# LOGOUT
+# -------------------------
+
+@pytest.mark.parametrize("revoked", [True, False])
+def test_logout(revoked):
+    """Vérifie que le service demande la révocation du jeton."""
+
+    # GIVEN
+    dao = MagicMock()
+    dao.revoke_access_token.return_value = revoked
+
+    # WHEN
+    with patch("service.person_service.PersonDAO", return_value=dao):
+        resultat = PersonService().logout("fake_token")
+
+    # THEN
+    dao.revoke_access_token.assert_called_once_with("fake_token")
+    assert resultat is revoked

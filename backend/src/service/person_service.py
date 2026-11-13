@@ -109,3 +109,9 @@ class PersonService:
         person.access_token = access_token
 
         return person
+
+    def logout(self, access_token: str) -> bool:
+        """Déconnecte un utilisateur en révoquant son jeton."""
+
+        return PersonDAO().revoke_access_token(access_token)
+

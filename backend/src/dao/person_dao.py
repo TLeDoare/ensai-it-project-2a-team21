@@ -111,6 +111,30 @@ class PersonDAO:
                     """,
                     (token_hash, expires_at, person_id),
                 )
+    
+
+    def revoke_access_token(self, access_token: str) -> bool:
+        """Révoque un jeton de session en supprimant son empreinte."""
+
+        token_hash = sha256(access_token.encode("utf-8")).hexdigest()
+
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE Person
+                    SET access_token_hash = NULL,
+                        access_token_expires_at = NULL,
+                        access_token = NULL
+                    WHERE access_token_hash = %s
+                    """,
+                    (token_hash,),
+                )
+
+                nb_lignes_modifiees = cursor.rowcount
+
+        return nb_lignes_modifiees == 1
+
 
     def create(self, person: Person) -> Person:
         """Crée un nouvel utilisateur dans la base de données."""

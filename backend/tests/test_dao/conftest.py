@@ -52,6 +52,12 @@ def connexion_test():
             """)
 
             cursor.execute("""
+                ALTER TABLE project_test_dao.person
+                ADD COLUMN IF NOT EXISTS access_token_hash VARCHAR(64),
+                ADD COLUMN IF NOT EXISTS access_token_expires_at TIMESTAMPTZ
+            """)
+
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS project_test_dao.redacteddoc (
                     id SERIAL PRIMARY KEY,
                     filename VARCHAR(255) NOT NULL,

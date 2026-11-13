@@ -1,10 +1,11 @@
+import pytest
+
 from pathlib import Path
 from uuid import uuid4
-
-import pytest
+from datetime import datetime, timedelta, timezone
+from hashlib import sha256
 from dotenv import load_dotenv
 from psycopg2 import errors
-
 from business_object.person import Person
 from business_object.types import Role
 from dao.db_connection import DBConnection
@@ -16,13 +17,11 @@ def personne_test(connexion_test):
     """Crée un utilisateur fictif et le supprime après le test."""
 
     email = f"test-{uuid4().hex}@example.com"
-    token = f"jeton-{uuid4().hex}"
 
     person = Person(
         email=email,
         password="hash_fictif",
         role=Role.Utilisateur,
-        access_token=token,
     )
 
     dao = PersonDAO()
@@ -139,16 +138,23 @@ def test_find_by_email_inexistant(connexion_test):
 
 
 def test_find_by_token(personne_test):
+    """Vérifie qu'un jeton valide permet de retrouver l'utilisateur."""
+
     # GIVEN
     dao = PersonDAO()
+    token = f"jeton-{uuid4().hex}"
+    expiration = datetime.now(timezone.utc) + timedelta(hours=24)
+
+    dao.update_access_token(personne_test.id, token, expiration)
 
     # WHEN
-    result = dao.find_by_token(personne_test.access_token)
+    resultat = dao.find_by_token(token)
 
     # THEN
-    assert result is not None
-    assert result.id == personne_test.id
-    assert result.access_token == personne_test.access_token
+    assert resultat is not None
+    assert resultat.id == personne_test.id
+    assert resultat.email == personne_test.email
+    assert resultat.access_token is None
 
 
 def test_find_by_token_inexistant(connexion_test):
@@ -179,19 +185,37 @@ def test_find_all(personne_test):
     assert person.role == Role.Utilisateur
 
 
-def test_update_access_token(personne_test):
+
+def test_update_access_token(personne_test, connexion_test):
+    """Vérifie que le jeton est stocké sous forme d'empreinte."""
+
     # GIVEN
     dao = PersonDAO()
-    nouveau_token = f"jeton-modifie-{uuid4().hex}"
+    token = f"jeton-{uuid4().hex}"
+    expiration = datetime.now(timezone.utc) + timedelta(hours=24)
 
     # WHEN
-    dao.update_access_token(personne_test.id, nouveau_token)
+    dao.update_access_token(personne_test.id, token, expiration)
 
     # THEN
-    result = dao.find_by_id(personne_test.id)
+    with connexion_test.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT access_token,
+                   access_token_hash,
+                   access_token_expires_at
+            FROM Person
+            WHERE id = %s
+            """,
+            (personne_test.id,),
+        )
+        resultat = cursor.fetchone()
 
-    assert result is not None
-    assert result.access_token == nouveau_token
+    assert resultat["access_token"] is None
+    assert resultat["access_token_hash"] == sha256(
+        token.encode("utf-8")
+    ).hexdigest()
+    assert resultat["access_token_expires_at"] == expiration
 
 
 def test_update_person(personne_test):
@@ -277,20 +301,58 @@ def test_create_sans_email(connexion_test):
         dao.create(personne)
 
 
-def test_update_access_token_trop_long(personne_test):
-    """Vérifie que la BDD refuse un token dépassant 50 caractères."""
+def test_find_by_token_expire(personne_test):
+    """Un jeton expiré ne permet plus de retrouver l'utilisateur."""
 
     # GIVEN
     dao = PersonDAO()
-    ancien_token = personne_test.access_token
-    token_invalide = "a" * 51
+    token = f"jeton-{uuid4().hex}"
 
-    # WHEN / THEN
-    with pytest.raises(errors.StringDataRightTruncation):
-        dao.update_access_token(personne_test.id, token_invalide)
+    # Date d'expiration située dans le passé
+    expiration = datetime.now(timezone.utc) - timedelta(hours=1)
 
-    # Vérifier que l'ancien token est conservé
-    result = dao.find_by_id(personne_test.id)
+    dao.update_access_token(personne_test.id, token, expiration)
 
-    assert result is not None
-    assert result.access_token == ancien_token
+    # WHEN
+    resultat = dao.find_by_token(token)
+
+    # THEN
+    assert resultat is None
+
+
+def test_revoke_access_token(personne_test, connexion_test):
+    """Un jeton révoqué ne peut plus être utilisé."""
+
+    # GIVEN
+    dao = PersonDAO()
+    token = f"jeton-{uuid4().hex}"
+    expiration = datetime.now(timezone.utc) + timedelta(hours=24)
+
+    dao.update_access_token(personne_test.id, token, expiration)
+
+    # Vérifie que le jeton fonctionne avant révocation
+    assert dao.find_by_token(token) is not None
+
+    # WHEN
+    resultat = dao.revoke_access_token(token)
+
+    # THEN
+    assert resultat is True
+
+    # L'ancien jeton n'est plus valide
+    assert dao.find_by_token(token) is None
+
+    # Les informations de session ont disparu de PostgreSQL
+    with connexion_test.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT access_token_hash, access_token_expires_at
+            FROM Person
+            WHERE id = %s
+            """,
+            (personne_test.id,),
+        )
+        ligne = cursor.fetchone()
+
+    assert ligne["access_token_hash"] is None
+    assert ligne["access_token_expires_at"] is None
