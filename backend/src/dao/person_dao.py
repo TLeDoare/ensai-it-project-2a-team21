@@ -1,3 +1,6 @@
+from datetime import datetime
+from hashlib import sha256
+
 from business_object.person import Person
 from business_object.types import Role
 from dao.db_connection import DBConnection
@@ -12,7 +15,6 @@ class PersonDAO:
             email=result["email"],
             password=result["password"],
             role=Role[result["role"].capitalize()],
-            access_token=result["access_token"],
         )
 
     def find_by_id(self, id: int) -> Person | None:
@@ -21,7 +23,7 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role, access_token
+                    SELECT id, email, password, role
                     FROM Person
                     WHERE id = %s
                     """,
@@ -40,7 +42,7 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role, access_token
+                    SELECT id, email, password, role
                     FROM Person
                     WHERE email = %s
                     """,
@@ -55,15 +57,19 @@ class PersonDAO:
 
     def find_by_token(self, token: str) -> Person | None:
         """Recherche un utilisateur à partir de son token d'accès."""
+
+        token_hash = sha256(token.encode("utf-8")).hexdigest()
+
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role, access_token
+                    SELECT id, email, password, role
                     FROM Person
-                    WHERE access_token = %s
+                    WHERE access_token_hash = %s
+                      AND access_token_expires_at > CURRENT_TIMESTAMP
                     """,
-                    (token,),
+                    (token_hash,),
                 )
                 result = cursor.fetchone()
 
@@ -81,25 +87,29 @@ class PersonDAO:
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT *                                "
+                    "SELECT id, email, password, role        "
                     "  FROM Person                           "
                 )
                 res = cursor.fetchall()
 
         return [self._build_person(row) for row in res]
 
-    def update_access_token(self, person_id: int, access_token: str) -> None:
+    def update_access_token(self, person_id: int, access_token: str, expires_at: datetime) -> None:
         """Met à jour le token d'accès d'un utilisateur."""
+
+        token_hash = sha256(access_token.encode("utf-8")).hexdigest()
 
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
                     UPDATE Person
-                    SET access_token = %s
+                    SET access_token_hash = %s,
+                        access_token_expires_at = %s,
+                        access_token = NULL
                     WHERE id = %s
                     """,
-                    (access_token, person_id),
+                    (token_hash, expires_at, person_id),
                 )
 
     def create(self, person: Person) -> Person:
@@ -109,15 +119,14 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO Person (email, password, role, access_token)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO Person (email, password, role)
+                    VALUES (%s, %s, %s)
                     RETURNING id
                     """,
                     (
                         person.email,
                         person.password,
                         person.role.name.lower(),
-                        person.access_token,
                     ),
                 )
 
@@ -127,26 +136,27 @@ class PersonDAO:
 
         return person
 
-    def update(self, person) -> bool:
-        nb_affected_rows = 0
+    def update(self, person: Person) -> bool:
+        """Met à jour les informations de l'utilisateur."""
 
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE Person                                                  "
-                    "   SET role = %(role)s,                                "
-                    "       password = COALESCE(%(password)s, password),            "
-                    "       email = %(email)s,                                      "
-                    "       access_token = COALESCE(%(access_token)s, access_token) "
-                    " WHERE id = %(id)s;                              ",
+                    """
+                    UPDATE Person
+                    SET role = %(role)s,
+                        password = COALESCE(%(password)s, password),
+                        email = %(email)s
+                    WHERE id = %(id)s
+                    """,
                     {
                         "password": person.password,
                         "email": person.email,
-                        "access_token": person.access_token,
                         "id": person.id,
-                        "role": person.role.name
+                        "role": person.role.name.lower(),
                     },
                 )
+
                 nb_affected_rows = cursor.rowcount
 
         return nb_affected_rows == 1

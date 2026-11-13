@@ -1,5 +1,6 @@
 import secrets
 
+from datetime import datetime, timedelta, timezone
 from psycopg2.errors import UniqueViolation
 
 from business_object.person import Person
@@ -98,8 +99,13 @@ class PersonService:
 
         access_token = secrets.token_urlsafe(32)
 
-        PersonDAO().update_access_token(person.id, access_token)
+        # Le jeton expire 24 heures après sa création
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
 
+        # Enregistre l'empreinte du jeton et sa date d'expiration
+        PersonDAO().update_access_token(person.id, access_token, expires_at)
+
+        # Le frontend reçoit le véritable jeton
         person.access_token = access_token
 
         return person
