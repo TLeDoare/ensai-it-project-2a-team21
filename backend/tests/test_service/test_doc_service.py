@@ -138,6 +138,7 @@ async def test_create_avec_vrai_mask_redactor(
     mock_hash.assert_called_once_with(content)
 
 
+@pytest.mark.llm
 @pytest.mark.asyncio
 @patch("service.doc_service.DocDAO")
 @patch("service.doc_service.PersonDAO")

@@ -20,11 +20,11 @@ class DocDAO(metaclass=Singleton):
             with DBConnection().connection as connection:
                 with connection.cursor() as cursor:
                         cursor.execute(
-                            "INSERT INTO redacteddoc (filename, upload_date, pii_count, pii_positions, params, author_email)        "
-                            "     VALUES (%(filename)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s, %(author)s)"
+                            "INSERT INTO redacteddoc (doc_hash, upload_date, pii_count, pii_positions, params, author_email)        "
+                            "     VALUES (%(doc_hash)s, %(upload_date)s, %(pii_count)s, %(pii_positions)s, %(params)s, %(author)s)"
                             "  RETURNING id;",
                             {
-                                "filename": doc.hash,
+                                "doc_hash": doc.hash,
                                 "upload_date": doc.upload_date,
                                 "pii_count": len(doc.details),
                                 "pii_positions": json.dumps(list(doc.details)),
@@ -56,7 +56,7 @@ class DocDAO(metaclass=Singleton):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, filename, upload_date, pii_positions, params, author_email
+                    SELECT id, doc_hash, upload_date, pii_positions, params, author_email
                     FROM redacteddoc
                     WHERE id = %(id)s
                     """,
@@ -68,7 +68,7 @@ class DocDAO(metaclass=Singleton):
                 redacted_doc = None
                 if doc_found:
                     redacted_doc = RedactedDoc(
-                        hash=doc_found["filename"],
+                        hash=doc_found["doc_hash"],
                         upload_date=doc_found["upload_date"],
                         params=literal_eval(doc_found["params"]),
                         details=literal_eval(doc_found["pii_positions"]),
@@ -92,7 +92,7 @@ class DocDAO(metaclass=Singleton):
             for doc in doc_bdd:
                 liste_doc.append(
                     RedactedDoc(
-                        hash=doc["filename"],
+                        hash=doc["doc_hash"],
                         upload_date=doc["upload_date"],
                         params=literal_eval(doc["params"]),
                         details=literal_eval(doc["pii_positions"]),
@@ -121,7 +121,7 @@ class DocDAO(metaclass=Singleton):
             for doc in doc_bdd:
                 liste_doc.append(
                     RedactedDoc(
-                        filename=doc["filename"],
+                        doc_hash=doc["doc_hash"],
                         upload_date=doc["upload_date"],
                         sent_by=doc["sent_by"],
                         params=doc["params"],
@@ -150,7 +150,7 @@ class DocDAO(metaclass=Singleton):
             for doc in doc_bdd:
                 liste_doc.append(
                     RedactedDoc(
-                        filename=doc["filename"],
+                        doc_hash=doc["doc_hash"],
                         upload_date=doc["upload_date"],
                         sent_by=doc["sent_by"],
                         params=doc["params"],
@@ -172,7 +172,7 @@ class DocDAO(metaclass=Singleton):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "UPDATE redacteddoc                                                  "
-                    "   SET filename = %(filename)s,                                "
+                    "   SET doc_hash = %(doc_hash)s,                                "
                     "       upload_date = %(upload_date)s,            "
                     "       sent_by = %(sent_by)s,                                          "
                     "       params = %(params)s,                                      "
@@ -180,7 +180,7 @@ class DocDAO(metaclass=Singleton):
                     "       id = %(id)s "
                     " WHERE id_doc = %(id_doc)s;                              ",
                     {
-                        "filename": doc.filename,
+                        "doc_hash": doc.doc_hash,
                         "upload_date": doc.upload_date,
                         "sent_by": doc.sent_by,
                         "params": doc.params,

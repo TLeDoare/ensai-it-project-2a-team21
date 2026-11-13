@@ -41,10 +41,8 @@ uv sync --project backend --all-extras
 ## Running the API
 
 ```bash
-uv run --project backend uvicorn main:app --app-dir backend/src --port 5000 --root-path /proxy/5000
+uv run --project backend python backend/src/main.py
 ```
-
-The `--root-path /proxy/5000` option is required on Onyxia; otherwise, the documentation page will fail to load ("Failed to load API definition").
 
 The interactive documentation is then accessible from the **Ports** tab in VS Code (port 5000), by appending `/docs` to the URL.
 
@@ -56,7 +54,7 @@ In a second terminal, while the API is still running in the first one:
 
 ```bash
 cd frontend
-uv run --project ../backend streamlit run app.py --server.port 8501
+uv run --project ../backend streamlit run app.py --server.port 8000
 ```
 
 The user interface is accessible from the **Ports** tab in VS Code (port 8501).

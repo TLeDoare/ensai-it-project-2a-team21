@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, field_validator
 
-from business_object.types import PII, Analyser
+from business_object.types import PII, Analyser, AnalysisFails
 
 # Il n'y a pas d'UploadDocModel car dès lors qu'un formulaire requiert le téléversement d'un fichier, il semble y avoir des problèmes
 # de validation.
@@ -23,7 +23,7 @@ class DocModel(BaseModel):
     params: dict
     details: list[PositionModel]
     content: str | None
-    analysis_fail_source: str | None
+    analysis_fail_source: AnalysisFails
 
     @field_validator("details", mode="before")
     @classmethod
