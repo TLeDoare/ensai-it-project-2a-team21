@@ -47,7 +47,8 @@ def connexion_test():
                     email VARCHAR(255) UNIQUE NOT NULL,
                     password VARCHAR(255) NOT NULL,
                     role VARCHAR(25) NOT NULL,
-                    access_token VARCHAR(50)
+                    access_token_hash VARCHAR(64),
+                    access_token_expires_at TIMESTAMPTZ
                 )
             """)
 
@@ -55,6 +56,11 @@ def connexion_test():
                 ALTER TABLE project_test_dao.person
                 ADD COLUMN IF NOT EXISTS access_token_hash VARCHAR(64),
                 ADD COLUMN IF NOT EXISTS access_token_expires_at TIMESTAMPTZ
+            """)
+            
+            cursor.execute("""
+                ALTER TABLE project_test_dao.person
+                DROP COLUMN IF EXISTS access_token
             """)
 
             cursor.execute("""
