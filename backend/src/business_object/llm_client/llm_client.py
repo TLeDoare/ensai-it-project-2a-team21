@@ -8,13 +8,18 @@ from .prompt_templates import SYSTEM_PROMPT, build_user_message
 
 load_environment_variables()
 
-
-async def detect_pii(document: str) -> str | None:
-    client = AsyncOpenAI(
+# on doit encapsuler cela dans une fonction pour qu'il soit:
+# 1) non executé dans le cas où ne veut pas utiliser le LLM
+# 2) mocké dans les tests qui ont besoin d'accéder à AsyncOpenAI
+def create_client():
+    return AsyncOpenAI(
         base_url=os.environ["LLM_BASE_URL"],
         api_key=os.environ["SSPCLOUD_API_KEY"],
         timeout=60.0,
     )
+
+async def detect_pii(document: str) -> str | None:
+    client = create_client()
 
     response = await client.chat.completions.create(
         model=os.getenv("LLM_MODEL", "qwen3-6-35b-moe"),

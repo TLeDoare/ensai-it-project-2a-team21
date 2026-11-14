@@ -55,12 +55,12 @@ def test_register_document_cree_doc_et_lien(connexion_test, id_person_test):
 
     with connexion_test.cursor() as cursor:
         cursor.execute(
-            "SELECT filename, pii_count FROM redacteddoc WHERE id = %s;",
+            "SELECT doc_hash, pii_count FROM redacteddoc WHERE id = %s;",
             (doc.id,),
         )
         ligne = cursor.fetchone()
     assert ligne is not None
-    assert ligne["filename"] == "test.txt"
+    assert ligne["doc_hash"] == "test.txt"
     assert ligne["pii_count"] == 2
 
 

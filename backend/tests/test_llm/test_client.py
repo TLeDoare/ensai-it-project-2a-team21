@@ -1,5 +1,6 @@
 import asyncio
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from business_object.llm_client import llm_client
 
@@ -9,25 +10,31 @@ def fausse_reponse(texte):
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
-def test_detect_pii_renvoie_le_texte_du_llm(monkeypatch):
-    async def faux_create(**kwargs):
-        return fausse_reponse('{"spans": []}')
+@patch("business_object.llm_client.llm_client.create_client")
+def test_detect_pii_renvoie_le_texte_du_llm(create_client_mock):
+    message_mock = MagicMock()
+    message_mock.choices[0].message.content = '{"spans": []}'
 
-    monkeypatch.setattr(llm_client.client.chat.completions, "create", faux_create)
+    create_client_mock = llm_client.create_client()
+    create_client_mock.chat.completions.create = AsyncMock(return_value=message_mock)
 
     reponse = asyncio.run(llm_client.detect_pii("Bonjour"))
 
     assert reponse == '{"spans": []}'
 
 
-def test_detect_pii_envoie_le_document_entre_balises(monkeypatch):
+@patch("business_object.llm_client.llm_client.create_client")
+def test_detect_pii_envoie_le_document_entre_balises(create_client_mock):
     envoye = {}
 
-    async def faux_create(**kwargs):
+    def side_effect(**kwargs):
         envoye.update(kwargs)
-        return fausse_reponse('{"spans": []}')
+        res = MagicMock()
+        res.choices[0].message.content = '{"spans": []}'
+        return res
 
-    monkeypatch.setattr(llm_client.client.chat.completions, "create", faux_create)
+    create_client_mock = llm_client.create_client()
+    create_client_mock.chat.completions.create = AsyncMock(side_effect=side_effect)
 
     asyncio.run(llm_client.detect_pii("Pierre Dupont"))
 
