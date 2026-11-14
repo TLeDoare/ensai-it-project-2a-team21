@@ -105,8 +105,7 @@ class PersonDAO:
                     """
                     UPDATE Person
                     SET access_token_hash = %s,
-                        access_token_expires_at = %s,
-                        access_token = NULL
+                        access_token_expires_at = %s
                     WHERE id = %s
                     """,
                     (token_hash, expires_at, person_id),
@@ -124,8 +123,7 @@ class PersonDAO:
                     """
                     UPDATE Person
                     SET access_token_hash = NULL,
-                        access_token_expires_at = NULL,
-                        access_token = NULL
+                        access_token_expires_at = NULL
                     WHERE access_token_hash = %s
                     """,
                     (token_hash,),

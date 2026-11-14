@@ -75,7 +75,6 @@ def test_create_person(connexion_test):
         assert result["email"] == email
         assert result["password"] == "hash_fictif"
         assert result["role"] == "utilisateur"
-        assert result["access_token"] is None
 
     finally:
         # CLEANUP
@@ -201,8 +200,7 @@ def test_update_access_token(personne_test, connexion_test):
     with connexion_test.cursor() as cursor:
         cursor.execute(
             """
-            SELECT access_token,
-                   access_token_hash,
+            SELECT access_token_hash,
                    access_token_expires_at
             FROM Person
             WHERE id = %s
@@ -211,7 +209,6 @@ def test_update_access_token(personne_test, connexion_test):
         )
         resultat = cursor.fetchone()
 
-    assert resultat["access_token"] is None
     assert resultat["access_token_hash"] == sha256(
         token.encode("utf-8")
     ).hexdigest()

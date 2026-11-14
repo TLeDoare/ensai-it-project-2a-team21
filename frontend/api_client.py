@@ -44,6 +44,24 @@ def connexion(email: str, mot_de_passe: str) -> dict:
     return _lire(reponse)
 
 
+def deconnexion(token: str) -> dict:
+    """Révoque le jeton de l'utilisateur côté API."""
+
+    try:
+        reponse = requests.post(
+            f"{API_URL}/login/logout/",
+            headers={"x-auth-token": token},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as erreur:
+        raise ApiError(
+            503,
+            "Impossible de contacter le serveur pour la déconnexion."
+        ) from erreur
+
+    return _lire(reponse)
+
+
 def role(id_person: int, token: str) -> str:
     # La connexion ne renvoie pas le rôle. Cette route étant réservée aux superviseurs
     # et aux administrateurs, un refus signifie que la personne est un simple utilisateur.

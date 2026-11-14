@@ -82,9 +82,22 @@ def barre_laterale() -> str:
         ecran = st.radio("Menu", ECRANS.get(utilisateur["role"], ECRANS["UTILISATEUR"]))
         st.divider()
         if st.button("Se déconnecter", use_container_width=True):
-            # On efface tout, y compris le dernier document, pour la personne suivante.
+            try:
+                api.deconnexion(utilisateur["token"])
+
+            except api.ApiError as erreur:
+                if erreur.status != 401:
+                    st.error(
+                        "La déconnexion n'a pas pu être confirmée "
+                        "par le serveur. Veuillez réessayer."
+                    )
+                    return ecran
+
+            # Le jeton a été révoqué ou était déjà invalide.
+            # On efface toutes les données de la session Streamlit.
             st.session_state.clear()
             st.rerun()
+
     return ecran
 
 
