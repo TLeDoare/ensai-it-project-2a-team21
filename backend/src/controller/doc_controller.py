@@ -9,6 +9,7 @@ from utils.exceptions import (
     AuthError,
     DocNotFound,
     DocRegistrationError,
+    LLMInjectionError,
     PseudonymisationImpossible,
     RedactorError,
 )
@@ -31,8 +32,12 @@ async def televerser_doc(
     # L'objet req contient le fichier et les paramètres (stratégie, etc.)
     try:
         fichier = file.decode("utf-8")
+        try:
+            parsed_params = literal_eval(params)
+        except ValueError:
+            raise HTTPException(status_code=500, detail="Les paramètres sont à fournir en format Python plutôt que JSON (e.g. true -> True)") from ValueError
         if len(fichier) < 20000:
-            doc_traite = await doc_service.create(fichier, current_person, literal_eval(params))
+            doc_traite = await doc_service.create(fichier, current_person, parsed_params)
             return doc_traite
         else:
             raise HTTPException(status_code=500, detail="Le fichier est trop volumineux.")
@@ -47,6 +52,8 @@ async def televerser_doc(
             status_code=409,
             detail=str(erreur)
         ) from erreur
+    except LLMInjectionError:
+        raise HTTPException(status_code=500, detail="Une injection de LLM a été détectée.") from LLMInjectionError
 
 @router.post("/find_by_id", response_model=DocModel, tags=["Doc"])
 async def find_by_id(id: int, doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):

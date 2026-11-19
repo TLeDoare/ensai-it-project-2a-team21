@@ -13,7 +13,7 @@ from dao.doc_dao import DocDAO
 from dao.injection_attempt_dao import InjectionAttemptDAO
 from dao.person_dao import PersonDAO
 from service.person_service import PersonService
-from utils.exceptions import DocNotFound
+from utils.exceptions import DocNotFound, LLMInjectionError
 from utils.log_utils import get_logger, log
 from utils.security import hash_any
 
@@ -32,6 +32,7 @@ class DocService:
             InjectionAttemptDAO().register_attempt(sent_by.email, doc_hash, "Pattern matching")
             # On peut décider de lever une exception ici pour bloquer le processus
             # raise SecurityException("Tentative d'injection détectée")
+            raise LLMInjectionError
 
         text = file
 
