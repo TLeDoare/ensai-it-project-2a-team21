@@ -88,23 +88,30 @@ class RegexDecorator(AnalyserDecorator):
     }
 
     async def _detect(self, content: str, type_pii: PII, pattern: str):
-        return [
-            Position(
-                indices=(m.start(), m.end()),
-                PII=type_pii,
-                confidence=1.0,
-                analyser_source=AnalyserSource.Regex,
-            )
-            for m in re.finditer(pattern, content)
-        ]
+        return await asyncio.to_thread(
+            lambda: [
+                Position(
+                    indices=(m.start(), m.end()),
+                    PII=type_pii,
+                    confidence=1.0,
+                    analyser_source=AnalyserSource.Regex,
+                )
+                for m in re.finditer(pattern, content)
+            ]
+        )
+
 
     async def analyse(self, content: str) -> Positions:
-        # Note: on part du principe que le regex, par son déterminisme, ne recontrera pas d'erreur, contrairement au LLM.
         taches = [super().analyse(content)]
-        taches += [self._detect(content, t, p) for t, p in self.PATTERNS.items()]
+        taches += [
+            self._detect(content, t, p)
+            for t, p in self.PATTERNS.items()
+        ]
+
         resultats = await asyncio.gather(*taches)
 
         positions: Positions = set()
         for element in resultats:
             positions.update(element)
+
         return positions
