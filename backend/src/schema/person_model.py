@@ -31,4 +31,4 @@ class RegisterModel(BaseModel):
 class UpdateModel(BaseModel):
     id: int
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128, pattern=PASSWORD_REGEX)
