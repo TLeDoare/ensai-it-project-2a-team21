@@ -92,3 +92,22 @@ def historique(token: str) -> list:
     if reponse.status_code == 404:
         return []
     return _lire(reponse)
+
+def utilisateurs(token: str) -> list:
+    """Renvoie la liste de tous les comptes (réservé à l'administrateur)."""
+    reponse = requests.get(f"{API_URL}/person/", headers={"x-auth-token": token}, timeout=TIMEOUT)
+    # Comme pour l'historique, un 404 signifie simplement qu'aucun compte n'est trouvé.
+    if reponse.status_code == 404:
+        return []
+    return _lire(reponse)
+
+
+def creer_compte(token: str, email: str, mot_de_passe: str, role_compte: str) -> dict:
+    """Crée un compte avec le rôle choisi ; le mot de passe est haché par l'API."""
+    reponse = requests.post(
+        f"{API_URL}/person/",
+        headers={"x-auth-token": token},
+        json={"email": email, "password": mot_de_passe, "role": role_compte},
+        timeout=TIMEOUT,
+    )
+    return _lire(reponse)

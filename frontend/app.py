@@ -279,6 +279,75 @@ def page_historique():
     types = sorted({d["type"] for d in document["details"]})
     st.caption("Types détectés : " + (", ".join(types) if types else "aucun"))
 
+def page_comptes():
+    st.subheader("Gestion des comptes")
+    token = st.session_state.utilisateur["token"]
+
+    # --- Liste des comptes existants ---
+    try:
+        comptes = api.utilisateurs(token)
+    except api.ApiError as erreur:
+        st.error(f"Impossible de charger les comptes ({erreur.status}) : {erreur.message}")
+        return
+
+    if comptes:
+        # Le mot de passe haché n'est jamais affiché : seules l'identité et le rôle sont utiles ici.
+        tableau = pd.DataFrame(
+            [{"N°": c.get("id"), "E-mail": c.get("email"), "Rôle": c.get("role")} for c in comptes]
+        )
+                # Un compteur pour le total, puis un par rôle (0 si aucun compte n'a ce rôle)
+        colonnes = st.columns(4)
+        colonnes[0].metric("Comptes", len(tableau))
+        for colonne, (role_nom, libelle) in zip(
+            colonnes[1:],
+            [("UTILISATEUR", "Utilisateurs"), ("SUPERVISEUR", "Superviseurs"), ("ADMINISTRATEUR", "Administrateurs")],
+        ):
+            colonne.metric(libelle, int((tableau["Rôle"] == role_nom).sum()))
+        st.dataframe(tableau.sort_values("N°"), hide_index=True, width="stretch")
+    else:
+        st.info("Aucun compte trouvé.")
+
+    st.divider()
+
+    # --- Création d'un compte ---
+    with st.form("creation_compte", clear_on_submit=True):
+        st.markdown("**Créer un compte**")
+        email = st.text_input("Adresse e-mail")
+        mot_de_passe = st.text_input(
+            "Mot de passe provisoire",
+            type="password",
+            help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
+        )
+        role_compte = st.selectbox("Rôle", list(ECRANS.keys()))
+        valider = st.form_submit_button("Créer le compte", type="primary")
+
+    if valider:
+        if not email.strip() or not mot_de_passe:
+            st.warning("L'e-mail et le mot de passe sont obligatoires.")
+            return
+               # Mêmes exigences que l'API : chaque règle non respectée est listée pour l'utilisateur
+        regles = [
+            (len(mot_de_passe) >= 8, "8 caractères minimum"),
+            (any(c.islower() for c in mot_de_passe), "une minuscule"),
+            (any(c.isupper() for c in mot_de_passe), "une majuscule"),
+            (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
+            (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
+        ]
+        manquantes = [libelle for respectee, libelle in regles if not respectee]
+        if manquantes:
+            st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
+            return
+        try:
+            api.creer_compte(token, email.strip(), mot_de_passe, role_compte)
+        except api.ApiError as erreur:
+            if erreur.status == 409:
+                st.error("Cette adresse e-mail est déjà utilisée.")
+            else:
+                st.error(f"La création a échoué ({erreur.status}) : {erreur.message}")
+            return
+        st.success(f"Compte {email.strip()} créé avec le rôle {role_compte}.")
+        st.rerun()
+
 # Aiguillage principal : Streamlit réexécute ce fichier en entier à chaque interaction.
 if "utilisateur" not in st.session_state:
     page_connexion()
@@ -289,5 +358,5 @@ else:
         page_caviarder()
     elif ecran == "Historique":
         page_historique()
-    else:
-        st.info("Cet écran sera construit dans une prochaine étape.")
+    elif ecran == "Gestion des comptes":
+        page_comptes()
