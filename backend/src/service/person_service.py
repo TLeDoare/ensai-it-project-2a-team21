@@ -63,6 +63,27 @@ class PersonService:
         PersonDAO().update(person)
         return person
 
+    def change_role(self, id: int, role: Role, sent_by: Person) -> Person:
+        """Change le rôle d'un compte (administrateur uniquement)."""
+        if sent_by.role != Role.Administrateur:
+            raise AuthError
+        # Un administrateur ne modifie pas son propre rôle : évite de bloquer l'application sans administrateur
+        if sent_by.id == id:
+            raise AuthError
+        person = self.find_by_id(id)
+        person.role = role
+        person.password = None  # COALESCE dans le DAO : le mot de passe existant est conservé
+        PersonDAO().update(person)
+        return person
+
+    def delete(self, id: int, sent_by: Person) -> None:
+        """Supprime un compte (administrateur uniquement, jamais son propre compte)."""
+        self.grant_auth(sent_by, Access.DeletePerson)
+        if sent_by.id == id:
+            raise AuthError
+        if not PersonDAO().delete(id):
+            raise PersonNotFound
+
     def grant_auth(self, who: Person, req: Access, third_p = None) -> None:
         access = False
         if req == Access.ReadDoc:

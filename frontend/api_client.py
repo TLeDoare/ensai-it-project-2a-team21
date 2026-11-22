@@ -111,3 +111,26 @@ def creer_compte(token: str, email: str, mot_de_passe: str, role_compte: str) ->
         timeout=TIMEOUT,
     )
     return _lire(reponse)
+    
+def changer_role(token: str, id_compte: int, nouveau_role: str) -> dict:
+    """Change le rôle d'un compte (réservé à l'administrateur)."""
+    reponse = requests.put(
+        f"{API_URL}/person/{id_compte}/role",
+        headers={"x-auth-token": token},
+        json={"role": nouveau_role},
+        timeout=TIMEOUT,
+    )
+    return _lire(reponse)
+
+
+def supprimer_compte(token: str, id_compte: int) -> None:
+    """Supprime définitivement un compte (réservé à l'administrateur)."""
+    reponse = requests.delete(
+        f"{API_URL}/person/{id_compte}",
+        headers={"x-auth-token": token},
+        timeout=TIMEOUT,
+    )
+    # Une suppression réussie renvoie 204 sans contenu : il n'y a rien à lire
+    if reponse.status_code == 204:
+        return
+    _lire(reponse)

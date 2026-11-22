@@ -182,3 +182,11 @@ class PersonDAO:
                 nb_affected_rows = cursor.rowcount
 
         return nb_affected_rows == 1
+
+    def delete(self, id: int) -> bool:
+        """Supprime définitivement un utilisateur. Renvoie True si une ligne a été supprimée."""
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("DELETE FROM Person WHERE id = %s", (id,))
+                nb_lignes_supprimees = cursor.rowcount
+        return nb_lignes_supprimees == 1

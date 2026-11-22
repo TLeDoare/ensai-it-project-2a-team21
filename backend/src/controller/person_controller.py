@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schema.person_model import PersonModel, RegisterModel, UpdateModel
+from schema.person_model import PersonModel, RegisterModel, UpdateModel, RoleModel
 from service.person_service import PersonService
 from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
 from utils.log_utils import get_logger
@@ -97,3 +97,26 @@ async def update_user(user: UpdateModel, person_service=Depends(get_person_servi
 
     return person_service.update(u, current_person)
 
+
+@router.put("/{id_user}/role", response_model=PersonModel, tags=["Users"])
+def change_role(id_user: int, body: RoleModel, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
+    """Modifie le rôle d'un compte (administrateur uniquement)."""
+    logger.info("Change the role of a user")
+    try:
+        return person_service.change_role(id_user, body.role, current_person)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
+    except AuthError:
+        raise HTTPException(status_code=403, detail="Action non autorisée.") from AuthError
+
+
+@router.delete("/{id_user}", status_code=204, tags=["Users"])
+def delete_user(id_user: int, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
+    """Supprime un compte (administrateur uniquement, jamais son propre compte)."""
+    logger.info("Delete a user")
+    try:
+        person_service.delete(id_user, current_person)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
+    except AuthError:
+        raise HTTPException(status_code=403, detail="Action non autorisée.") from AuthError

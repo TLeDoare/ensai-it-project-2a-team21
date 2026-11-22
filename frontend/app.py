@@ -309,44 +309,90 @@ def page_comptes():
 
     st.divider()
 
-    # --- Création d'un compte ---
-    with st.form("creation_compte", clear_on_submit=True):
-        st.markdown("**Créer un compte**")
-        email = st.text_input("Adresse e-mail")
-        mot_de_passe = st.text_input(
-            "Mot de passe provisoire",
-            type="password",
-            help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
-        )
-        role_compte = st.selectbox("Rôle", list(ECRANS.keys()))
-        valider = st.form_submit_button("Créer le compte", type="primary")
+               # --- Trois boutons d'action : un clic ouvre le panneau, un second clic le referme ---
+    if "action_compte" not in st.session_state:
+        st.session_state.action_compte = None
 
-    if valider:
-        if not email.strip() or not mot_de_passe:
-            st.warning("L'e-mail et le mot de passe sont obligatoires.")
-            return
-               # Mêmes exigences que l'API : chaque règle non respectée est listée pour l'utilisateur
-        regles = [
-            (len(mot_de_passe) >= 8, "8 caractères minimum"),
-            (any(c.islower() for c in mot_de_passe), "une minuscule"),
-            (any(c.isupper() for c in mot_de_passe), "une majuscule"),
-            (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
-            (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
-        ]
-        manquantes = [libelle for respectee, libelle in regles if not respectee]
-        if manquantes:
-            st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
-            return
-        try:
-            api.creer_compte(token, email.strip(), mot_de_passe, role_compte)
-        except api.ApiError as erreur:
-            if erreur.status == 409:
-                st.error("Cette adresse e-mail est déjà utilisée.")
-            else:
+    def basculer(action: str):
+        """Ouvre le panneau demandé, ou le referme s'il est déjà ouvert."""
+        st.session_state.action_compte = None if st.session_state.action_compte == action else action
+
+    col_creer, col_modifier, col_supprimer = st.columns(3)
+    col_creer.button("Créer un compte", type="primary", use_container_width=True,
+                     on_click=basculer, args=("creer",))
+    col_modifier.button("Modifier un compte", type="primary", use_container_width=True,
+                        on_click=basculer, args=("modifier",), disabled=not comptes)
+    col_supprimer.button("Supprimer un compte", type="primary", use_container_width=True,
+                         on_click=basculer, args=("supprimer",), disabled=not comptes)
+
+    action = st.session_state.action_compte
+    # Liste des comptes au format lisible, partagée par les panneaux Modifier et Supprimer
+    choix = {f"{c['email']} ({c['role']})": c for c in comptes} if comptes else {}
+    roles = list(ECRANS.keys())
+
+    # --- Panneau Créer ---
+    if action == "creer":
+        with st.form("creation_compte", clear_on_submit=True):
+            st.markdown("**Créer un compte**")
+            email = st.text_input("Adresse e-mail")
+            mot_de_passe = st.text_input(
+                "Mot de passe provisoire",
+                type="password",
+                help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
+            )
+            role_compte = st.selectbox("Rôle", roles)
+            valider = st.form_submit_button("Valider la création", type="primary")
+        if valider:
+            if not email.strip() or not mot_de_passe:
+                st.warning("L'e-mail et le mot de passe sont obligatoires.")
+                return
+            # Mêmes exigences que l'API : chaque règle non respectée est listée pour l'utilisateur
+            regles = [
+                (len(mot_de_passe) >= 8, "8 caractères minimum"),
+                (any(c.islower() for c in mot_de_passe), "une minuscule"),
+                (any(c.isupper() for c in mot_de_passe), "une majuscule"),
+                (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
+                (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
+            ]
+            manquantes = [libelle for respectee, libelle in regles if not respectee]
+            if manquantes:
+                st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
+                return
+            try:
+                api.creer_compte(token, email.strip(), mot_de_passe, role_compte)
+            except api.ApiError as erreur:
                 st.error(f"La création a échoué ({erreur.status}) : {erreur.message}")
-            return
-        st.success(f"Compte {email.strip()} créé avec le rôle {role_compte}.")
-        st.rerun()
+                return
+            st.success(f"Compte {email.strip()} créé avec le rôle {role_compte}.")
+            st.rerun()
+
+    # --- Panneau Modifier ---
+    elif action == "modifier":
+        st.markdown("**Modifier le rôle d'un compte**")
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_modif")]
+        nouveau_role = st.selectbox("Nouveau rôle", roles, index=roles.index(compte["role"]))
+        if st.button("Enregistrer le rôle", type="primary"):
+            try:
+                api.changer_role(token, compte["id"], nouveau_role)
+                st.success(f"{compte['email']} a maintenant le rôle {nouveau_role}.")
+                st.rerun()
+            except api.ApiError as erreur:
+                st.error(f"Changement refusé ({erreur.status}) : {erreur.message}")
+
+    # --- Panneau Supprimer ---
+    elif action == "supprimer":
+        st.markdown("**Supprimer un compte**")
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_suppr")]
+        st.warning(f"Le compte {compte['email']} sera supprimé définitivement.")
+        # Case à cocher obligatoire : évite une suppression par simple clic accidentel
+        confirme = st.checkbox("Je confirme la suppression définitive")
+        if st.button("Confirmer la suppression", type="primary", disabled=not confirme):
+            try:
+                api.supprimer_compte(token, compte["id"])
+                st.success(f"Compte {compte['email']} supprimé.")
+                st.rerun()
+            except api.ApiError as erreur:
+                st.error(f"Suppression refusée ({erreur.status}) : {erreur.message}")
 
 # Aiguillage principal : Streamlit réexécute ce fichier en entier à chaque interaction.
 if "utilisateur" not in st.session_state:

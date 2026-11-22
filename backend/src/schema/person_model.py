@@ -32,3 +32,6 @@ class UpdateModel(BaseModel):
     id: int
     email: EmailStr
     password: str = Field(min_length=8, max_length=128, pattern=PASSWORD_REGEX)
+
+class RoleModel(BaseModel):
+    role: Role
