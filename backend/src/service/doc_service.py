@@ -15,7 +15,7 @@ from dao.person_dao import PersonDAO
 from service.person_service import PersonService
 from utils.exceptions import DocNotFound, LLMInjectionError
 from utils.log_utils import get_logger, log
-from utils.security import hash_any
+from utils.security import hash_document
 
 logger = get_logger(__name__)
 
@@ -27,7 +27,7 @@ class DocService:
         # Détection d'injection
         injection_filter = InjectionFilter()
         if injection_filter.detect_injection(file):
-            doc_hash = hash_any(file)
+            doc_hash = hash_document(file)
             logger.warning(f"!!! TENTATIVE D'INJECTION DE PROMPT DETECTEE !!! Par: {sent_by.email} (Hash: {doc_hash})")
             InjectionAttemptDAO().register_attempt(sent_by.email, doc_hash, "Pattern matching")
             # On peut décider de lever une exception ici pour bloquer le processus
@@ -49,7 +49,7 @@ class DocService:
                 positions_filtrees.add(pos)
 
         positions_filtrees = resoudre_chevauchements(positions_filtrees, text)
-        doc_hash = hash_any(file)
+        doc_hash = hash_document(file)
 
         redactor_context = RedactorContext()
         if params.get("mask", True):

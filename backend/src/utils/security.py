@@ -1,8 +1,20 @@
+# Modules standards de Python
+import hashlib
+import hmac
+import os
+
+# Bibliothèques installées
+from dotenv import load_dotenv
 from fastapi import Header, HTTPException
 from pwdlib import PasswordHash
 
+# Modules du projet
 from business_object.person import Person
 from dao.person_dao import PersonDAO
+
+# Charger le .env pour disposer de DOC_HASH_SECRET
+load_dotenv()
+
 
 password_hash = PasswordHash.recommended()
 
@@ -37,3 +49,27 @@ def verify_token(x_auth_token=Header(None)) -> Person:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
     return person
+
+
+
+def hash_document(content: str) -> str:
+    """Calcule l'empreinte HMAC-SHA256 d'un document (F4).
+
+    Le même document produit toujours la même empreinte, ce qui permet de
+    repérer les doublons dans le journal d'audit sans stocker le contenu.
+    La clé secrète empêche de recalculer l'empreinte d'un texte deviné.
+
+    Args:
+        content: contenu brut du document.
+
+    Returns:
+        L'empreinte en hexadécimal (64 caractères).
+ C
+    Raises:
+        RuntimeError: si DOC_HASH_SECRET est absente du .env.
+    """
+    secret = os.getenv("DOC_HASH_SECRET")
+    if not secret:
+        # Refuser de calculer une empreinte sans clé, plutôt qu'une empreinte non protégée
+        raise RuntimeError("DOC_HASH_SECRET manquante dans le .env")
+    return hmac.new(secret.encode("utf-8"), content.encode("utf-8"), hashlib.sha256).hexdigest()

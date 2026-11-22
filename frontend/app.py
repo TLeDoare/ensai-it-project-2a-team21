@@ -268,7 +268,14 @@ def page_historique():
     numero = st.selectbox("Voir le détail du document n°", tableau["N°"].tolist())
     document = next(d for d in documents if d["id"] == numero)
     with st.container(border=True):
-        st.markdown(surligner(document["content"], []), unsafe_allow_html=True)
+        # Lire le texte du document sans planter s'il est absent
+        contenu = document.get("content") if document else None
+        if contenu is None:
+        # Document sans texte disponible : message au lieu d'une erreur
+            st.info("Par conception, le contenu des documents n'est pas conservé : seuls l'empreinte et les types de PII détectés sont journalisés.")
+        else:
+        # Cas normal : afficher le texte surligné
+            st.markdown(surligner(contenu, []), unsafe_allow_html=True)
     types = sorted({d["type"] for d in document["details"]})
     st.caption("Types détectés : " + (", ".join(types) if types else "aucun"))
 
