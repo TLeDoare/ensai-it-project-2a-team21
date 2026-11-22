@@ -30,6 +30,8 @@ The `.env` file (never committed to version control) must contain:
 | `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DATABASE`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | See the PostgreSQL service README on Onyxia |
 | `POSTGRES_SCHEMA` | Any name of your choice, e.g. `anonymia` |
 
+| `DOC_HASH_SECRET` | Clé HMAC de l'empreinte des documents (F4) | Clé commune à l'équipe, transmise en privé. Ne jamais la régénérer |
+
 ## Installation
 
 From the repository root:
