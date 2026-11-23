@@ -150,6 +150,29 @@ def afficher_resultat(resultat: dict):
         st.markdown("**Texte caviardé**")
         with st.container(border=True, height=420):
             st.markdown(surligner(reponse["content"], []), unsafe_allow_html=True)
+            # --- Comparaison côte à côte des détecteurs (FO4), repliée par défaut pour alléger l'affichage ---
+    with st.expander("Comparer les détecteurs (regex / LLM)"):
+        # Sépare les PII selon le détecteur qui les a trouvées (champ "source" renvoyé par l'API)
+        pii_regex = [d for d in details if d["source"] == "Regex"]
+        pii_llm = [d for d in details if d["source"] == "LLM"]
+        col_regex, col_llm = st.columns(2)
+        with col_regex:
+            st.markdown(f"Expressions régulières ({len(pii_regex)} PII)")
+            with st.container(border=True, height=300):
+                # Texte d'origine surligné uniquement avec les PII trouvées par les regex
+                st.markdown(surligner(resultat["original"], pii_regex), unsafe_allow_html=True)
+        with col_llm:
+            st.markdown(f"LLM ({len(pii_llm)} PII)")
+            with st.container(border=True, height=300):
+                # Texte d'origine surligné uniquement avec les PII trouvées par le LLM
+                st.markdown(surligner(resultat["original"], pii_llm), unsafe_allow_html=True)
+        # Types propres à chaque détecteur : montre leur complémentarité
+        types_regex = {d["type"] for d in pii_regex}
+        types_llm = {d["type"] for d in pii_llm}
+        st.caption(
+            "Types trouvés seulement par les regex : " + (", ".join(sorted(types_regex - types_llm)) or "aucun")
+            + " | seulement par le LLM : " + (", ".join(sorted(types_llm - types_regex)) or "aucun")
+        )
 
     st.download_button(
         "Télécharger le document caviardé",
@@ -255,6 +278,24 @@ def page_historique():
     col1, col2 = st.columns(2)
     col1.metric("Documents traités", len(tableau))
     col2.metric("PII détectées au total", int(tableau["PII détectées"].sum()))
+
+        # --- Graphiques des indicateurs d'activité (F4) ---
+    graphique_jours, graphique_types = st.columns(2)
+    with graphique_jours:
+        st.markdown("**Documents traités par jour**")
+        # Compte les documents filtrés pour chaque date
+        st.bar_chart(tableau.groupby(tableau["Date"].dt.date).size())
+    with graphique_types:
+        st.markdown("**Fréquence des types de PII**")
+        # Ne garde que les documents encore visibles après les filtres
+        numeros_visibles = set(tableau["N°"])
+        types_pii = pd.Series(
+            [pii["type"] for doc in documents if doc["id"] in numeros_visibles for pii in doc["details"]]
+        )
+        if types_pii.empty:
+            st.info("Aucune PII sur la période choisie.")
+        else:
+            st.bar_chart(types_pii.value_counts()) 
 
     st.dataframe(
         tableau.sort_values("Date", ascending=False),
