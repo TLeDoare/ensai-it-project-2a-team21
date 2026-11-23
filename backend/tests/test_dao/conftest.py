@@ -15,7 +15,11 @@ def connexion_test():
     load_environment_variables()
 
     if os.getenv("POSTGRES_SCHEMA") != "project_test_dao":
-        pytest.fail("Le schéma PostgreSQL n'est pas celui des tests.")
+        pytest.fail(
+            "Le schéma PostgreSQL n'est pas celui des tests. "
+            "Les tests DAO écrivent en base : mettez POSTGRES_SCHEMA=project_test_dao dans le .env "
+            "le temps des tests, puis remettez POSTGRES_SCHEMA=anonymia."
+        )
 
     connection = DBConnection().connection
 
@@ -57,7 +61,7 @@ def connexion_test():
                 ADD COLUMN IF NOT EXISTS access_token_hash VARCHAR(64),
                 ADD COLUMN IF NOT EXISTS access_token_expires_at TIMESTAMPTZ
             """)
-            
+
             cursor.execute("""
                 ALTER TABLE project_test_dao.person
                 DROP COLUMN IF EXISTS access_token
@@ -73,6 +77,17 @@ def connexion_test():
                     pii_positions TEXT,
                     author_email VARCHAR(100),
                     params VARCHAR(1000)
+                )
+            """)
+                       # Table des tentatives d'injection, identique à data/init_db.sql (recréée à chaque session de tests)
+            cursor.execute("""
+                DROP TABLE IF EXISTS project_test_dao.prompt_injection_attempt;
+                CREATE TABLE project_test_dao.prompt_injection_attempt (
+                    id SERIAL PRIMARY KEY,
+                    attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    user_email VARCHAR(255) NOT NULL,
+                    content_hash VARCHAR(255) NOT NULL,
+                    pattern_detected VARCHAR(255)
                 )
             """)
 

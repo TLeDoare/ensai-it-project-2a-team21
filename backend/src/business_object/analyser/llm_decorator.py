@@ -17,7 +17,8 @@ class LLMDecorator(AnalyserDecorator):
             res = OutputVerifier().verify(raw, content)
             if res[1]:
                 # On décide d'inclure le résultat tout en explicitant une erreur
-                return res[0] | AnalysisFail(LLMInjectionError, "LLM")
+                                # On garde les PII trouvées ET on ajoute l'alerte : l'AnalysisFail est mis dans un ensemble pour l'union
+                return res[0] | {AnalysisFail(LLMInjectionError("Omission suspecte du LLM"), "LLM")}
             else:
                 return res[0]
         except Exception as e:

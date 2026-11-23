@@ -1,3 +1,5 @@
+"""Tests du DocDAO sur le schéma de test : enregistrement et relecture des documents caviardés."""
+
 from datetime import datetime
 
 import pytest
@@ -9,8 +11,7 @@ from dao.doc_dao import DocDAO
 
 @pytest.fixture
 def id_person_test(connexion_test):
-    """Crée un utilisateur provisoire et renvoie son id, puis nettoie
-    les trois tables après"""
+    """Crée un utilisateur provisoire et renvoie son id, puis vide les tables après le test."""
     with connexion_test.cursor() as cursor:
         cursor.execute(
             "INSERT INTO person (email, password, role) "
@@ -22,7 +23,7 @@ def id_person_test(connexion_test):
 
     yield id_person
 
-    connexion_test.rollback()     # éviter les transactions qui restent ouvertes
+    connexion_test.rollback()  # éviter les transactions qui restent ouvertes
     with connexion_test.cursor() as cursor:
         cursor.execute("DELETE FROM redacteddoc;")
         cursor.execute("DELETE FROM person;")
@@ -30,7 +31,7 @@ def id_person_test(connexion_test):
 
 
 def _doc_factice(id_person: int, nb_pii: int = 2) -> RedactedDoc:
-    """Construit un RedactedDoc de test avec nb_pii positions détectées"""
+    """Construit un RedactedDoc de test avec nb_pii positions détectées."""
     details = {
         Position(indices=(i, i + 5), PII=PII.last_name,
                  confidence=0.9, analyser_source=Analyser.Regex)
@@ -45,7 +46,10 @@ def _doc_factice(id_person: int, nb_pii: int = 2) -> RedactedDoc:
     )
 
 
+# --- register_document : enregistrement ---
+
 def test_register_document_cree_doc_et_lien(connexion_test, id_person_test):
+    """Un document enregistré reçoit un id, et la ligne en base a la bonne empreinte et le bon nombre de PII."""
     doc = _doc_factice(id_person_test, nb_pii=2)
 
     ok = DocDAO().register_document(doc)
@@ -65,7 +69,7 @@ def test_register_document_cree_doc_et_lien(connexion_test, id_person_test):
 
 
 def test_register_document_sans_pii(connexion_test, id_person_test):
-    """Un document sans PII s'enregistre avec un compte de 0 PII"""
+    """Un document sans PII s'enregistre avec un compte de 0 PII."""
     doc = _doc_factice(id_person_test, nb_pii=0)
 
     ok = DocDAO().register_document(doc)
@@ -77,3 +81,43 @@ def test_register_document_sans_pii(connexion_test, id_person_test):
         )
         ligne = cursor.fetchone()
     assert ligne["pii_count"] == 0
+
+
+# --- find_by_id : relecture d'un document ---
+
+def test_find_by_id_relit_le_document_enregistre(connexion_test, id_person_test):
+    """Un document enregistré puis relu par son id garde son empreinte, son auteur et ses PII."""
+    doc = _doc_factice(id_person_test, nb_pii=2)
+    DocDAO().register_document(doc)
+
+    relu = DocDAO().find_by_id(doc.id)
+
+    assert relu is not None
+    assert relu.id == doc.id
+    assert relu.hash == "test.txt"
+    assert str(relu.sent_by) == str(id_person_test)
+    assert relu.params == {"strategie": "masquage"}
+    assert len(relu.details) == 2
+
+
+def test_find_by_id_inexistant_renvoie_none(connexion_test, id_person_test):
+    """Un id qui n'existe pas en base renvoie None, sans erreur."""
+    assert DocDAO().find_by_id(999999) is None
+
+
+# --- find_all : liste des documents (journal d'audit) ---
+
+def test_find_all_renvoie_tous_les_documents(connexion_test, id_person_test):
+    """Après deux enregistrements, find_all renvoie les deux documents."""
+    DocDAO().register_document(_doc_factice(id_person_test, nb_pii=1))
+    DocDAO().register_document(_doc_factice(id_person_test, nb_pii=3))
+
+    documents = DocDAO().find_all()
+
+    assert len(documents) == 2
+    assert sorted(len(d.details) for d in documents) == [1, 3]
+
+
+def test_find_all_base_vide_renvoie_liste_vide(connexion_test, id_person_test):
+    """Sans aucun document en base, find_all renvoie une liste vide."""
+    assert DocDAO().find_all() == []
