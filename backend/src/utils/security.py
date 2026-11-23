@@ -64,7 +64,7 @@ def hash_document(content: str) -> str:
 
     Returns:
         L'empreinte en hexadécimal (64 caractères).
- C
+
     Raises:
         RuntimeError: si DOC_HASH_SECRET est absente du .env.
     """
