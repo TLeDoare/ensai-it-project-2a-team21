@@ -158,13 +158,9 @@ LE DOARÉ Tanguy
 \newpage
 \section{Architecture générale}
 
-Anonymia est une application web développée en Python, reposant sur une architecture client-serveur. Elle se compose de deux parties distinctes: une interface utilisateur (\textit{frontend}) et un serveur applicatif (\textit{backend}).
+Anonymia est une application web développée en Python, reposant sur une architecture client-serveur. Elle se compose de deux parties distinctes: une interface utilisateur (\textit{frontend}) et un serveur applicatif (\textit{backend}). Ces deux composants communiquent au moyen de requêtes HTTP. Le backend prend en charge les traitements métier, tandis que le frontend permet à l'utilisateur d'accéder aux fonctionnalités de l'application.
 
-Ces deux composants communiquent au moyen de requêtes HTTP. Le backend prend en charge les traitements métier, tandis que le frontend permet à l'utilisateur d'accéder aux fonctionnalités de l'application.
-
-Afin de faciliter la maintenance, les tests et le développement collaboratif, nous avons adopté une architecture en couches fondée sur le principe de séparation des responsabilités (\textit{Separation of Concerns}).
-
-Chaque composant possède ainsi un rôle défini et communique avec les autres au travers d'interfaces identifiables.
+Afin de faciliter la maintenance, les tests et le développement collaboratif, nous avons adopté une architecture en couches fondée sur le principe de séparation des responsabilités (\textit{Separation of Concerns}). Chaque composant possède ainsi un rôle défini et communique avec les autres au travers d'interfaces identifiables.
 
 
 % --------------------------------------------------
@@ -173,25 +169,13 @@ Chaque composant possède ainsi un rôle défini et communique avec les autres a
 
 \subsection{Organisation client-serveur}
 
-Le frontend est développé avec \textbf{Streamlit}, un framework Python permettant de construire une interface web interactive.
+Le frontend est développé avec \textbf{Streamlit}, un framework Python permettant de construire une interface web interactive. Il propose notamment la connexion des utilisateurs, le dépôt de documents au format texte, la configuration des paramètres de caviardage et la consultation des résultats.
 
-Il propose notamment la connexion des utilisateurs, le dépôt de documents au format texte, la configuration des paramètres de caviardage et la consultation des résultats.
+L'interface ne réalise pas directement les opérations de détection ou de modification des données personnelles. Elle transmet les demandes au backend à l'aide de la bibliothèque \textbf{Requests}. Ces échanges s'effectuent par requêtes HTTP, avec des réponses principalement structurées au format JSON. Lors de l'envoi d'un document, le texte et les paramètres du traitement sont transmis au serveur sous la forme d'une requête multipart.
 
-L'interface ne réalise pas directement les opérations de détection ou de modification des données personnelles. Elle transmet les demandes au backend à l'aide de la bibliothèque \textbf{Requests}.
+Le backend est développé avec \textbf{FastAPI} et exécuté par le serveur ASGI \textbf{Uvicorn}. Il expose une API HTTP organisée autour de plusieurs ensembles de routes : l'authentification, la gestion des utilisateurs et le traitement des documents. Il centralise les règles métier, les contrôles d'accès, les opérations de caviardage et les interactions avec les services externes et la base de données.
 
-Ces échanges s'effectuent par requêtes HTTP, avec des réponses principalement structurées au format JSON.
-
-Lors de l'envoi d'un document, le texte et les paramètres du traitement sont transmis au serveur sous la forme d'une requête multipart.
-
-Le backend est développé avec \textbf{FastAPI} et exécuté par le serveur ASGI \textbf{Uvicorn}.
-
-Il expose une API HTTP organisée autour de plusieurs ensembles de routes : l'authentification, la gestion des utilisateurs et le traitement des documents.
-
-Il centralise les règles métier, les contrôles d'accès, les opérations de caviardage et les interactions avec les services externes et la base de données.
-
-Cette séparation permet de faire évoluer l'interface sans modifier directement la logique métier.
-
-Elle rend également possible l'utilisation de l'API indépendamment du frontend, notamment pour les tests et les opérations de diagnostic.
+Cette séparation permet de faire évoluer l'interface sans modifier directement la logique métier. Elle rend également possible l'utilisation de l'API indépendamment du frontend, notamment pour les tests et les opérations de diagnostic.
 
 
 % --------------------------------------------------
@@ -205,48 +189,26 @@ Le backend constitue le cœur de l'application. Son organisation reprend la stru
 \medskip
 
 \noindent
-\textbf{La couche de contrôle} correspond au package \texttt{controller}.
-
-Elle constitue le point d'entrée des requêtes HTTP et assure leur transmission vers les services appropriés.
-
-Les contrôleurs sont associés à des routes FastAPI, tandis que les modèles du package \texttt{schema}, construits avec Pydantic, définissent et valident la structure des données échangées avec les clients.
-
-Cette couche prend également en charge les réponses HTTP et la conversion de certaines erreurs métier en codes de réponse adaptés.
+\textbf{La couche de contrôle} correspond au package \texttt{controller}. Elle constitue le point d'entrée des requêtes HTTP et assure leur transmission vers les services appropriés. Les contrôleurs sont associés à des routes FastAPI, tandis que les modèles du package \texttt{schema}, construits avec Pydantic, définissent et valident la structure des données échangées avec les clients. Cette couche prend également en charge les réponses HTTP et la conversion de certaines erreurs métier en codes de réponse adaptés.
 
 \medskip
 
 \noindent
-\textbf{La couche de service}, contenue dans le package \texttt{service}, coordonne les opérations nécessaires à la réalisation des fonctionnalités.
-
-Deux classes principales ont été implémentées : \texttt{PersonService}, responsable notamment de l'authentification et des autorisations, et \texttt{DocService}, qui organise le traitement des documents.
-
-Cette dernière coordonne les différentes étapes du caviardage, depuis l'analyse du texte jusqu'à l'enregistrement des données associées au traitement.
+\textbf{La couche de service}, contenue dans le package \texttt{service}, coordonne les opérations nécessaires à la réalisation des fonctionnalités. Deux classes principales ont été implémentées : \texttt{PersonService}, responsable notamment de l'authentification et des autorisations, et \texttt{DocService}, qui organise le traitement des documents. Cette dernière coordonne les différentes étapes du caviardage, depuis l'analyse du texte jusqu'à l'enregistrement des données associées au traitement.
 
 \medskip
 
 \noindent
-\textbf{Les objets métier}, regroupés dans le package \texttt{business\_object}, représentent les entités et les mécanismes propres à l'application.
-
-Ils comprennent notamment les objets \texttt{Person} et \texttt{RedactedDoc}, ainsi que les composants chargés de la détection et du caviardage.
-
-Ce package contient également les différentes stratégies de traitement du texte.
-
-L'utilisation d'objets dédiés permet de séparer les algorithmes des mécanismes de communication HTTP et de persistance.
+\textbf{Les objets métier}, regroupés dans le package \texttt{business\_object}, représentent les entités et les mécanismes propres à l'application. Ils comprennent notamment les objets \texttt{Person} et \texttt{RedactedDoc}, ainsi que les composants chargés de la détection et du caviardage. Ce package contient également les différentes stratégies de traitement du texte. L'utilisation d'objets dédiés permet de séparer les algorithmes des mécanismes de communication HTTP et de persistance.
 
 \medskip
 
 \noindent
-\textbf{La couche d'accès aux données}, identifiée par le package \texttt{dao} (\textit{Data Access Object}), assure les échanges avec la base PostgreSQL.
-
-Les classes DAO regroupent les requêtes nécessaires à la création, à la consultation et à la modification des informations persistantes.
-
-Les connexions sont gérées au moyen de la bibliothèque \texttt{psycopg2}.
-
-Cette organisation évite de disperser les requêtes SQL dans les services métier.
+\textbf{La couche d'accès aux données}, identifiée par le package \texttt{dao} (\textit{Data Access Object}), assure les échanges avec la base PostgreSQL. Les classes DAO regroupent les requêtes nécessaires à la création, à la consultation et à la modification des informations persistantes. Les connexions sont gérées au moyen de la bibliothèque \texttt{psycopg2}. Cette organisation évite de disperser les requêtes SQL dans les services métier.
 
 \medskip
 
-Enfin, le package \texttt{utils} rassemble plusieurs fonctions transversales, notamment la configuration de l'environnement, la journalisation, la gestion des exceptions et certaines opérations de sécurité.
+Enfin, le package \texttt{utils} rassemble plusieurs fonctions transversales, notamment la configuration de l'environnement, la journalisation, la gestion des exceptions et certaines opérations de sécurité. 
 
 Cette décomposition favorise la réutilisation des composants et permet de tester les règles métier indépendamment des contrôleurs HTTP, notamment en simulant les interactions avec la couche DAO.
 
@@ -257,15 +219,7 @@ Cette décomposition favorise la réutilisation des composants et permet de test
 
 \subsubsection{Illustration par un diagramme de séquence}
 
-Afin d'illustrer les interactions entre les différents composants du backend, nous avons réalisé un diagramme de séquence représentant le déroulement de la détection des données personnelles au sein d'un document.
-
-Ce diagramme, élaboré lors de la phase de conception, met en évidence le rôle de l'API, du service chargé de coordonner l'analyse et des deux mécanismes complémentaires de détection.
-
-Le traitement repose sur l'exécution concurrente du détecteur par expressions régulières et du détecteur utilisant un modèle de langage.
-
-Ce dernier fait intervenir des mécanismes de filtrage des entrées et de vérification des réponses produites.
-
-Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une liste de données personnelles identifiées dans le document.
+Afin d'illustrer les interactions entre les différents composants du backend, nous avons réalisé un diagramme de séquence représentant le déroulement de la détection des données personnelles au sein d'un document. Ce diagramme, élaboré lors de la phase de conception, met en évidence le rôle de l'API, du service chargé de coordonner l'analyse et des deux mécanismes complémentaires de détection. Le traitement repose sur l'exécution concurrente du détecteur par expressions régulières et du détecteur utilisant un modèle de langage. Ce dernier fait intervenir des mécanismes de filtrage des entrées et de vérification des réponses produites. Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une liste de données personnelles identifiées dans le document.
 
 \begin{figure}[htbp]
     \centering
@@ -290,15 +244,7 @@ Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une l
     \label{fig:sequence_detection}
 \end{figure}
 
-La figure~\ref{fig:sequence_detection} illustre ainsi le principe de séparation des responsabilités adopté dans notre architecture.
-
-Elle se concentre sur la phase de détection, sans représenter l'ensemble des étapes ultérieures de caviardage et de persistance des données.
-
-Certains éléments ont évolué depuis cette conception initiale.
-
-Dans l'implémentation finale, la coordination du traitement est notamment assurée par \texttt{DocService} et \texttt{AnalyserFactory}, et les détecteurs sont intégrés au moyen des classes \texttt{RegexDecorator} et \texttt{LLMDecorator}.
-
-La route de traitement des documents est également devenue \texttt{POST /doc/redact/}.
+La figure~\ref{fig:sequence_detection} illustre ainsi le principe de séparation des responsabilités adopté dans notre architecture. Elle se concentre sur la phase de détection, sans représenter l'ensemble des étapes ultérieures de caviardage et de persistance des données. Certains éléments ont évolué depuis cette conception initiale. Dans l'implémentation finale, la coordination du traitement est notamment assurée par \texttt{DocService} et \texttt{AnalyserFactory}, et les détecteurs sont intégrés au moyen des classes \texttt{RegexDecorator} et \texttt{LLMDecorator}. La route de traitement des documents est également devenue \texttt{POST /doc/redact/}.
 
 
 % --------------------------------------------------
@@ -309,29 +255,15 @@ La route de traitement des documents est également devenue \texttt{POST /doc/re
 
 Le fonctionnement d'Anonymia repose principalement sur un ensemble de bibliothèques Python spécialisées.
 
-\textbf{FastAPI} assure l'exposition des fonctionnalités du backend sous forme d'API HTTP.
+\textbf{FastAPI} assure l'exposition des fonctionnalités du backend sous forme d'API HTTP. \textbf{Pydantic} permet de valider les données échangées, tandis que \textbf{Streamlit} et \textbf{Requests} sont utilisés respectivement pour l'interface web et sa communication avec le serveur.
 
-\textbf{Pydantic} permet de valider les données échangées, tandis que \textbf{Streamlit} et \textbf{Requests} sont utilisés respectivement pour l'interface web et sa communication avec le serveur.
+La persistance est assurée par \textbf{PostgreSQL}. La base conserve notamment les comptes utilisateurs, les informations nécessaires à la gestion des sessions et les métadonnées des traitements. Les documents originaux ne sont pas enregistrés dans les tables de suivi des documents : celles-ci conservent notamment une empreinte du document, la date du traitement et les informations relatives aux données personnelles détectées.
 
-La persistance est assurée par \textbf{PostgreSQL}.
+La détection des données personnelles repose sur deux approches complémentaires. Les expressions régulières permettent d'identifier des informations présentant une structure reconnaissable, tandis qu'un grand modèle de langage (\textit{Large Language Model}, LLM) est mobilisé pour analyser les éléments nécessitant une interprétation contextuelle.
 
-La base conserve notamment les comptes utilisateurs, les informations nécessaires à la gestion des sessions et les métadonnées des traitements.
+L'accès au LLM s'effectue via l'API proposée par \textbf{SSP Cloud}, à l'aide de la bibliothèque Python \texttt{openai} et de son client asynchrone. Cette intégration est indépendante de l'interface utilisateur : les appels au modèle sont déclenchés depuis les composants de détection du backend. Le recours aux fonctionnalités asynchrones de Python permet également d'exécuter les deux mécanismes de détection de manière concurrente.
 
-Les documents originaux ne sont pas enregistrés dans les tables de suivi des documents : celles-ci conservent notamment une empreinte du document, la date du traitement et les informations relatives aux données personnelles détectées.
-
-La détection des données personnelles repose sur deux approches complémentaires.
-
-Les expressions régulières permettent d'identifier des informations présentant une structure reconnaissable, tandis qu'un grand modèle de langage (\textit{Large Language Model}, LLM) est mobilisé pour analyser les éléments nécessitant une interprétation contextuelle.
-
-L'accès au LLM s'effectue via l'API proposée par \textbf{SSP Cloud}, à l'aide de la bibliothèque Python \texttt{openai} et de son client asynchrone.
-
-Cette intégration est indépendante de l'interface utilisateur : les appels au modèle sont déclenchés depuis les composants de détection du backend.
-
-Le recours aux fonctionnalités asynchrones de Python permet également d'exécuter les deux mécanismes de détection de manière concurrente.
-
-Enfin, l'environnement d'exécution est géré au moyen de \textbf{uv}, qui facilite l'installation et la synchronisation des dépendances du projet.
-
-Les paramètres de connexion et les clés nécessaires aux services externes sont fournis au moyen de variables d'environnement, chargées notamment avec \texttt{python-dotenv}.
+Enfin, l'environnement d'exécution est géré au moyen de \textbf{uv}, qui facilite l'installation et la synchronisation des dépendances du projet. Les paramètres de connexion et les clés nécessaires aux services externes sont fournis au moyen de variables d'environnement, chargées notamment avec \texttt{python-dotenv}.
 
 
 % ==================================================
