@@ -1,11 +1,13 @@
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from business_object.types import Role
 from controller import doc_controller, login_controller, person_controller
 from utils.env_variables import load_environment_variables
 from utils.log_utils import LogMiddleware, get_logger, initialize_logs
 from utils.reset_database import ResetDatabase
+from utils.security import verify_token
 
 logger = get_logger(__name__)
 initialize_logs("Anonymia Webservice")
@@ -39,13 +41,17 @@ async def redirect_to_docs():
 
 
 @app.get("/reset_database", tags=["Misc"])
-async def reset_database():
-    """Reset the database"""
+async def reset_database(current_person=Depends(verify_token)):
+    """Réinitialise la base de données (administrateur uniquement)."""
+    # Seul un administrateur connecté peut vider la base : on refuse tous les autres rôles
+    if current_person.role != Role.Administrateur:
+        logger.warning("Tentative de réinitialisation de la base refusée")
+        raise HTTPException(status_code=403, detail="Action non autorisée.")
+
     logger.info("Database reset")
     success = ResetDatabase().run()
 
     return {"message": f"Database re-initialization - {'SUCCESS' if success else 'FAILURE'}"}
-
 
 app.include_router(doc_controller.router, prefix="/doc", tags=["Doc"])
 app.include_router(login_controller.router, prefix="/login", tags=["Login"])
