@@ -29,7 +29,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     # Si cela pose un problème de sécurité, c'est que l'utilisateur est sur un réseau non sécurisé, donc qu'il a déjà
     # fait fuiter son mot de passe par sa requête de login.
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": exc.errors()},
     )
 
