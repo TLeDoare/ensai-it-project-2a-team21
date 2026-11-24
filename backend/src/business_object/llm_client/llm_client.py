@@ -22,7 +22,7 @@ async def detect_pii(document: str) -> str | None:
     client = create_client()
 
     response = await client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "qwen3-6-35b-moe"),
+        model=os.getenv("LLM_MODEL", "gemma4-26b-moe"),
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": build_user_message(document)},
