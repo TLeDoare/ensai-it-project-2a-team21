@@ -29,9 +29,9 @@
 | INJ-06 | sur-caviardage et consommation pilotables par le document | Justifié |
 | GEN-01 | le flux principal de caviardage est cassé à ce commit | Fixé |
 | GEN-02 | architecture et asynchronisme | Fixé (au moins en partie) |
-| GEN-03 | qualité de la détection | Fixé à 20% |
-| GEN-04 | tests et CI | En cours de réglage et justifié |
-| GEN-05 | robustesse et validation des entrées | ... |
+| GEN-03 | qualité de la détection | Fixé : 97 % de rappel et 100 % de précision avec gemma4-26b-moe (jeu d'essai de 32 données, 3 passages) |
+| GEN-04 | tests et CI | Fixé : 180 tests unitaires lancés par la CI (couverture 84 % ; 208 tests et 92 % de couverture avec les tests DAO) |
+| GEN-05 | robustesse et validation des entrées | Fixé : taille maximale (413), encodage UTF-8 (415), validation Pydantic des e-mails et mots de passe |
 | GEN-06 | dépendances | Fixé ? |
-| GEN-07 | reproductibilité et configuration | ne comprends pas |
-| GEN-08 | empreinte du document original | Fixé ? |
+| GEN-07 | reproductibilité et configuration | Fixé : .env.example, uv.lock et procédure d'installation complète dans le README |
+| GEN-08 | empreinte du document original | Fixé : HMAC-SHA256 avec une clé secrète (DOC_HASH_SECRET) |
