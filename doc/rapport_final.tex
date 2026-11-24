@@ -17,6 +17,8 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{setspace}
+\usepackage{pdflscape}
+\usepackage{rotating}
 
 \geometry{
     top=2.5cm,
@@ -32,6 +34,8 @@
     linkcolor=ensaiBlue,
     urlcolor=ensaiBlue
 }
+
+\graphicspath{ {./} }
 
 \setlength{\parskip}{0.4em}
 
@@ -273,24 +277,124 @@ Enfin, l'environnement d'exécution est géré au moyen de \textbf{uv}, qui faci
 \newpage
 \section{Réponse au besoin}
 
-\subsection{Fonctionnalités implémentées}
+\subsection{Introduction}
 
-\textit{Présenter les fonctionnalités F1 à F5
-et leur état réel d'implémentation.}
+La réponse précise aux besoins s’est largement axée sur la liste des fonctionnalités obligatoires F1, …, F5 spécifiées dans le sujet. Cependant, nous avons pu commencer à implémenter la fonctionnalité optionnelle FO4. Nous nous attarderons dans cette partie sur le processus central de l’application, c’est-à-dire la détection des données personnelles suivie de l’anonymisation. Bien que les fonctionnalités soient interdépendantes, nous décrirons donc principalement l’implémentation des fonctionnalités obligatoires 2 et 3: détection des données personnelles et anonymisation.
 
-\subsection{Détection des données personnelles}
 
-\textit{Présenter les mécanismes Regex et LLM.}
+\subsection{Description des fonctionnalités principales}
 
-\subsection{Stratégies de caviardage}
+\subsubsection{Fonctionnalité 2: Détection des données personnelles}
 
-\textit{Présenter le masquage et la pseudonymisation.}
+La détection de données personnelles fait en réalité appel à deux processus différents: le premier est la détection de données personnelles par expression régulière. En effet, certaines PII (Personally Identifiable Information) telles que le NIR ou l’IBAN  possèdent des formats connus et encodés de manière prévisible,  ce qui permet  de les détecter à l'aide d'expression régulière. La liste des  PII  est donnée en  annexe. Cependant certaines informations sensibles telles que les prénoms ou les informations médicales ne respectent pas des formats précis. Ainsi, nous pouvons faire appel à des outils plus développés et  pouvant prendre  en compte le contexte  textuel : ce sont les LLM (Large Language Model). Si le LLM rencontre un dysfonctionnement, alors seul la détection par expression régulière est appelée et l’utilisateur en est averti.
 
-\subsection{Fonctionnement de l'application}
+Les fonctions de recherche par expression régulière sont disponibles dans la librairie standard de Python. Ainsi, c'est celle-là que nous utiliserons dans notre projet. Cependant, pour accomplir une tâche aussi complexe que la détection de prénom, nous devons utiliser des modèles de langage avancés, qui ne peuvent généralement pas fonctionner sur un ordinateur personnel. Nous faisons alors appel aux modèles de LLM proposés par Onyxia. En particulier, notre application s’est concentrée sur l'intégration du modèle open-source Qwen, et l’API utilisée pour communiquer au LLM utilise le modèle OpenAI, qui est un standard de l’industrie.
 
-\textit{Présenter un parcours utilisateur et
-les principales interfaces.}
 
+\subsubsection{Fonctionnalité 3: Anonymisation}
+
+Nous devons tout d'abord rappeler que l'anonymisation à laquelle nous faisons référence ici n'a aucune valeur juridique. En effet, l'utilisateur reste dans tous les cas responsable du traitement des informations sensibles et l'application ne garantit pas que toutes ces informations seront détectées et caviardées. 
+L'anonymisation peut être approchée par deux stratégies: la première est le masquage, et la seconde est l'anonymisation. Le masquage remplace l'information sensible par une référence: par exemple “Jean Martin” est remplacé par "[NOM\_1]". 
+
+La seconde est la pseudonymisation, qui remplace l'information sensible par une information possédant la même forme: par exemple, “Jean Martin” est remplacé par “Paul Durand”. La pseudonymisation que nous pratiquons n'est pas celle au sens du droit RGPD: en effet selon la RGPD, la pseudonymisation implique qu'il est possible de retrouver les informations originales non caviardées; notre application n'enregistre cependant aucune table de correspondance et donc ne permet pas de retrouver les informations sensibles à partir d’un contenu anonymisé.
+
+
+\subsection{Caviardage d’un document: partie contrôleur}
+La première étape de cette fonctionnalité est la soumission d’un document texte. Ceci correspond à la requête \textsc{HTTP post /redact/}. Cette requête contient les paramètres suivants:
+\begin{itemize}
+\item \textsc{file}: Le fichier à téléverser dans l’objectif d’être caviardé. Plusieurs contraintes s’imposent sur ce fichier: tout d’abord, celui-ci doit être dans un format décodable utf-8 valide. Si cela est le cas, alors il ne doit pas dépasser une certaine longueur pour éviter de surcharger l’application, en particulier de limiter la taille de l’entrée du LLM. Enfin, l’application a été pensée pour des formats en texte brut ou bien proche du texte brut, tel que les formats texte .txt, ou bien le format markdown .md.
+\item \textsc{params}: C’est un format JSON, qui a pour attributs les paramètres “llm” et “mask”, tous deux des booléens. “llm” indique si le LLM doit être activé pour cette requête, et le masquage est appliqué dans le cas où “mask” est activé, sinon c’est la pseudonymisation qui est activée. Dans le futur, plusieurs paramètres additionnels pourront être implémentés. 
+\item Enfin, bien que cela ne fasse pas partie de la requête elle-même, l'utilisateur doit pouvoir fournir un token valide lui permettant de s'identifier, afin de confirmer que son rôle lui permet de téléverser les documents.
+\end{itemize}
+\subsection{Caviardage d’un document: partie service}
+\begin{landscape}
+\begin{figure}[p]
+  \thispagestyle{empty}
+    \centering
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{service}
+    \caption{Diagramme d'activité de \textsc{DocService}}
+\end{figure}
+\end{landscape}
+Le service des documents constitue le cœur du processus de caviardage de l’application. Voici le déroulement du processus de création de document:
+\begin{itemize}
+\item Tout d’abord le service s’assure que l’utilisateur possède la permission de téléverser des documents.
+\item Un filtre d’injection est instancié afin de vérifier qu'il n'y a pas de tentative d'injection de prompt dans la requête. Si une tentative d’injection est détectée, alors elle sera enregistrée et rapportée.
+\item Suite à cela, le service instancie un “analyseur” (que nous décrirons plus en détail par la suite) qui a pour objectif de  trouver les positions des PII à caviarder à partir d'un texte. Il y a deux processus qui permettent de réaliser cette tâche: d'abord le détecteur par expressions régulières, suivi du détecteur faisant appel au LLM, si celui-ci est activé dans les paramètres spécifiés. Ces deux processus sont exécutés en parallèle afin d'optimiser le temps de réponse de l'application et de se conformer au cahier des charges.
+\item Le service fait appel à un “caviardeur” qui s'occupe de remplacer les instances de PII détectées par un contenu masqué ou pseudonymisé en fonction des paramètres spécifiés par l’utilisateur.
+\item Le service enregistre le document dans la base de données. On s'assure que le contenu original non caviardé du document n'est pas enregistré
+\item Le service renvoie enfin la réponse au contrôleur.
+\end{itemize}
+\subsection{Détail de l’architecture de l’«Analyseur»}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth]{uml}
+    \caption{Diagramme des classes de l'analyseur}
+\end{figure}
+Le rôle de l'analyseur est central dans le processus de traitement de document. En effet, c'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. 
+
+\begin{enumerate}
+  \item \textsc{Analyseur} est l'interface de base, qui ne possède qu'une fonction virtuelle se chargeant de convertir un contenu textuel en un ensemble de positions de PII.
+  \item \textsc{AnalyserFactory} est instanciée par \textsc{DocService}. Elle lit \textsc{params} et assemble la chaîne adéquate.
+  \item \textsc{EmptyAnalyser} est l'implémentation de base qui ne renvoie aucune position. Il correspond au composant concret au cœur de la chaîne.
+  \item \textsc{AnalyserDecorator} est une classe abstraite qui implémente \textsc{Analyser} et est capable d'envelopper n'importe quel autre analyseur afin de l'appeler dans la chaîne.
+  \item Enfin \textsc{RegexDecorator} et \textsc{LLMDecorator} sont les décorateurs concrets. Chacun détecte les PII suivant leurs algorithmes propres et ajoute leur position aux positions déjà produites par le wrapper (le décorateur qu’ils «emballent»).
+\end{enumerate}
+
+Le choix du décorateur est motivé par les raisons suivantes:
+\begin{enumerate}
+  \item Tout d'abord, activer ou non le LLM dépend de params et est donc une donnée runtime; ainsi, le patron permet d’assembler la chaîne à l'exécution.
+  \item Les détecteurs sont isolés les uns des autres.
+  \item Cela permet une plus grande flexibilité. En effet, en utilisant de l'héritage pur, il y aurait un grand nombre de classes se ressemblant fortement mais possédant une architecture différente à implémenter; cela serait redondant.
+  \item Ajouter un maillon dans la chaîne comme par exemple un NLP (Natural Language Processing) ou bien un \textit{LLM as a judge} revient à créer un nouveau décorateur et à ne pas modifier les décorateurs déjà implémentés. Cela permet donc de mieux respecter le principe ouvert/fermé.
+  \item Enfin un simple design pattern de stratégie n'aurait pas permis d'implémenter le fait que les détecteurs LLM et Regex sont cumulables.
+\end{enumerate}
+
+Enfin, il faut noter que ce principe est tout à fait compatible avec l'exécution asynchrone. Il faut faire attention cependant à lancer les détecteurs Regex par le biais d’un \textit{thread}, car l'implémentation re de la librairie standard python ne fournit pas par défaut de recherche regex en asynchrone. La recherche d’injection de prompt n’a pas été intégrée parmi les décorateurs, car elle s’exécute sur le texte avant le reste de la chaîne. Si la vérification de sortie de LLM (intégrée dans le décorateur LLM) détecte une anomalie, elle renvoie une classe spéciale qui n’est pas un ensemble de positions, mais une classe spéciale (\textsc{AnalysisFail}) qui a pour but de rapporter qu’une erreur s’est produite dans la chaîne, tout en préservant la chaîne.
+
+\subsection{Détail de l’architecture du «Caviardeur»}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth]{uml2}
+    \caption{Diagramme des classes du caviardeur}
+\end{figure}
+
+Une fois la position des PII connues, il existe plusieurs stratégies pour le caviarder: le masquage et la pseudonymisation, que nous avons détaillé précédemment. Cela a été implémenté par le patron de conception de la stratégie, ici aussi fortement inspirée de l’implémentation proposée par Refactoring Guru:
+
+\begin{itemize}
+  \item \textsc{RedactorStrategy} (interface) représente le contrat unique, c’est à dire qu’une seule stratégie sera exécutée sur le contenu à caviarder.
+  \item \textsc{MaskRedactor} et \textsc{PseudonymiseRedactor} sont les stratégies concrètes, chacune réalisant l'interface.
+  \item \textsc{RedactorContext} est le contexte du pattern. Il détient une référence vers la stratégie courante (agrégation, le losange), la change via \textit{set\_strategy}, et la délègue via \textit{execute\_strategy}.
+  \item \textsc{DocService} est le client. Il choisit la stratégie (en pointillé vers les deux implémentations, car il les instancie) et la passe au contexte.
+\end{itemize}
+
+Le choix du patron est justifié par les raisons suivantes:
+\begin{enumerate}
+  \item Les algorithmes sont interchangeables. Les deux stratégies ont exactement la même signature d'entrée/sortie. Le client n'a pas besoin de savoir comment le caviardage est fait, seulement lequel demander.
+  \item Choix à l'exécution. Le mode de caviardage dépend de params (donc d'une donnée runtime, éventuellement différente à chaque document). Le contexte permet de changer de stratégie sans reconstruire quoi que ce soit.
+  \item Principe ouvert/fermé: ajouter un mode (chiffrement réversible, hachage, etc.) revient à créer une nouvelle classe implémentant \textsc{RedactorStrategy}. \textsc{DocService} et \textsc{RedactorContext} ne changent pas.
+\end{enumerate}
+
+\subsection{Sécurité}
+
+La sécurité constitue un enjeu central d'Anonymia, puisque l'application est amenée à manipuler des documents contenant potentiellement des données personnelles sensibles. Elle concerne à la fois la protection des compte utilisateurs, la conservation des données traitées et la sécurisation de
+l'utilisation du modèle de langage.
+
+Concernant l'authentification, les mots de passe des utilisateurs ne sont jamais stockés en clair dans la base de données. Seule une version hachée et salée est conservée, de sorte qu'une compromission de la base ne permette pas d'accéder directement aux mots de passe. Les droits d'accès sont également limités selon trois rôles : utilisateur, superviseur et administrateur. Cette séparation permet de restreindre l'accès aux fonctionnalités sensibles, notamment la gestion des comptes et la consultation de l'historique des traitements.
+
+
+Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte cryptographique du document peut également être calculée afin de pouvoir identifier qu'un document a déjà été traité sans avoir à conserver son contenu. De plus, pour rendre le caviardage cohérent (par exemple “Jean Dupont” toujours caviardé en “[NOM\_1]”, et pas “[NOM\_1]”, puis “[NOM\_2]”), les stratégies de caviardage doivent enregistrer des tables de correspondanc. Pour que le masquage ne puisse pas être inversé, les stratégies de caviardage sont instanciées seulement au runtime, et chaque document a sa propre instance de “caviardeur”, ce qui rend impossible la réversibilité. 
+
+L'utilisation d'un LLM introduit par ailleurs un risque spécifique d'injection de prompt. Un document soumis par l'utilisateur peut contenir des instructions malveillantes afin de pousser le modèle à ne pas détecter certaines PII. Si une telle attaque réussissait, des données personnelles pourraient rester présentes dans le document final. Pour limiter ce risque, Anonymia repose sur une défense en profondeur en trois étapes: 
+
+\begin{enumerate}
+\item Tout d'abord, un prompt système strict rappelle au modèle que le document constitue uniquement une donnée à analyser et que les instructions qu'il contient ne doivent pas être exécutées.
+\item Ensuite, un \textsc{InjectionFilter} recherche avant l'appel au LLM des motifs susceptibles de correspondre à une tentative d'injection.
+\item Enfin, la sortie du modèle est contrôlée par un \textsc{OutputVerifier}, qui vérifie le respect du format attendu, la validité des types de PII retournés ainsi que la présence réelle dans le document des éléments signalés par le modèle.
+\end{enumerate}
+
+Aucune de ces protections n'étant suffisante isolément, leur combinaison permet de réduire le risque d'une sortie incorrecte ou manipulée. Le détecteur Regex constitue également un niveau de sécurité supplémentaire, puisqu'il ne dépend pas des instructions présentes dans le document. En cas d'échec ou d'indisponibilité du LLM, l'application peut ainsi continuer à fonctionner en mode dégradé à partir des résultats issus des expressions régulières, et en avertir l’utilisateur.
 
 % ==================================================
 % 4. OUTILS MIS EN PLACE
@@ -386,6 +490,240 @@ les limites rencontrées et les améliorations possibles.}
 \subsection{Tanguy Le Doaré}
 
 \textit{Note individuelle -- une page maximum.}
+\newpage
 
+\section{Annexes}
+\subsection{Liste des fonctionnalités obligatoires}
+\renewcommand{\labelenumi}{F\arabic{enumi}.}
+\begin{enumerate}
+\item \textbf{Authentification et gestion des utilisateurs.} Création de compte, connexion. Mots de passe hashés. Trois rôles : utilisateur (soumet des documents), superviseur (accède à la page de consultation et au tableau de bord), administrateur (gère les comptes : création, modification du rôle, désactivation, suppression). Un compte administrateur initial est créé au démarrage de l’application.
+\item \textbf{Détection des données personnelles.} Soumission d’un document texte. L’application lance en parallèle une détection par expressions régulières et une détection par LLM, fusionne les résultats et restitue à l’utilisateur la liste annotée des PII détectées (position, type, niveau de confiance, détecteur d’origine). Si le service LLM est indisponible, l’application continue de fonctionner avec les expressions régulières seules.
+\item \textbf{Anonymisation.} Production d’une version anonymisée du document, selon une stratégie au choix : masquage ([NOM\_1]), ou pseudonymisation cohérente (Pierre Dupont → Jean Martin, le même nom recevant toujours le même substitut dans le document).
+\item \textbf{Journalisation et consultation.} Pour chaque traitement, l’application enregistre des métadonnées : date, utilisateur, hash du document (jamais le contenu brut), nombre et types de PII détectées, détecteurs ayant contribué. Un outil de consultation est mis à disposition des superviseurs et des administrateurs, qui peuvent filtrer par utilisateur ou par période.
+\item \textbf{Sécurisation du détecteur LLM.} Un LLM peut être manipulé par le contenu qu’on lui soumet : un document peut contenir des instructions cachées (« ignore les consignes précédentes ») visant à détourner son comportement. Cette fonctionnalité durcit le détecteur LLM de F2 par trois mécanismes complémentaires :
+\begin{enumerate}
+  \item Un prompt système strict qui cadre le rôle du modèle et impose un format de sortie JSON contraint.
+  \item Un pré-filtrage des documents pour détecter les patterns d’injection connus.
+  \item Une vérification de la sortie du modèle pour s’assurer qu’elle est cohérente avec le document fourni (positions valides, pas d’invention). Un jeu de tests adversariaux fourni par le tuteur sert de validation : le détecteur doit conserver son comportement normal même face à des documents piégés.
+\end{enumerate}
+\end{enumerate}
+\subsection{Liste des fonctionnalités optionnelles}
+\renewcommand{\labelenumi}{FO\arabic{enumi}.}
+\begin{enumerate}
+  \item \textbf{item Détecteur par modèle de NER local.} Ajout d’un troisième détecteur basé sur spaCy. Le modèle utilisé (fr\_core\_news\_lg) est un outil de NER (Named Entity Recognition, ou reconnaissance d’entités nommées) : un modèle pré-entraîné qui identifie automatiquement noms de personnes, lieux et organisations dans un texte. Cette FO permet de comparer la qualité d’un détecteur dédié au NER avec celle du LLM généraliste, sans dépendance à un service externe.
+\item \textbf{Anonymisation directe par LLM.} Un mode supplémentaire d’anonymisation où le LLM produit en une seule étape le document anonymisé, plutôt que de simplement détecter les positions. L’utilisateur peut alors comparer le résultat avec celui produit par le pipeline classique (détection puis substitution) et apprécier les différences en termes de fluidité, de naturel et de fidélité au document source.
+\item \textbf{Juge d’injection LLM.} Ajout d’un second appel LLM jouant le rôle de « juge » : sa seule mission est de décider si le document soumis tente de manipuler le système. Il s’exécute en parallèle de la détection principale et son verdict enrichit les métadonnées de journalisation sans bloquer le pipeline.
+\item \textbf{Console d’exploration.} Interface utilisateur interactive complétant l’API par un outil d’analyse adapté aux utilisateurs métier. Permet de soumettre des documents et visualiser les PII détectées (mises en évidence dans le texte source), de comparer côte à côte les résultats des différents détecteurs sur un même document afin d’apprécier leurs forces et faiblesses, et de consulter sous forme graphique les indicateurs d’activité enregistrés en F4 (volumétrie, fréquence des types de PII détectées, et plus généralement tout indicateur que les élèves jugeront utile). Le périmètre exact du visuel est laissé à l’appréciation du groupe.
+\end{enumerate}
+\subsection{Liste des PII spécifiées}
+Les PII retenues sont classées selon trois cercles correspondant à un niveau
+croissant de difficulté de détection. Plus on s'éloigne du premier cercle,
+plus la décision de détection relève d'un choix de conception à documenter,
+et non d'une évidence technique.
+
+\medskip
+\noindent\textbf{Cercle 1 --- Identification directe et non ambiguë}
+
+\smallskip
+
+Ces types identifient une personne à eux seuls, sans nécessiter de mise en
+contexte ni de recoupement. Aucune règle de décision particulière n'est
+requise : la présence de la donnée suffit.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+
+NIR (Numéro d’Inscription au Répertoire)
+& Regex
+& Structure fixe avec clé de contrôle calculée à partir des autres chiffres ;
+identifiant unique d'une personne à lui seul, sans besoin d'aucune autre
+information. \\
+
+IBAN (International Bank Account Number)
+& Regex
+& Format international normalisé, vérifiable par clé de contrôle
+(modulo 97) ; désigne un compte bancaire rattaché à une personne physique. \\
+
+Mail
+& Regex
+& Structure fixe (partie locale, arobase, domaine) ; très souvent nominative
+ou directement rattachable à un individu. \\
+
+Numéro de téléphone
+& Regex
+& Format national relativement structuré (nombre de chiffres, préfixe) ;
+un numéro, surtout mobile, est généralement propre à un seul individu. \\
+
+Numéro CNI (Carte nationale d'identité)
+& Regex
+& Structure fixe ; il constitue un identifiant administratif unique de son
+détenteur. \\
+
+PAN (Primary Account Number)
+& Regex
+& Format structuré selon le réseau émetteur et vérifiable par l'algorithme
+de Luhn ; donnée financière directement rattachée à son porteur. \\
+
+Nom de personne
+& LLM
+& Aucune structure syntaxique propre ; la compréhension du contexte permet
+d'identifier un nom propre désignant une personne. Il s'agit d'un des types
+les plus difficiles à détecter. \\
+
+Adresse postale avec code postal
+& LLM
+& Forme libre (numéro, rue, ville) qu'aucun motif unique ne peut couvrir dans
+toute sa variété ; elle permet de localiser précisément le domicile d'une
+personne. \\
+
+\bottomrule
+\end{longtable}
+
+
+\medskip
+\noindent\textbf{Cercle 2 --- Identification indirecte ou dépendante du contexte}
+
+\smallskip
+
+Ces types nécessitent un recoupement avec d'autres informations ou une règle
+de décision permettant de déterminer leur caractère identifiant.
+
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification et règle de décision} \\
+\midrule
+\endhead
+
+Plaque d'immatriculation
+& Regex
+& Format réglementé et fixe (par exemple AA-123-AA) ; identifie un véhicule
+et peut indirectement permettre de remonter à son propriétaire. \\
+
+Adresse IP
+& Regex
+& Format structuré (IPv4 ou IPv6) ; via le fournisseur d'accès, elle peut
+permettre de remonter jusqu'à un foyer ou un individu. \\
+
+SIREN (Système d’Identification du Répertoire des Entreprises)
+& Regex
+& Longueur et structure fixes ; identifie en principe une entreprise.
+\textbf{Règle :} il n'est retenu comme donnée personnelle que lorsqu'il
+concerne une entreprise individuelle ou une activité permettant d'identifier
+directement une personne physique. \\
+
+Référence cadastrale
+& Regex
+& Codification structurée permettant d'identifier une parcelle ; le
+recoupement avec des registres peut permettre de retrouver son propriétaire. \\
+
+Données GPS
+& Regex
+& Coordonnées numériques structurées ; une position suffisamment précise
+peut révéler un domicile ou des habitudes de déplacement. \\
+
+Date de naissance
+& LLM
+& Une date seule ne permet pas de déterminer la nature de l'événement.
+\textbf{Règle :} elle est retenue comme date de naissance uniquement lorsque
+le contexte l'associe explicitement à une naissance. \\
+
+Lieu
+& LLM
+& Aucune structure permettant à elle seule de déterminer son caractère
+identifiant. La décision dépend du contexte et notamment du niveau de
+précision géographique. \\
+
+Organisme
+& LLM
+& Le caractère identifiant dépend de la taille de la structure. Une
+institution nationale ne permet généralement pas d'identifier une personne,
+contrairement à une structure très restreinte. \\
+
+\bottomrule
+\end{longtable}
+
+
+\medskip
+\noindent\textbf{Cercle 3 --- Jugement fortement contextuel et catégories sensibles}
+
+\smallskip
+
+Ces types nécessitent une interprétation fine du texte ou un cumul
+d'informations. Leur détection repose donc principalement sur le contexte.
+
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+
+Fonctions révélatrices
+& LLM
+& Un intitulé de fonction seul est peu identifiant, mais combiné à une
+organisation ou à un lieu précis, il peut permettre d'identifier une personne. \\
+
+Liens familiaux
+& LLM
+& Une mention telle que « son fils » ou « sa femme » ne désigne pas directement
+une personne, mais peut devenir identifiante lorsqu'elle est combinée à
+d'autres éléments du texte. \\
+
+Éléments de vie privée (cumul)
+& LLM
+& Chaque détail pris isolément peut sembler anodin ; leur accumulation peut
+permettre de réidentifier une personne par recoupement. \\
+
+Situation judiciaire
+& LLM
+& Information particulièrement sensible dont la détection dépend entièrement
+du contexte et de la formulation employée. \\
+
+Revenus d'une personne physique
+& LLM
+& Donnée financière personnelle à distinguer du chiffre d'affaires d'une
+entreprise, qui concerne une structure et non directement un individu. \\
+
+Suivi médical
+& LLM
+& Donnée nécessitant une compréhension du contexte médical, sans structure
+syntaxique fixe permettant une détection par expression régulière. \\
+
+Ethnie
+& LLM
+& Donnée sensible dont l'identification repose principalement sur
+l'interprétation du texte. \\
+
+Sexe et accords grammaticaux
+& LLM
+& Information pouvant être utile pour maintenir la cohérence grammaticale lors
+d'une pseudonymisation ; elle n'est pas nécessairement occultée de manière
+systématique. \\
+
+\bottomrule
+\end{longtable}
+
+\newpage
 \end{document}
 
