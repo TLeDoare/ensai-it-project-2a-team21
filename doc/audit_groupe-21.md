@@ -18,7 +18,7 @@
 | ER2-02 | la clé est obligatoire pour démarrer, même sans LLM | Justifié/50% Fixé |
 | ER3-01 | réinitialisation de la base sans authentification et comptes par défaut commités | Justifié |
 | ER3-02 | hachage de mot de passe inadapté | Fixé |
-| ER3-03 | jetons de session permanents, stockés en clair, sans révocation | ... |
+| ER3-03 | jetons de session permanents, stockés en clair, sans révocation | Fixé |
 | ER3-04 | aucune protection contre la force brute, aucune politique de mot de passe | Justifié |
 | ER3-05 | liste complète des utilisateurs exposée au rôle superviseur | Justifié |
 | INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | Fixé |
