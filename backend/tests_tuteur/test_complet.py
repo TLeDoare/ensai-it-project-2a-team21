@@ -95,6 +95,7 @@ def test_evaluer_pipeline_pii():
     import asyncio
 
     from business_object.analyser.analyser_factory import AnalyserFactory
+    from business_object.analyser.overlap import resoudre_chevauchements
     from business_object.types import PII, AnalysisFail
 
     conversion_pii = {
@@ -105,7 +106,7 @@ def test_evaluer_pipeline_pii():
         PII.IBAN: "IBAN",
         PII.email: "EMAIL",
         PII.phone_number: "PHONE",
-        PII.CNI: "INTERNAL_ID",
+        PII.CNI: "PASSPORT",
         PII.EX_CNI: "INTERNAL_ID",
         PII.PAN: "IBAN",
         PII.postal_code: "LOCATION",
@@ -144,7 +145,10 @@ def test_evaluer_pipeline_pii():
         # Remplacez cette simulation par votre véritable fonction d'analyse :
         analyser = AnalyserFactory().get_analyser({})
         predicted_spans = asyncio.run(analyser.analyse(content))
-        predicted_spans = [{'start': span.indices[0], 'end': span.indices[1], 'type': conversion_pii[span.PII]} for span in list(predicted_spans) if not isinstance(span, AnalysisFail)]
+        positions = {span for span in predicted_spans if not isinstance(span, AnalysisFail)}
+        # Même fusion des chevauchements que doc_service.py : on évalue ce que l'application masque vraiment
+        positions = resoudre_chevauchements(positions, content)
+        predicted_spans = [{'start': span.indices[0], 'end': span.indices[1], 'type': conversion_pii[span.PII]} for span in positions]
         # predicted_spans = [] # Ex: [{'type': 'NOM', 'start': 12, 'end': 20}]
 
         # 3. Évaluation comparative

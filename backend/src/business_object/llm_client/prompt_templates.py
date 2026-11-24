@@ -49,6 +49,8 @@ Types autorisés : """ + TYPES_TEXTE + """
 - Une donnée qui apparaît plusieurs fois n'est citée qu'une seule fois.
 - Ne signale pas les personnalités publiques citées dans leurs fonctions, ni les zones géographiques larges (région, pays).
 - Une commune de moins de 10 000 habitants est un lieu (place) à signaler.
+- organism : le nom d'un organisme précis cité dans le document : administration, mairie, préfecture, caisse (CAF, CPAM, URSSAF), service social, tribunal, établissement, entreprise ou association (par exemple "Mairie de Quimper", "Caisse d'allocations familiales du Rhône", "la société Nordis Logistique"). Signale son nom complet en un seul bloc (organism), ville ou département compris : "Mairie de Quimper" est un organism, pas un place.
+- Un lieu (place) se signale quand il est cité seul, hors d'une adresse et hors du nom d'un organisme (par exemple "née à Quimper").
 - Si le document est vide ou ne contient aucune donnée personnelle, renvoie {"spans": []}.
 - Pour une personne, signale son nom complet en un seul bloc (name), tel qu'il apparaît dans le texte (par exemple "Jean Martin" ou "M. Martin" sans la civilité).
 
