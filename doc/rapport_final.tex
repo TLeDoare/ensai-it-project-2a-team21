@@ -17,6 +17,8 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{setspace}
+\usepackage{pdflscape}
+\usepackage{rotating}
 
 \geometry{
     top=2.5cm,
@@ -32,6 +34,8 @@
     linkcolor=ensaiBlue,
     urlcolor=ensaiBlue
 }
+
+\graphicspath{ {./} }
 
 \setlength{\parskip}{0.4em}
 
@@ -273,24 +277,124 @@ Enfin, l'environnement d'exécution est géré au moyen de \textbf{uv}, qui faci
 \newpage
 \section{Réponse au besoin}
 
-\subsection{Fonctionnalités implémentées}
+\subsection{Introduction}
 
-\textit{Présenter les fonctionnalités F1 à F5
-et leur état réel d'implémentation.}
+La réponse précise aux besoins s’est largement axée sur la liste des fonctionnalités obligatoires F1, …, F5 spécifiées dans le sujet. Cependant, nous avons pu commencer à implémenter la fonctionnalité optionnelle FO4. Nous nous attarderons dans cette partie sur le processus central de l’application, c’est-à-dire la détection des données personnelles suivie de l’anonymisation. Bien que les fonctionnalités soient interdépendantes, nous décrirons donc principalement l’implémentation des fonctionnalités obligatoires 2 et 3: détection des données personnelles et anonymisation.
 
-\subsection{Détection des données personnelles}
 
-\textit{Présenter les mécanismes Regex et LLM.}
+\subsection{Description des fonctionnalités principales}
 
-\subsection{Stratégies de caviardage}
+\subsubsection{Fonctionnalité 2: Détection des données personnelles}
 
-\textit{Présenter le masquage et la pseudonymisation.}
+La détection de données personnelles fait en réalité appel à deux processus différents: le premier est la détection de données personnelles par expression régulière. En effet, certaines PII (Personally Identifiable Information) telles que le NIR ou l’IBAN  possèdent des formats connus et encodés de manière prévisible,  ce qui permet  de les détecter à l'aide d'expression régulière. La liste des  PII  est donnée en  annexe. Cependant certaines informations sensibles telles que les prénoms ou les informations médicales ne respectent pas des formats précis. Ainsi, nous pouvons faire appel à des outils plus développés et  pouvant prendre  en compte le contexte  textuel : ce sont les LLM (Large Language Model). Si le LLM rencontre un dysfonctionnement, alors seul la détection par expression régulière est appelée et l’utilisateur en est averti.
 
-\subsection{Fonctionnement de l'application}
+Les fonctions de recherche par expression régulière sont disponibles dans la librairie standard de Python. Ainsi, c'est celle-là que nous utiliserons dans notre projet. Cependant, pour accomplir une tâche aussi complexe que la détection de prénom, nous devons utiliser des modèles de langage avancés, qui ne peuvent généralement pas fonctionner sur un ordinateur personnel. Nous faisons alors appel aux modèles de LLM proposés par Onyxia. En particulier, notre application s’est concentrée sur l'intégration du modèle open-source Qwen, et l’API utilisée pour communiquer au LLM utilise le modèle OpenAI, qui est un standard de l’industrie.
 
-\textit{Présenter un parcours utilisateur et
-les principales interfaces.}
 
+\subsubsection{Fonctionnalité 3: Anonymisation}
+
+Nous devons tout d'abord rappeler que l'anonymisation à laquelle nous faisons référence ici n'a aucune valeur juridique. En effet, l'utilisateur reste dans tous les cas responsable du traitement des informations sensibles et l'application ne garantit pas que toutes ces informations seront détectées et caviardées. 
+L'anonymisation peut être approchée par deux stratégies: la première est le masquage, et la seconde est l'anonymisation. Le masquage remplace l'information sensible par une référence: par exemple “Jean Martin” est remplacé par "[NOM\_1]". 
+
+La seconde est la pseudonymisation, qui remplace l'information sensible par une information possédant la même forme: par exemple, “Jean Martin” est remplacé par “Paul Durand”. La pseudonymisation que nous pratiquons n'est pas celle au sens du droit RGPD: en effet selon la RGPD, la pseudonymisation implique qu'il est possible de retrouver les informations originales non caviardées; notre application n'enregistre cependant aucune table de correspondance et donc ne permet pas de retrouver les informations sensibles à partir d’un contenu anonymisé.
+
+
+\subsection{Caviardage d’un document: partie contrôleur}
+La première étape de cette fonctionnalité est la soumission d’un document texte. Ceci correspond à la requête \textsc{HTTP post /redact/}. Cette requête contient les paramètres suivants:
+\begin{itemize}
+\item \textsc{file}: Le fichier à téléverser dans l’objectif d’être caviardé. Plusieurs contraintes s’imposent sur ce fichier: tout d’abord, celui-ci doit être dans un format décodable utf-8 valide. Si cela est le cas, alors il ne doit pas dépasser une certaine longueur pour éviter de surcharger l’application, en particulier de limiter la taille de l’entrée du LLM. Enfin, l’application a été pensée pour des formats en texte brut ou bien proche du texte brut, tel que les formats texte .txt, ou bien le format markdown .md.
+\item \textsc{params}: C’est un format JSON, qui a pour attributs les paramètres “llm” et “mask”, tous deux des booléens. “llm” indique si le LLM doit être activé pour cette requête, et le masquage est appliqué dans le cas où “mask” est activé, sinon c’est la pseudonymisation qui est activée. Dans le futur, plusieurs paramètres additionnels pourront être implémentés. 
+\item Enfin, bien que cela ne fasse pas partie de la requête elle-même, l'utilisateur doit pouvoir fournir un token valide lui permettant de s'identifier, afin de confirmer que son rôle lui permet de téléverser les documents.
+\end{itemize}
+\subsection{Caviardage d’un document: partie service}
+\begin{landscape}
+\begin{figure}[p]
+  \thispagestyle{empty}
+    \centering
+    \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{service}
+    \caption{Diagramme d'activité de \textsc{DocService}}
+\end{figure}
+\end{landscape}
+Le service des documents constitue le cœur du processus de caviardage de l’application. Voici le déroulement du processus de création de document:
+\begin{itemize}
+\item Tout d’abord le service s’assure que l’utilisateur possède la permission de téléverser des documents.
+\item Un filtre d’injection est instancié afin de vérifier qu'il n'y a pas de tentative d'injection de prompt dans la requête. Si une tentative d’injection est détectée, alors elle sera enregistrée et rapportée.
+\item Suite à cela, le service instancie un “analyseur” (que nous décrirons plus en détail par la suite) qui a pour objectif de  trouver les positions des PII à caviarder à partir d'un texte. Il y a deux processus qui permettent de réaliser cette tâche: d'abord le détecteur par expressions régulières, suivi du détecteur faisant appel au LLM, si celui-ci est activé dans les paramètres spécifiés. Ces deux processus sont exécutés en parallèle afin d'optimiser le temps de réponse de l'application et de se conformer au cahier des charges.
+\item Le service fait appel à un “caviardeur” qui s'occupe de remplacer les instances de PII détectées par un contenu masqué ou pseudonymisé en fonction des paramètres spécifiés par l’utilisateur.
+\item Le service enregistre le document dans la base de données. On s'assure que le contenu original non caviardé du document n'est pas enregistré
+\item Le service renvoie enfin la réponse au contrôleur.
+\end{itemize}
+\subsection{Détail de l’architecture de l’«Analyseur»}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth]{uml}
+    \caption{Diagramme des classes de l'analyseur}
+\end{figure}
+Le rôle de l'analyseur est central dans le processus de traitement de document. En effet, c'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. 
+
+\begin{enumerate}
+  \item \textsc{Analyseur} est l'interface de base, qui ne possède qu'une fonction virtuelle se chargeant de convertir un contenu textuel en un ensemble de positions de PII.
+  \item \textsc{AnalyserFactory} est instanciée par \textsc{DocService}. Elle lit \textsc{params} et assemble la chaîne adéquate.
+  \item \textsc{EmptyAnalyser} est l'implémentation de base qui ne renvoie aucune position. Il correspond au composant concret au cœur de la chaîne.
+  \item \textsc{AnalyserDecorator} est une classe abstraite qui implémente \textsc{Analyser} et est capable d'envelopper n'importe quel autre analyseur afin de l'appeler dans la chaîne.
+  \item Enfin \textsc{RegexDecorator} et \textsc{LLMDecorator} sont les décorateurs concrets. Chacun détecte les PII suivant leurs algorithmes propres et ajoute leur position aux positions déjà produites par le wrapper (le décorateur qu’ils «emballent»).
+\end{enumerate}
+
+Le choix du décorateur est motivé par les raisons suivantes:
+\begin{enumerate}
+  \item Tout d'abord, activer ou non le LLM dépend de params et est donc une donnée runtime; ainsi, le patron permet d’assembler la chaîne à l'exécution.
+  \item Les détecteurs sont isolés les uns des autres.
+  \item Cela permet une plus grande flexibilité. En effet, en utilisant de l'héritage pur, il y aurait un grand nombre de classes se ressemblant fortement mais possédant une architecture différente à implémenter; cela serait redondant.
+  \item Ajouter un maillon dans la chaîne comme par exemple un NLP (Natural Language Processing) ou bien un \textit{LLM as a judge} revient à créer un nouveau décorateur et à ne pas modifier les décorateurs déjà implémentés. Cela permet donc de mieux respecter le principe ouvert/fermé.
+  \item Enfin un simple design pattern de stratégie n'aurait pas permis d'implémenter le fait que les détecteurs LLM et Regex sont cumulables.
+\end{enumerate}
+
+Enfin, il faut noter que ce principe est tout à fait compatible avec l'exécution asynchrone. Il faut faire attention cependant à lancer les détecteurs Regex par le biais d’un \textit{thread}, car l'implémentation re de la librairie standard python ne fournit pas par défaut de recherche regex en asynchrone. La recherche d’injection de prompt n’a pas été intégrée parmi les décorateurs, car elle s’exécute sur le texte avant le reste de la chaîne. Si la vérification de sortie de LLM (intégrée dans le décorateur LLM) détecte une anomalie, elle renvoie une classe spéciale qui n’est pas un ensemble de positions, mais une classe spéciale (\textsc{AnalysisFail}) qui a pour but de rapporter qu’une erreur s’est produite dans la chaîne, tout en préservant la chaîne.
+
+\subsection{Détail de l’architecture du «Caviardeur»}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\linewidth]{uml2}
+    \caption{Diagramme des classes du caviardeur}
+\end{figure}
+
+Une fois la position des PII connues, il existe plusieurs stratégies pour le caviarder: le masquage et la pseudonymisation, que nous avons détaillé précédemment. Cela a été implémenté par le patron de conception de la stratégie, ici aussi fortement inspirée de l’implémentation proposée par Refactoring Guru:
+
+\begin{itemize}
+  \item \textsc{RedactorStrategy} (interface) représente le contrat unique, c’est à dire qu’une seule stratégie sera exécutée sur le contenu à caviarder.
+  \item \textsc{MaskRedactor} et \textsc{PseudonymiseRedactor} sont les stratégies concrètes, chacune réalisant l'interface.
+  \item \textsc{RedactorContext} est le contexte du pattern. Il détient une référence vers la stratégie courante (agrégation, le losange), la change via \textit{set\_strategy}, et la délègue via \textit{execute\_strategy}.
+  \item \textsc{DocService} est le client. Il choisit la stratégie (en pointillé vers les deux implémentations, car il les instancie) et la passe au contexte.
+\end{itemize}
+
+Le choix du patron est justifié par les raisons suivantes:
+\begin{enumerate}
+  \item Les algorithmes sont interchangeables. Les deux stratégies ont exactement la même signature d'entrée/sortie. Le client n'a pas besoin de savoir comment le caviardage est fait, seulement lequel demander.
+  \item Choix à l'exécution. Le mode de caviardage dépend de params (donc d'une donnée runtime, éventuellement différente à chaque document). Le contexte permet de changer de stratégie sans reconstruire quoi que ce soit.
+  \item Principe ouvert/fermé: ajouter un mode (chiffrement réversible, hachage, etc.) revient à créer une nouvelle classe implémentant \textsc{RedactorStrategy}. \textsc{DocService} et \textsc{RedactorContext} ne changent pas.
+\end{enumerate}
+
+\subsection{Sécurité}
+
+La sécurité constitue un enjeu central d'Anonymia, puisque l'application est amenée à manipuler des documents contenant potentiellement des données personnelles sensibles. Elle concerne à la fois la protection des compte utilisateurs, la conservation des données traitées et la sécurisation de
+l'utilisation du modèle de langage.
+
+Concernant l'authentification, les mots de passe des utilisateurs ne sont jamais stockés en clair dans la base de données. Seule une version hachée et salée est conservée, de sorte qu'une compromission de la base ne permette pas d'accéder directement aux mots de passe. Les droits d'accès sont également limités selon trois rôles : utilisateur, superviseur et administrateur. Cette séparation permet de restreindre l'accès aux fonctionnalités sensibles, notamment la gestion des comptes et la consultation de l'historique des traitements.
+
+
+Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte cryptographique du document peut également être calculée afin de pouvoir identifier qu'un document a déjà été traité sans avoir à conserver son contenu. De plus, pour rendre le caviardage cohérent (par exemple “Jean Dupont” toujours caviardé en “[NOM\_1]”, et pas “[NOM\_1]”, puis “[NOM\_2]”), les stratégies de caviardage doivent enregistrer des tables de correspondanc. Pour que le masquage ne puisse pas être inversé, les stratégies de caviardage sont instanciées seulement au runtime, et chaque document a sa propre instance de “caviardeur”, ce qui rend impossible la réversibilité. 
+
+L'utilisation d'un LLM introduit par ailleurs un risque spécifique d'injection de prompt. Un document soumis par l'utilisateur peut contenir des instructions malveillantes afin de pousser le modèle à ne pas détecter certaines PII. Si une telle attaque réussissait, des données personnelles pourraient rester présentes dans le document final. Pour limiter ce risque, Anonymia repose sur une défense en profondeur en trois étapes: 
+
+\begin{enumerate}
+\item Tout d'abord, un prompt système strict rappelle au modèle que le document constitue uniquement une donnée à analyser et que les instructions qu'il contient ne doivent pas être exécutées.
+\item Ensuite, un \textsc{InjectionFilter} recherche avant l'appel au LLM des motifs susceptibles de correspondre à une tentative d'injection.
+\item Enfin, la sortie du modèle est contrôlée par un \textsc{OutputVerifier}, qui vérifie le respect du format attendu, la validité des types de PII retournés ainsi que la présence réelle dans le document des éléments signalés par le modèle.
+\end{enumerate}
+
+Aucune de ces protections n'étant suffisante isolément, leur combinaison permet de réduire le risque d'une sortie incorrecte ou manipulée. Le détecteur Regex constitue également un niveau de sécurité supplémentaire, puisqu'il ne dépend pas des instructions présentes dans le document. En cas d'échec ou d'indisponibilité du LLM, l'application peut ainsi continuer à fonctionner en mode dégradé à partir des résultats issus des expressions régulières, et en avertir l’utilisateur.
 
 % ==================================================
 % 4. OUTILS MIS EN PLACE
