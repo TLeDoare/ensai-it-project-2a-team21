@@ -178,6 +178,17 @@ def afficher_resultat(resultat: dict):
             "Types trouvés seulement par les regex : " + (", ".join(sorted(types_regex - types_llm)) or "aucun")
             + " | seulement par le LLM : " + (", ".join(sorted(types_llm - types_regex)) or "aucun")
         )
+        # Nombre de PII par type pour chaque détecteur, côte à côte
+        if details:
+            st.dataframe(
+                pd.crosstab(pd.Series([d["type"] for d in details], name="Type"),
+                            pd.Series([d["source"] for d in details], name="Détecteur")),
+                use_container_width=True,
+            )
+        st.caption(
+            "Une donnée trouvée par les deux détecteurs n'est comptée qu'une fois, "
+            "sous le détecteur retenu lors de la fusion des chevauchements."
+        )
 
     st.download_button(
         "Télécharger le document caviardé",
@@ -263,6 +274,9 @@ def page_historique():
                 "Date": pd.to_datetime(d["upload_date"]),
                 "Auteur": d["sent_by"],
                 "PII détectées": len(d["details"]),
+                # Paramètres du traitement, enregistrés dans le journal (F4)
+                "Stratégie": "Masquage" if d["params"].get("mask", True) else "Pseudonymisation",
+                "LLM": "Oui" if d["params"].get("llm", True) else "Non",
                 "Empreinte": d["hash"][:12],
             }
             for d in documents
@@ -280,27 +294,52 @@ def page_historique():
     if len(periode) == 2:
         tableau = tableau[tableau["Date"].dt.date.between(periode[0], periode[1])]
 
-    col1, col2 = st.columns(2)
+    # Toutes les PII des documents encore visibles après les filtres (pour les graphiques ci-dessous)
+    numeros_visibles = set(tableau["N°"])
+    pii_visibles = pd.DataFrame(
+        [pii for doc in documents if doc["id"] in numeros_visibles for pii in doc["details"]],
+        columns=["start", "end", "type", "confidence", "source"],
+    )
+
+    col1, col2, col3 = st.columns(3)
     col1.metric("Documents traités", len(tableau))
     col2.metric("PII détectées au total", int(tableau["PII détectées"].sum()))
+    # Moyenne arrondie à une décimale ; 0 si aucun document ne correspond aux filtres
+    col3.metric("PII par document (moyenne)", round(tableau["PII détectées"].mean(), 1) if len(tableau) else 0)
 
-        # --- Graphiques des indicateurs d'activité (F4) ---
-    graphique_jours, graphique_types = st.columns(2)
-    with graphique_jours:
-        st.markdown("**Documents traités par jour**")
-        # Compte les documents filtrés pour chaque date
-        st.bar_chart(tableau.groupby(tableau["Date"].dt.date).size())
-    with graphique_types:
-        st.markdown("**Fréquence des types de PII**")
-        # Ne garde que les documents encore visibles après les filtres
-        numeros_visibles = set(tableau["N°"])
-        types_pii = pd.Series(
-            [pii["type"] for doc in documents if doc["id"] in numeros_visibles for pii in doc["details"]]
-        )
-        if types_pii.empty:
+    # --- Graphiques des indicateurs d'activité (F4), regroupés en trois onglets ---
+    onglet_activite, onglet_donnees, onglet_usage = st.tabs(["Activité", "Données détectées", "Usage"])
+    with onglet_activite:
+        graphique_jours, graphique_auteurs = st.columns(2)
+        with graphique_jours:
+            st.markdown("**Documents traités par jour**")
+            # Compte les documents filtrés pour chaque date
+            st.bar_chart(tableau.groupby(tableau["Date"].dt.date).size())
+        with graphique_auteurs:
+            st.markdown("**Documents traités par auteur**")
+            st.bar_chart(tableau["Auteur"].value_counts())
+    with onglet_donnees:
+        if pii_visibles.empty:
             st.info("Aucune PII sur la période choisie.")
         else:
-            st.bar_chart(types_pii.value_counts()) 
+            graphique_types, graphique_sources = st.columns(2)
+            with graphique_types:
+                st.markdown("**Fréquence des types de PII**")
+                st.bar_chart(pii_visibles["type"].value_counts())
+            with graphique_sources:
+                st.markdown("**PII par détecteur (regex ou LLM)**")
+                st.bar_chart(pii_visibles["source"].value_counts())
+            # Croisement type x détecteur : quel détecteur trouve quel type de donnée
+            st.markdown("**Types de PII selon le détecteur**")
+            st.dataframe(pd.crosstab(pii_visibles["type"], pii_visibles["source"]), use_container_width=True)
+    with onglet_usage:
+        graphique_strategie, graphique_llm = st.columns(2)
+        with graphique_strategie:
+            st.markdown("**Stratégie de caviardage choisie**")
+            st.bar_chart(tableau["Stratégie"].value_counts())
+        with graphique_llm:
+            st.markdown("**Traitements avec ou sans LLM**")
+            st.bar_chart(tableau["LLM"].value_counts())
 
     st.dataframe(
         tableau.sort_values("Date", ascending=False),
