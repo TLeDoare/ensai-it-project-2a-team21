@@ -490,6 +490,240 @@ les limites rencontrées et les améliorations possibles.}
 \subsection{Tanguy Le Doaré}
 
 \textit{Note individuelle -- une page maximum.}
+\newpage
 
+\section{Annexes}
+\subsection{Liste des fonctionnalités obligatoires}
+\renewcommand{\labelenumi}{F\arabic{enumi}.}
+\begin{enumerate}
+\item \textbf{Authentification et gestion des utilisateurs.} Création de compte, connexion. Mots de passe hashés. Trois rôles : utilisateur (soumet des documents), superviseur (accède à la page de consultation et au tableau de bord), administrateur (gère les comptes : création, modification du rôle, désactivation, suppression). Un compte administrateur initial est créé au démarrage de l’application.
+\item \textbf{Détection des données personnelles.} Soumission d’un document texte. L’application lance en parallèle une détection par expressions régulières et une détection par LLM, fusionne les résultats et restitue à l’utilisateur la liste annotée des PII détectées (position, type, niveau de confiance, détecteur d’origine). Si le service LLM est indisponible, l’application continue de fonctionner avec les expressions régulières seules.
+\item \textbf{Anonymisation.} Production d’une version anonymisée du document, selon une stratégie au choix : masquage ([NOM\_1]), ou pseudonymisation cohérente (Pierre Dupont → Jean Martin, le même nom recevant toujours le même substitut dans le document).
+\item \textbf{Journalisation et consultation.} Pour chaque traitement, l’application enregistre des métadonnées : date, utilisateur, hash du document (jamais le contenu brut), nombre et types de PII détectées, détecteurs ayant contribué. Un outil de consultation est mis à disposition des superviseurs et des administrateurs, qui peuvent filtrer par utilisateur ou par période.
+\item \textbf{Sécurisation du détecteur LLM.} Un LLM peut être manipulé par le contenu qu’on lui soumet : un document peut contenir des instructions cachées (« ignore les consignes précédentes ») visant à détourner son comportement. Cette fonctionnalité durcit le détecteur LLM de F2 par trois mécanismes complémentaires :
+\begin{enumerate}
+  \item Un prompt système strict qui cadre le rôle du modèle et impose un format de sortie JSON contraint.
+  \item Un pré-filtrage des documents pour détecter les patterns d’injection connus.
+  \item Une vérification de la sortie du modèle pour s’assurer qu’elle est cohérente avec le document fourni (positions valides, pas d’invention). Un jeu de tests adversariaux fourni par le tuteur sert de validation : le détecteur doit conserver son comportement normal même face à des documents piégés.
+\end{enumerate}
+\end{enumerate}
+\subsection{Liste des fonctionnalités optionnelles}
+\renewcommand{\labelenumi}{FO\arabic{enumi}.}
+\begin{enumerate}
+  \item \textbf{item Détecteur par modèle de NER local.} Ajout d’un troisième détecteur basé sur spaCy. Le modèle utilisé (fr\_core\_news\_lg) est un outil de NER (Named Entity Recognition, ou reconnaissance d’entités nommées) : un modèle pré-entraîné qui identifie automatiquement noms de personnes, lieux et organisations dans un texte. Cette FO permet de comparer la qualité d’un détecteur dédié au NER avec celle du LLM généraliste, sans dépendance à un service externe.
+\item \textbf{Anonymisation directe par LLM.} Un mode supplémentaire d’anonymisation où le LLM produit en une seule étape le document anonymisé, plutôt que de simplement détecter les positions. L’utilisateur peut alors comparer le résultat avec celui produit par le pipeline classique (détection puis substitution) et apprécier les différences en termes de fluidité, de naturel et de fidélité au document source.
+\item \textbf{Juge d’injection LLM.} Ajout d’un second appel LLM jouant le rôle de « juge » : sa seule mission est de décider si le document soumis tente de manipuler le système. Il s’exécute en parallèle de la détection principale et son verdict enrichit les métadonnées de journalisation sans bloquer le pipeline.
+\item \textbf{Console d’exploration.} Interface utilisateur interactive complétant l’API par un outil d’analyse adapté aux utilisateurs métier. Permet de soumettre des documents et visualiser les PII détectées (mises en évidence dans le texte source), de comparer côte à côte les résultats des différents détecteurs sur un même document afin d’apprécier leurs forces et faiblesses, et de consulter sous forme graphique les indicateurs d’activité enregistrés en F4 (volumétrie, fréquence des types de PII détectées, et plus généralement tout indicateur que les élèves jugeront utile). Le périmètre exact du visuel est laissé à l’appréciation du groupe.
+\end{enumerate}
+\subsection{Liste des PII spécifiées}
+Les PII retenues sont classées selon trois cercles correspondant à un niveau
+croissant de difficulté de détection. Plus on s'éloigne du premier cercle,
+plus la décision de détection relève d'un choix de conception à documenter,
+et non d'une évidence technique.
+
+\medskip
+\noindent\textbf{Cercle 1 --- Identification directe et non ambiguë}
+
+\smallskip
+
+Ces types identifient une personne à eux seuls, sans nécessiter de mise en
+contexte ni de recoupement. Aucune règle de décision particulière n'est
+requise : la présence de la donnée suffit.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+
+NIR (Numéro d’Inscription au Répertoire)
+& Regex
+& Structure fixe avec clé de contrôle calculée à partir des autres chiffres ;
+identifiant unique d'une personne à lui seul, sans besoin d'aucune autre
+information. \\
+
+IBAN (International Bank Account Number)
+& Regex
+& Format international normalisé, vérifiable par clé de contrôle
+(modulo 97) ; désigne un compte bancaire rattaché à une personne physique. \\
+
+Mail
+& Regex
+& Structure fixe (partie locale, arobase, domaine) ; très souvent nominative
+ou directement rattachable à un individu. \\
+
+Numéro de téléphone
+& Regex
+& Format national relativement structuré (nombre de chiffres, préfixe) ;
+un numéro, surtout mobile, est généralement propre à un seul individu. \\
+
+Numéro CNI (Carte nationale d'identité)
+& Regex
+& Structure fixe ; il constitue un identifiant administratif unique de son
+détenteur. \\
+
+PAN (Primary Account Number)
+& Regex
+& Format structuré selon le réseau émetteur et vérifiable par l'algorithme
+de Luhn ; donnée financière directement rattachée à son porteur. \\
+
+Nom de personne
+& LLM
+& Aucune structure syntaxique propre ; la compréhension du contexte permet
+d'identifier un nom propre désignant une personne. Il s'agit d'un des types
+les plus difficiles à détecter. \\
+
+Adresse postale avec code postal
+& LLM
+& Forme libre (numéro, rue, ville) qu'aucun motif unique ne peut couvrir dans
+toute sa variété ; elle permet de localiser précisément le domicile d'une
+personne. \\
+
+\bottomrule
+\end{longtable}
+
+
+\medskip
+\noindent\textbf{Cercle 2 --- Identification indirecte ou dépendante du contexte}
+
+\smallskip
+
+Ces types nécessitent un recoupement avec d'autres informations ou une règle
+de décision permettant de déterminer leur caractère identifiant.
+
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification et règle de décision} \\
+\midrule
+\endhead
+
+Plaque d'immatriculation
+& Regex
+& Format réglementé et fixe (par exemple AA-123-AA) ; identifie un véhicule
+et peut indirectement permettre de remonter à son propriétaire. \\
+
+Adresse IP
+& Regex
+& Format structuré (IPv4 ou IPv6) ; via le fournisseur d'accès, elle peut
+permettre de remonter jusqu'à un foyer ou un individu. \\
+
+SIREN (Système d’Identification du Répertoire des Entreprises)
+& Regex
+& Longueur et structure fixes ; identifie en principe une entreprise.
+\textbf{Règle :} il n'est retenu comme donnée personnelle que lorsqu'il
+concerne une entreprise individuelle ou une activité permettant d'identifier
+directement une personne physique. \\
+
+Référence cadastrale
+& Regex
+& Codification structurée permettant d'identifier une parcelle ; le
+recoupement avec des registres peut permettre de retrouver son propriétaire. \\
+
+Données GPS
+& Regex
+& Coordonnées numériques structurées ; une position suffisamment précise
+peut révéler un domicile ou des habitudes de déplacement. \\
+
+Date de naissance
+& LLM
+& Une date seule ne permet pas de déterminer la nature de l'événement.
+\textbf{Règle :} elle est retenue comme date de naissance uniquement lorsque
+le contexte l'associe explicitement à une naissance. \\
+
+Lieu
+& LLM
+& Aucune structure permettant à elle seule de déterminer son caractère
+identifiant. La décision dépend du contexte et notamment du niveau de
+précision géographique. \\
+
+Organisme
+& LLM
+& Le caractère identifiant dépend de la taille de la structure. Une
+institution nationale ne permet généralement pas d'identifier une personne,
+contrairement à une structure très restreinte. \\
+
+\bottomrule
+\end{longtable}
+
+
+\medskip
+\noindent\textbf{Cercle 3 --- Jugement fortement contextuel et catégories sensibles}
+
+\smallskip
+
+Ces types nécessitent une interprétation fine du texte ou un cumul
+d'informations. Leur détection repose donc principalement sur le contexte.
+
+\begin{longtable}{
+    p{3.2cm}
+    @{\hspace{0.4cm}}
+    p{1.8cm}
+    @{\hspace{0.4cm}}
+    p{8.5cm}
+}
+\toprule
+\textbf{Type} & \textbf{Détecteur} & \textbf{Justification} \\
+\midrule
+\endhead
+
+Fonctions révélatrices
+& LLM
+& Un intitulé de fonction seul est peu identifiant, mais combiné à une
+organisation ou à un lieu précis, il peut permettre d'identifier une personne. \\
+
+Liens familiaux
+& LLM
+& Une mention telle que « son fils » ou « sa femme » ne désigne pas directement
+une personne, mais peut devenir identifiante lorsqu'elle est combinée à
+d'autres éléments du texte. \\
+
+Éléments de vie privée (cumul)
+& LLM
+& Chaque détail pris isolément peut sembler anodin ; leur accumulation peut
+permettre de réidentifier une personne par recoupement. \\
+
+Situation judiciaire
+& LLM
+& Information particulièrement sensible dont la détection dépend entièrement
+du contexte et de la formulation employée. \\
+
+Revenus d'une personne physique
+& LLM
+& Donnée financière personnelle à distinguer du chiffre d'affaires d'une
+entreprise, qui concerne une structure et non directement un individu. \\
+
+Suivi médical
+& LLM
+& Donnée nécessitant une compréhension du contexte médical, sans structure
+syntaxique fixe permettant une détection par expression régulière. \\
+
+Ethnie
+& LLM
+& Donnée sensible dont l'identification repose principalement sur
+l'interprétation du texte. \\
+
+Sexe et accords grammaticaux
+& LLM
+& Information pouvant être utile pour maintenir la cohérence grammaticale lors
+d'une pseudonymisation ; elle n'est pas nécessairement occultée de manière
+systématique. \\
+
+\bottomrule
+\end{longtable}
+
+\newpage
 \end{document}
 
