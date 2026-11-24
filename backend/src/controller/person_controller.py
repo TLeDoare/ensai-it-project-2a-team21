@@ -74,28 +74,39 @@ def create_person(
 
 
 @router.put("/{id_user}", response_model=PersonModel, tags=["Users"])
-async def update_user(user: UpdateModel, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
-    """Update an existing user's information.
+async def update_user(
+    id_user: int,
+    user: UpdateModel,
+    person_service=Depends(get_person_service),
+    current_person=Depends(verify_token),
+):
+    """Change le mot de passe d'un compte (uniquement son propre compte).
+
+    L'e-mail n'est pas modifiable : c'est l'identifiant de connexion et la clé du journal d'audit
+    (author_email). La valeur envoyée dans le corps est donc ignorée.
+
     Args:
-        id_user (int)
-        user (PersonModel): The new data for the user.
-        person_service (PersonService): The service used to interact with user data.
+        id_user (int): identifiant du compte à modifier, lu dans l'adresse.
+        user (UpdateModel): contient le nouveau mot de passe.
     Returns:
-        str: A confirmation message indicating the user was updated.
+        PersonModel: le compte modifié.
     Raises:
-        HTTPException: 404 error if the user is not found.
-        HTTPException: 500 error if the update process fails.
+        HTTPException: 404 si le compte n'existe pas, 403 s'il ne s'agit pas de son propre compte.
     """
     logger.info("Update a user")
     try:
-        u = person_service.find_by_id(user.id)
+        # Lecture interne (sent_by=None) : le contrôle des droits est fait par update() juste après
+        u = person_service.find_by_id(id_user)
     except PersonNotFound:
-        raise HTTPException(status_code=404, detail="User (id={id_user}) not found.") from PersonNotFound
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
 
-    u.email = user.email
+    # Seul le mot de passe est remplacé ; il est haché par person_service.update
     u.password = user.password
 
-    return person_service.update(u, current_person)
+    try:
+        return person_service.update(u, current_person)
+    except AuthError:
+        raise HTTPException(status_code=403, detail="Vous ne pouvez modifier que votre propre compte.") from AuthError
 
 
 @router.put("/{id_user}/role", response_model=PersonModel, tags=["Users"])

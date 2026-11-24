@@ -134,3 +134,14 @@ def supprimer_compte(token: str, id_compte: int) -> None:
     if reponse.status_code == 204:
         return
     _lire(reponse)
+
+def modifier_mon_compte(token: str, id_compte: int, email: str, mot_de_passe: str) -> dict:
+    """Change le mot de passe de son propre compte ; l'API le hache et ignore l'e-mail envoyé."""
+    reponse = requests.put(
+        f"{API_URL}/person/{id_compte}",
+        headers={"x-auth-token": token},
+        # UpdateModel exige id, email et password : on renvoie l'e-mail actuel, qui ne sera pas modifié
+        json={"id": id_compte, "email": email, "password": mot_de_passe},
+        timeout=TIMEOUT,
+    )
+    return _lire(reponse)

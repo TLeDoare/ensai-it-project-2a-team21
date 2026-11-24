@@ -9,10 +9,11 @@ import streamlit as st
 st.set_page_config(page_title="Anonymia", layout="wide")
 
 # Écrans accessibles par rôle : un rôle hérite des écrans du rôle inférieur, comme dans le dossier.
+# « Mon compte » est accessible à tous : chacun peut changer son propre mot de passe.
 ECRANS = {
-    "UTILISATEUR": ["Caviarder un document"],
-    "SUPERVISEUR": ["Caviarder un document", "Historique"],
-    "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes"],
+    "UTILISATEUR": ["Caviarder un document", "Mon compte"],
+    "SUPERVISEUR": ["Caviarder un document", "Historique", "Mon compte"],
+    "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes", "Mon compte"],
 }
 
 # Couleur de surlignage par type de PII ; les types absents de la liste sont en gris.
@@ -423,17 +424,81 @@ def page_comptes():
     # --- Panneau Supprimer ---
     elif action == "supprimer":
         st.markdown("**Supprimer un compte**")
+
+        # Message de réussite conservé après le rechargement de la page (st.rerun efface l'affichage)
+        if "message_suppression" in st.session_state:
+            st.success(st.session_state.pop("message_suppression"))
+
         compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_suppr")]
-        st.warning(f"Le compte {compte['email']} sera supprimé définitivement.")
-        # Case à cocher obligatoire : évite une suppression par simple clic accidentel
-        confirme = st.checkbox("Je confirme la suppression définitive")
-        if st.button("Confirmer la suppression", type="primary", disabled=not confirme):
-            try:
-                api.supprimer_compte(token, compte["id"])
-                st.success(f"Compte {compte['email']} supprimé.")
+
+        @st.dialog("Confirmer la suppression")
+        def confirmer_suppression(compte_cible: dict):
+            """Fenêtre modale : la suppression n'a lieu qu'après une validation explicite, compte par compte."""
+            st.write(f"Voulez-vous vraiment supprimer le compte **{compte_cible['email']}** ?")
+            st.caption("Cette action est définitive : le compte ne pourra pas être restauré.")
+            col_annuler, col_supprimer = st.columns(2)
+            # Annuler : ferme simplement la fenêtre, sans rien modifier
+            if col_annuler.button("Annuler", use_container_width=True):
                 st.rerun()
-            except api.ApiError as erreur:
-                st.error(f"Suppression refusée ({erreur.status}) : {erreur.message}")
+            # Supprimer : appel à l'API, puis fermeture de la fenêtre et rechargement de la liste
+            if col_supprimer.button("Supprimer", type="primary", use_container_width=True):
+                try:
+                    api.supprimer_compte(token, compte_cible["id"])
+                    st.session_state["message_suppression"] = f"Compte {compte_cible['email']} supprimé."
+                    st.rerun()
+                except api.ApiError as erreur:
+                    st.error(f"Suppression refusée ({erreur.status}) : {erreur.message}")
+
+        # Le bouton ouvre seulement la fenêtre : aucune suppression directe depuis la page
+        if st.button("Supprimer ce compte", type="primary"):
+            confirmer_suppression(compte)
+
+def page_mon_compte():
+    st.subheader("Mon compte")
+    utilisateur = st.session_state.utilisateur
+    # E-mail et rôle affichés en lecture seule : seul un administrateur peut changer le rôle,
+    # et l'e-mail n'est pas modifiable (identifiant de connexion et clé du journal d'audit)
+    st.text_input("Adresse e-mail", value=utilisateur["email"], disabled=True)
+    st.caption(f"Rôle : {utilisateur['role'].capitalize()}. Pour changer de rôle, contactez un administrateur.")
+
+    with st.form("changer_mot_de_passe", clear_on_submit=True):
+        st.markdown("**Changer mon mot de passe**")
+        mot_de_passe = st.text_input(
+            "Nouveau mot de passe",
+            type="password",
+            help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
+        )
+        confirmation = st.text_input("Confirmer le nouveau mot de passe", type="password")
+        valider = st.form_submit_button("Enregistrer", type="primary")
+
+    if not valider:
+        return
+    if not mot_de_passe:
+        st.warning("Saisissez un nouveau mot de passe.")
+        return
+    if mot_de_passe != confirmation:
+        st.warning("Les deux mots de passe ne sont pas identiques.")
+        return
+    # Mêmes règles que pour la création de compte, vérifiées avant l'envoi
+    regles = [
+        (len(mot_de_passe) >= 8, "8 caractères minimum"),
+        (any(c.islower() for c in mot_de_passe), "une minuscule"),
+        (any(c.isupper() for c in mot_de_passe), "une majuscule"),
+        (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
+        (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
+    ]
+    manquantes = [libelle for respectee, libelle in regles if not respectee]
+    if manquantes:
+        st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
+        return
+
+    try:
+        # L'e-mail actuel est renvoyé tel quel : l'API exige le champ mais ne le modifie pas
+        api.modifier_mon_compte(utilisateur["token"], utilisateur["id"], utilisateur["email"], mot_de_passe)
+    except api.ApiError as erreur:
+        st.error(f"La modification a échoué ({erreur.status}) : {erreur.message}")
+        return
+    st.success("Votre mot de passe a été modifié. Utilisez-le à votre prochaine connexion.")
 
 # Aiguillage principal : Streamlit réexécute ce fichier en entier à chaque interaction.
 if "utilisateur" not in st.session_state:
@@ -447,3 +512,5 @@ else:
         page_historique()
     elif ecran == "Gestion des comptes":
         page_comptes()
+    elif ecran == "Mon compte":
+        page_mon_compte()
