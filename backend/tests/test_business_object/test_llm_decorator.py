@@ -7,6 +7,7 @@ import pytest
 
 from business_object.analyser.empty_analyser import EmptyAnalyser
 from business_object.analyser.llm_decorator import LLMDecorator
+from business_object.analyser.regex_decorator import RegexDecorator
 from business_object.llm_client.prompt_templates import LLM_PII_TYPES
 from business_object.types import AnalysisFail
 
@@ -60,3 +61,49 @@ async def test_omission_suspecte_garde_les_pii_et_alerte(mock_llm, mock_verifier
 
     assert "position_trouvee" in resultat
     assert len(echecs(resultat)) == 1
+
+# --- Tests d'assemblage : vrai RegexDecorator + vrai OutputVerifier, seul le LLM est simulé (INJ-03) ---
+
+TEXTE_AVEC_EMAIL = "Contactez-nous à contact@exemple.fr pour toute question."
+
+
+def decorateur_avec_regex() -> LLMDecorator:
+    """Chaîne réelle LLM -> Regex -> vide, comme celle construite par AnalyserFactory."""
+    return LLMDecorator(RegexDecorator(EmptyAnalyser(), {}), {})
+
+
+@pytest.mark.asyncio
+@patch("business_object.analyser.llm_decorator.detect_pii", new_callable=AsyncMock)
+async def test_omission_reelle_detectee(mock_llm):
+    """Les regex trouvent un e-mail mais le LLM ne renvoie rien : l'alerte d'omission est levée."""
+    mock_llm.return_value = json.dumps({"spans": []})
+
+    resultat = await decorateur_avec_regex().analyse(TEXTE_AVEC_EMAIL)
+
+    assert len(echecs(resultat)) == 1
+    assert "Omission suspecte" in str(echecs(resultat)[0].exception)
+    # L'e-mail trouvé par les regex est conservé (fail-safe)
+    assert len([r for r in resultat if not isinstance(r, AnalysisFail)]) == 1
+
+
+@pytest.mark.asyncio
+@patch("business_object.analyser.llm_decorator.detect_pii", new_callable=AsyncMock)
+async def test_pas_d_alerte_si_texte_sans_pii(mock_llm):
+    """Ni les regex ni le LLM ne trouvent rien : aucune alerte."""
+    mock_llm.return_value = json.dumps({"spans": []})
+
+    resultat = await decorateur_avec_regex().analyse("Bonjour, la réunion est reportée.")
+
+    assert resultat == set()
+
+
+@pytest.mark.asyncio
+@patch("business_object.analyser.llm_decorator.detect_pii", new_callable=AsyncMock)
+async def test_json_invalide_mode_degrade(mock_llm):
+    """Réponse du LLM illisible : les résultats des regex sont gardés et l'échec est signalé."""
+    mock_llm.return_value = "ceci n'est pas du JSON"
+
+    resultat = await decorateur_avec_regex().analyse(TEXTE_AVEC_EMAIL)
+
+    assert len(echecs(resultat)) == 1
+    assert len([r for r in resultat if not isinstance(r, AnalysisFail)]) == 1
