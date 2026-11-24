@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from schema.person_model import PersonModel, RegisterModel, UpdateModel, RoleModel
+from schema.person_model import ActiveModel, PersonModel, RegisterModel, RoleModel, UpdateModel
 from service.person_service import PersonService
 from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound
 from utils.log_utils import get_logger
@@ -115,6 +115,18 @@ def change_role(id_user: int, body: RoleModel, person_service=Depends(get_person
     logger.info("Change the role of a user")
     try:
         return person_service.change_role(id_user, body.role, current_person)
+    except PersonNotFound:
+        raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
+    except AuthError:
+        raise HTTPException(status_code=403, detail="Action non autorisée.") from AuthError
+
+
+@router.put("/{id_user}/active", response_model=PersonModel, tags=["Users"])
+def set_active(id_user: int, body: ActiveModel, person_service=Depends(get_person_service), current_person=Depends(verify_token)):
+    """Désactive ou réactive un compte (administrateur uniquement, jamais son propre compte)."""
+    logger.info("Change the status of a user")
+    try:
+        return person_service.set_active(id_user, body.active, current_person)
     except PersonNotFound:
         raise HTTPException(status_code=404, detail=f"L'utilisateur d'id {id_user} est inconnu") from PersonNotFound
     except AuthError:

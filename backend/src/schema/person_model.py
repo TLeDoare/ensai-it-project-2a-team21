@@ -15,6 +15,7 @@ class PersonModel(BaseModel):
     id: int
     email: EmailStr
     role: Role
+    active: bool = True
 
 
 class LoginModel(BaseModel):
@@ -35,3 +36,7 @@ class UpdateModel(BaseModel):
 
 class RoleModel(BaseModel):
     role: Role
+
+
+class ActiveModel(BaseModel):
+    active: bool

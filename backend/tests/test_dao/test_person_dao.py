@@ -353,3 +353,42 @@ def test_revoke_access_token(personne_test, connexion_test):
 
     assert ligne["access_token_hash"] is None
     assert ligne["access_token_expires_at"] is None
+
+
+def test_set_active_desactive_et_coupe_la_session(personne_test):
+    """Un compte désactivé est relu inactif, et son jeton en cours ne fonctionne plus (F1)."""
+
+    # GIVEN : un compte actif, connecté avec un jeton valide
+    dao = PersonDAO()
+    token = f"jeton-{uuid4().hex}"
+    expiration = datetime.now(timezone.utc) + timedelta(hours=24)
+    dao.update_access_token(personne_test.id, token, expiration)
+    assert dao.find_by_id(personne_test.id).active is True
+
+    # WHEN
+    resultat = dao.set_active(personne_test.id, False)
+
+    # THEN
+    assert resultat is True
+    assert dao.find_by_id(personne_test.id).active is False
+    assert dao.find_by_token(token) is None
+
+
+def test_set_active_reactive(personne_test):
+    """Un compte désactivé puis réactivé est relu actif."""
+
+    # GIVEN
+    dao = PersonDAO()
+    dao.set_active(personne_test.id, False)
+
+    # WHEN
+    resultat = dao.set_active(personne_test.id, True)
+
+    # THEN
+    assert resultat is True
+    assert dao.find_by_id(personne_test.id).active is True
+
+
+def test_set_active_compte_inexistant(connexion_test):
+    """Aucune ligne modifiée pour un identifiant inconnu."""
+    assert PersonDAO().set_active(-1, False) is False

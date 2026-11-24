@@ -123,6 +123,17 @@ def changer_role(token: str, id_compte: int, nouveau_role: str) -> dict:
     return _lire(reponse)
 
 
+def changer_statut(token: str, id_compte: int, actif: bool) -> dict:
+    """Désactive (actif=False) ou réactive (actif=True) un compte (réservé à l'administrateur)."""
+    reponse = requests.put(
+        f"{API_URL}/person/{id_compte}/active",
+        headers={"x-auth-token": token},
+        json={"active": actif},
+        timeout=TIMEOUT,
+    )
+    return _lire(reponse)
+
+
 def supprimer_compte(token: str, id_compte: int) -> None:
     """Supprime définitivement un compte (réservé à l'administrateur)."""
     reponse = requests.delete(

@@ -1,4 +1,4 @@
-"""Tests de PersonService : modification, changement de rôle et suppression de comptes (sans base)."""
+"""Tests de PersonService : modification, changement de rôle, désactivation et suppression de comptes (sans base)."""
 
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -7,7 +7,7 @@ import pytest
 
 from business_object.types import Role
 from service.person_service import PersonService
-from utils.exceptions import AuthError, PersonNotFound
+from utils.exceptions import AccountDisabled, AuthError, PersonNotFound, WrongCredError
 
 ADMIN = SimpleNamespace(id=1, role=Role.Administrateur)
 SUPERVISEUR = SimpleNamespace(id=2, role=Role.Superviseur)
@@ -80,3 +80,58 @@ def test_delete_compte_inconnu(mock_dao):
     mock_dao.return_value.delete.return_value = False
     with pytest.raises(PersonNotFound):
         PersonService().delete(99, ADMIN)
+
+# --- set_active : désactivation et réactivation d'un compte (F1) ---
+
+@pytest.mark.parametrize("statut", [False, True])
+@patch("service.person_service.PersonDAO")
+def test_set_active_ok(mock_dao, statut):
+    """L'administrateur désactive ou réactive un autre compte : le DAO enregistre le nouveau statut."""
+    compte = SimpleNamespace(id=9, role=Role.Utilisateur, active=not statut)
+    mock_dao.return_value.find_by_id.return_value = compte
+
+    resultat = PersonService().set_active(9, statut, ADMIN)
+
+    assert resultat.active is statut
+    mock_dao.return_value.set_active.assert_called_once_with(9, statut)
+
+
+@pytest.mark.parametrize("auteur, cible", [(SUPERVISEUR, 9), (ADMIN, ADMIN.id)])
+def test_set_active_refuse(auteur, cible):
+    """Refusé pour un non-administrateur, et pour un administrateur sur son propre compte."""
+    with pytest.raises(AuthError):
+        PersonService().set_active(cible, False, auteur)
+
+
+@patch("service.person_service.PersonDAO")
+def test_set_active_compte_inconnu(mock_dao):
+    """Le compte visé n'existe pas : PersonNotFound, et aucun statut n'est écrit."""
+    mock_dao.return_value.find_by_id.return_value = None
+    with pytest.raises(PersonNotFound):
+        PersonService().set_active(99, False, ADMIN)
+    mock_dao.return_value.set_active.assert_not_called()
+
+
+# --- login : un compte désactivé ne peut plus se connecter ---
+
+@patch("service.person_service.verify_password", return_value=True)
+@patch("service.person_service.PersonDAO")
+def test_login_compte_desactive_refuse(mock_dao, mock_verify):
+    """Bon mot de passe mais compte désactivé : AccountDisabled, et aucun jeton n'est créé."""
+    compte = SimpleNamespace(id=9, email="x@test.fr", password="hash", role=Role.Utilisateur, active=False)
+    mock_dao.return_value.find_by_email.return_value = compte
+
+    with pytest.raises(AccountDisabled):
+        PersonService().login("x@test.fr", "MotDePasse1!")
+    mock_dao.return_value.update_access_token.assert_not_called()
+
+
+@patch("service.person_service.verify_password", return_value=False)
+@patch("service.person_service.PersonDAO")
+def test_login_compte_desactive_mauvais_mot_de_passe(mock_dao, mock_verify):
+    """Mauvais mot de passe sur un compte désactivé : WrongCredError, l'état du compte n'est pas révélé."""
+    compte = SimpleNamespace(id=9, email="x@test.fr", password="hash", role=Role.Utilisateur, active=False)
+    mock_dao.return_value.find_by_email.return_value = compte
+
+    with pytest.raises(WrongCredError):
+        PersonService().login("x@test.fr", "Faux1!")

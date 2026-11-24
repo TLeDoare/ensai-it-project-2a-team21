@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from business_object.types import Role
 from controller.login_controller import get_person_service
 from main import app
-from utils.exceptions import WrongCredError
+from utils.exceptions import AccountDisabled, WrongCredError
 from utils.security import verify_token
 
 IDENTIFIANTS = {"email": "jean@test.fr", "password": "MotDePasse1!"}
@@ -72,3 +72,10 @@ def test_logout_jeton_invalide_refuse(client, service):
     """Le service ne trouve pas le jeton à révoquer : 401."""
     service.logout.return_value = False
     assert client.post("/login/logout/", headers={"x-auth-token": "faux"}).status_code == 401
+
+def test_login_compte_desactive_refuse(client, service):
+    """Compte désactivé : 403 avec un message explicite, sans jeton."""
+    service.login.side_effect = AccountDisabled
+    reponse = client.post("/login/", json=IDENTIFIANTS)
+    assert reponse.status_code == 403
+    assert "désactivé" in reponse.json()["detail"]

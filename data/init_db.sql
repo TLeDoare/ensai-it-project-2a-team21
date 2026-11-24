@@ -8,6 +8,7 @@ CREATE TABLE Person (
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(25) NOT NULL, -- 'utilisateur', 'superviseur', 'administrateur'
+  active BOOLEAN NOT NULL DEFAULT TRUE, -- FALSE : compte désactivé, connexion refusée (F1)
   access_token_hash VARCHAR(64),
   access_token_expires_at TIMESTAMPTZ
 );

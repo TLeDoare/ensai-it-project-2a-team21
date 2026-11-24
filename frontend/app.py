@@ -58,9 +58,13 @@ def page_connexion():
         if valider:
             try:
                 reponse = api.connexion(email, mot_de_passe)
-            except api.ApiError:
-                # Message volontairement vague : on n'indique pas si c'est l'e-mail ou le mot de passe.
-                st.error("E-mail ou mot de passe incorrect.")
+            except api.ApiError as erreur:
+                # 403 : bons identifiants mais compte désactivé par un administrateur (F1)
+                if erreur.status == 403:
+                    st.error(erreur.message)
+                else:
+                    # Message volontairement vague : on n'indique pas si c'est l'e-mail ou le mot de passe.
+                    st.error("E-mail ou mot de passe incorrect.")
                 return
             # Conservé d'une page à l'autre ; le jeton accompagne chaque appel à l'API.
             st.session_state.utilisateur = {
@@ -335,7 +339,16 @@ def page_comptes():
     if comptes:
         # Le mot de passe haché n'est jamais affiché : seules l'identité et le rôle sont utiles ici.
         tableau = pd.DataFrame(
-            [{"N°": c.get("id"), "E-mail": c.get("email"), "Rôle": c.get("role")} for c in comptes]
+            [
+                {
+                    "N°": c.get("id"),
+                    "E-mail": c.get("email"),
+                    "Rôle": c.get("role"),
+                    # Statut F1 : un compte désactivé est conservé mais ne peut plus se connecter
+                    "Statut": "Actif" if c.get("active", True) else "Désactivé",
+                }
+                for c in comptes
+            ]
         )
                 # Un compteur pour le total, puis un par rôle (0 si aucun compte n'a ce rôle)
         colonnes = st.columns(4)
@@ -359,16 +372,18 @@ def page_comptes():
         """Ouvre le panneau demandé, ou le referme s'il est déjà ouvert."""
         st.session_state.action_compte = None if st.session_state.action_compte == action else action
 
-    col_creer, col_modifier, col_supprimer = st.columns(3)
+    col_creer, col_modifier, col_statut, col_supprimer = st.columns(4)
     col_creer.button("Créer un compte", type="primary", use_container_width=True,
                      on_click=basculer, args=("creer",))
     col_modifier.button("Modifier un compte", type="primary", use_container_width=True,
                         on_click=basculer, args=("modifier",), disabled=not comptes)
+    col_statut.button("Activer / désactiver", type="primary", use_container_width=True,
+                      on_click=basculer, args=("statut",), disabled=not comptes)
     col_supprimer.button("Supprimer un compte", type="primary", use_container_width=True,
                          on_click=basculer, args=("supprimer",), disabled=not comptes)
 
     action = st.session_state.action_compte
-    # Liste des comptes au format lisible, partagée par les panneaux Modifier et Supprimer
+    # Liste des comptes au format lisible, partagée par les panneaux Modifier, Statut et Supprimer
     choix = {f"{c['email']} ({c['role']})": c for c in comptes} if comptes else {}
     roles = list(ECRANS.keys())
 
@@ -417,6 +432,29 @@ def page_comptes():
             try:
                 api.changer_role(token, compte["id"], nouveau_role)
                 st.success(f"{compte['email']} a maintenant le rôle {nouveau_role}.")
+                st.rerun()
+            except api.ApiError as erreur:
+                st.error(f"Changement refusé ({erreur.status}) : {erreur.message}")
+
+    # --- Panneau Activer / désactiver ---
+    elif action == "statut":
+        st.markdown("**Activer ou désactiver un compte**")
+        st.caption("Un compte désactivé est conservé avec son historique, mais ne peut plus se connecter.")
+
+        # Message de réussite conservé après le rechargement de la page (st.rerun efface l'affichage)
+        if "message_statut" in st.session_state:
+            st.success(st.session_state.pop("message_statut"))
+
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_statut")]
+        actif = compte.get("active", True)
+        st.write(f"Statut actuel : **{'Actif' if actif else 'Désactivé'}**")
+        # Le bouton propose l'action inverse du statut actuel
+        libelle = "Désactiver ce compte" if actif else "Réactiver ce compte"
+        if st.button(libelle, type="primary"):
+            try:
+                api.changer_statut(token, compte["id"], not actif)
+                etat = "désactivé" if actif else "réactivé"
+                st.session_state["message_statut"] = f"Compte {compte['email']} {etat}."
                 st.rerun()
             except api.ApiError as erreur:
                 st.error(f"Changement refusé ({erreur.status}) : {erreur.message}")

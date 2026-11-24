@@ -59,7 +59,8 @@ def connexion_test():
             cursor.execute("""
                 ALTER TABLE project_test_dao.person
                 ADD COLUMN IF NOT EXISTS access_token_hash VARCHAR(64),
-                ADD COLUMN IF NOT EXISTS access_token_expires_at TIMESTAMPTZ
+                ADD COLUMN IF NOT EXISTS access_token_expires_at TIMESTAMPTZ,
+                ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE
             """)
 
             cursor.execute("""

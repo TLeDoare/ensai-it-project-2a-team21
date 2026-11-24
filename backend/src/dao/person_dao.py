@@ -15,6 +15,8 @@ class PersonDAO:
             email=result["email"],
             password=result["password"],
             role=Role[result["role"].capitalize()],
+            # Statut du compte (F1) : actif par défaut si la ligne lue ne contient pas la colonne
+            active=result.get("active", True),
         )
 
     def find_by_id(self, id: int) -> Person | None:
@@ -23,7 +25,7 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role
+                    SELECT id, email, password, role, active
                     FROM Person
                     WHERE id = %s
                     """,
@@ -42,7 +44,7 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role
+                    SELECT id, email, password, role, active
                     FROM Person
                     WHERE email = %s
                     """,
@@ -64,10 +66,11 @@ class PersonDAO:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, email, password, role
+                    SELECT id, email, password, role, active
                     FROM Person
                     WHERE access_token_hash = %s
                       AND access_token_expires_at > CURRENT_TIMESTAMP
+                      AND active
                     """,
                     (token_hash,),
                 )
@@ -87,7 +90,7 @@ class PersonDAO:
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id, email, password, role        "
+                    "SELECT id, email, password, role, active"
                     "  FROM Person                           "
                 )
                 res = cursor.fetchall()
@@ -190,3 +193,24 @@ class PersonDAO:
                 cursor.execute("DELETE FROM Person WHERE id = %s", (id,))
                 nb_lignes_supprimees = cursor.rowcount
         return nb_lignes_supprimees == 1
+
+    def set_active(self, id: int, active: bool) -> bool:
+        """Active ou désactive un compte. Renvoie True si une ligne a été modifiée.
+
+        Désactiver un compte efface aussi son jeton de session : la personne est déconnectée
+        immédiatement, sans attendre l'expiration du jeton.
+        """
+        with DBConnection().connection as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE Person
+                    SET active = %(active)s,
+                        access_token_hash = CASE WHEN %(active)s THEN access_token_hash END,
+                        access_token_expires_at = CASE WHEN %(active)s THEN access_token_expires_at END
+                    WHERE id = %(id)s
+                    """,
+                    {"active": active, "id": id},
+                )
+                nb_lignes_modifiees = cursor.rowcount
+        return nb_lignes_modifiees == 1

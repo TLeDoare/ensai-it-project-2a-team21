@@ -112,3 +112,22 @@ def test_supprimer_compte_erreurs(client, service, erreur, code):
     """Compte inconnu : 404 ; non-administrateur ou son propre compte : 403."""
     service.delete.side_effect = erreur
     assert client.delete("/person/5").status_code == code
+
+# --- PUT /person/{id}/active : désactivation et réactivation (F1) ---
+
+def test_desactiver_compte_ok(client, service):
+    """Désactivation réussie : 200, le compte renvoyé est inactif, et le service a reçu le bon statut."""
+    service.set_active.return_value = SimpleNamespace(id=5, email="x@test.fr", role=Role.Utilisateur, active=False)
+
+    reponse = client.put("/person/5/active", json={"active": False})
+
+    assert reponse.status_code == 200
+    assert reponse.json()["active"] is False
+    assert service.set_active.call_args.args[:2] == (5, False)
+
+
+@pytest.mark.parametrize("erreur, code", [(PersonNotFound, 404), (AuthError, 403)])
+def test_desactiver_compte_erreurs(client, service, erreur, code):
+    """Compte inconnu : 404 ; non-administrateur ou son propre compte : 403."""
+    service.set_active.side_effect = erreur
+    assert client.put("/person/5/active", json={"active": False}).status_code == code
