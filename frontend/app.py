@@ -190,6 +190,26 @@ def afficher_resultat(resultat: dict):
             "sous le détecteur retenu lors de la fusion des chevauchements."
         )
 
+    # FO2 : comparaison du pipeline classique et de la réécriture directe par le LLM
+    if "direct" in resultat or "direct_erreur" in resultat:
+        with st.expander("Comparer avec l'anonymisation directe par le LLM", expanded=True):
+            if "direct_erreur" in resultat:
+                st.error("La réécriture directe a échoué : " + resultat["direct_erreur"])
+            else:
+                col_classique, col_direct = st.columns(2)
+                with col_classique:
+                    st.markdown("**Pipeline classique** (détection puis remplacement)")
+                    with st.container(border=True, height=300):
+                        st.markdown(surligner(reponse["content"], []), unsafe_allow_html=True)
+                with col_direct:
+                    st.markdown("**Réécriture directe par le LLM**")
+                    with st.container(border=True, height=300):
+                        st.markdown(surligner(resultat["direct"], []), unsafe_allow_html=True)
+                st.caption(
+                    "La réécriture directe n'est pas vérifiable : on ne sait pas quelles données le LLM a remplacées, "
+                    "ni s'il en a oublié. Elle sert à comparer, pas à diffuser ; elle n'est pas enregistrée dans l'historique."
+                )
+
     st.download_button(
         "Télécharger le document caviardé",
         reponse["content"],
@@ -224,6 +244,8 @@ def page_caviarder():
     with st.expander("Options"):
         strategie = st.radio("Stratégie", ["Masquage", "Pseudonymisation"], index=0)
         utiliser_llm = st.toggle("Utiliser le LLM (noms, adresses, lieux...)", value=True)
+        # FO2 : second appel, indépendant du premier, où le LLM réécrit lui-même le document
+        comparer_direct = st.toggle("Comparer avec l'anonymisation directe par le LLM", value=False)
 
     if st.button("Caviarder", type="primary"):
         # Le fichier est prioritaire ; à défaut, le texte collé est envoyé comme un fichier.
@@ -250,6 +272,18 @@ def page_caviarder():
             "duree": time.perf_counter() - debut,
             "llm": utiliser_llm,
         }
+
+        # FO2 : un échec de ce second appel n'empêche pas d'afficher le caviardage classique
+        if comparer_direct:
+            try:
+                with st.spinner("Réécriture directe par le LLM..."):
+                    # Même stratégie que le caviardage classique, pour comparer ce qui est comparable
+                    direct = api.anonymiser_par_llm(
+                        st.session_state.utilisateur["token"], nom, contenu, masquer=(strategie == "Masquage")
+                    )
+                st.session_state.resultat["direct"] = direct["content"]
+            except api.ApiError as erreur:
+                st.session_state.resultat["direct_erreur"] = f"{erreur.message} ({erreur.status})"
 
     if "resultat" in st.session_state:
         afficher_resultat(st.session_state.resultat)

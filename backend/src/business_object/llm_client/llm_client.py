@@ -4,7 +4,7 @@ from openai import AsyncOpenAI
 
 from utils.env_variables import load_environment_variables
 
-from .prompt_templates import SYSTEM_PROMPT, build_user_message
+from .prompt_templates import SYSTEM_PROMPT, build_rewrite_message, build_rewrite_system_prompt, build_user_message
 
 load_environment_variables()
 
@@ -32,3 +32,22 @@ async def detect_pii(document: str) -> str | None:
         response_format={"type": "json_object"},
     )
     return response.choices[0].message.content
+
+
+async def anonymiser_directement(document: str, masquer: bool = True) -> str:
+    """FO2 : le LLM renvoie directement le document anonymisé (texte libre, pas de JSON).
+
+    masquer=True : marqueurs [NAME_1]... ; masquer=False : données fictives (pseudonymisation).
+    """
+    client = create_client()
+
+    response = await client.chat.completions.create(
+        model=os.getenv("LLM_MODEL", "gemma4-26b-moe"),
+        messages=[
+            {"role": "system", "content": build_rewrite_system_prompt(masquer)},
+            {"role": "user", "content": build_rewrite_message(document)},
+        ],
+        temperature=0.1,
+        max_tokens=8000,
+    )
+    return response.choices[0].message.content or ""

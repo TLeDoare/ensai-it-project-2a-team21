@@ -84,6 +84,17 @@ def caviarder(token: str, nom_fichier: str, contenu: bytes, utiliser_llm: bool =
         timeout=TIMEOUT_LLM,
     )
     return _lire(reponse)
+
+def anonymiser_par_llm(token: str, nom_fichier: str, contenu: bytes, masquer: bool = True) -> dict:
+    """FO2 : demande au LLM de réécrire lui-même le document anonymisé (rien n'est enregistré)."""
+    reponse = requests.post(
+        f"{API_URL}/doc/redact_llm/",
+        headers={"x-auth-token": token},
+        files={"file": (nom_fichier, contenu, "text/plain")},
+        data={"mask": masquer},
+        timeout=TIMEOUT_LLM,
+    )
+    return _lire(reponse)
     ############################################ADMIN#######
 
 def historique(token: str) -> list:
