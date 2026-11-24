@@ -21,16 +21,22 @@ load_environment_variables()
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
-    Intercepts Pydantic 422 errors to log them.
+    Intercepte les erreurs de validation Pydantic (422).
+
+    Ni les logs ni la réponse ne contiennent les valeurs envoyées (ER1-04) : une requête
+    mal formée peut contenir un mot de passe ou un extrait de document.
     """
     logger.error("Validation Error.")
 
-    # On renvoie une réponse à l'utilisateur, mais l'erreur précise est cachée des logs.
-    # Si cela pose un problème de sécurité, c'est que l'utilisateur est sur un réseau non sécurisé, donc qu'il a déjà
-    # fait fuiter son mot de passe par sa requête de login.
+    # Pour chaque erreur, on garde seulement le champ concerné (loc), le message (msg)
+    # et le type d'erreur (type) ; la valeur reçue (input) n'est jamais renvoyée.
+    erreurs = [
+        {"loc": erreur["loc"], "msg": erreur["msg"], "type": erreur["type"]}
+        for erreur in exc.errors()
+    ]
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={"detail": exc.errors()},
+        content={"detail": erreurs},
     )
 
 
