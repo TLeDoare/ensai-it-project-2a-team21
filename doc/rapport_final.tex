@@ -19,6 +19,9 @@
 \usepackage{setspace}
 \usepackage{pdflscape}
 \usepackage{rotating}
+\usepackage{tabularx}
+\usepackage{array}
+
 
 \geometry{
     top=2.5cm,
@@ -552,13 +555,67 @@ C'est le cœur du système. Les tests vérifient la création de A à Z d'un doc
 
 Quelques semaines avant le rendu final, dans l'optique d'aider à l'amélioration de notre projet, notre tuteur a réalisé un audit complet de l'application sous la forme d'un fichier Markdown (\texttt{.md}) recensant 26 constats (1 critique, 9 élevés, 12 moyens et 4 faibles), qui met en valeur certains acquis tout en pointant des vulnérabilités et dysfonctionnements sur des événements redoutés tels que l'exfiltration de PII (\texttt{ER1}), l'usage non autorisé de la clé LLM (\texttt{ER2}) ou la compromission des identifiants utilisateurs (\texttt{ER3}). L'audit comporte également une section dédiée à l'injection de prompt (conformité à la fonctionnalité F5 et efficacité réelle, avec des points comme l'absence de filtre amont \texttt{INJ-01}, l'absence de tests adversariaux et de CI \texttt{INJ-02} ou la détection des omissions \texttt{INJ-03}), ainsi qu'une partie consacrée à l'architecture, à l'asynchronisme (\texttt{GEN-02}) et à la qualité globale (\texttt{GEN-01} à \texttt{GEN-08}). Pour traiter méthodiquement la majorité de ces retours, nous avons mis en place un fichier de suivi d'avancement détaillant les réactions apportées : la majorité des constats sont marqués comme \textit{Fixé}, comme la suppression des valeurs sensibles dans les logs et réponses 422 (\texttt{ER1-04}), la création différée du client LLM uniquement lors d'un appel (\texttt{ER2-02}), la restriction de la réinitialisation de la base aux administrateurs (\texttt{ER3-01}), l'ajout d'un filtre, de tests et de la journalisation sur l'injection (\texttt{INJ-01} à \texttt{INJ-05}), l'exécution parallèle de la regex et du LLM via \texttt{asyncio.gather} (\texttt{GEN-02}), ou encore le calcul de l'empreinte du document par HMAC-SHA256 avec \texttt{DOC\_HASH\_SECRET} (\texttt{GEN-08}).
 
-\begin{figure}[htbp]
-    \centering
-    % Remplacer le chemin ci-dessous par le fichier de capture d'écran de audit_groupe-21.md
-    \includegraphics[width=0.95\textwidth]{suivi_audit_groupe21.png}
-    \caption{Aperçu du fichier de l'avancement du traitement de l'audit (\texttt{audit\_groupe-21.md})}
-    \label{fig:audit_groupe21}
-\end{figure}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{1.5cm}|
+                  >{\raggedright\arraybackslash}p{6cm}|
+                  >{\raggedright\arraybackslash}p{8cm}|}
+\hline
+\textbf{Code audit} & \textbf{Description} & \textbf{Réaction} \\
+\hline
+ER1-01 & Le texte intégral de chaque document est écrit en clair dans le fichier de log & Fixé \\
+\hline
+ER1-02 & Mode dégradé silencieux (fail-open) & Fixé \\
+\hline
+ER1-03 & Le prompt demande des types que le vérificateur rejette & Fixé \\
+\hline
+ER1-04 & Le gestionnaire d'erreur 422 renvoie et journalise le corps brut des requêtes & Fixé : ni les logs ni la réponse 422 ne contiennent les valeurs envoyées ; seuls le champ, le message et le type d'erreur sont renvoyés \\
+\hline
+ER1-05 & Surface web, documentation et protections frontend désactivées & Justifié : CORS et XSRF désactivés pour fonctionner derrière le proxy d'Onyxia, à réactiver en production \\
+\hline
+ER2-01 & Consommation non bornée, atteignable sans compte légitime & Fixé \\
+\hline
+ER2-02 & La clé est obligatoire pour démarrer, même sans LLM & Fixé : le client LLM n'est créé qu'au moment d'un appel au LLM \\
+\hline
+ER3-01 & Réinitialisation de la base sans authentification et comptes par défaut commités & Fixé pour la réinitialisation (administrateur uniquement) ; comptes de test justifiés pour la démonstration \\
+\hline
+ER3-02 & Hachage de mot de passe inadapté & Fixé \\
+\hline
+ER3-03 & Jetons de session permanents, stockés en clair, sans révocation & Fixé \\
+\hline
+ER3-04 & Aucune protection contre la force brute, aucune politique de mot de passe & Fixé : politique de mot de passe imposée (8 caractères, majuscule, minuscule, chiffre, caractère spécial) ; après 5 échecs de connexion en 15 minutes pour une même adresse, elle est bloquée 15 minutes (code 429), y compris pour une adresse inconnue afin de ne pas révéler quels comptes existent ; chaque blocage est écrit dans backend/logs/backend.log (utils/limiteur\_connexion.py, tests dans test\_limite\_connexion.py) \\
+\hline
+ER3-05 & Liste complète des utilisateurs exposée au rôle superviseur & Justifié \\
+\hline
+INJ-01 & Le filtre d'injection décrit dans le rapport n'existe pas & Fixé \\
+\hline
+INJ-02 & Aucun jeu adversarial exécuté, aucune CI & Fixé, et justifié \\
+\hline
+INJ-03 & La vérification de sortie ne peut pas détecter une omission & Fixé \\
+\hline
+INJ-04 & Délimitation contournable et prompt contradictoire & Fixé \\
+\hline
+INJ-05 & Aucune trace des tentatives d'injection dans la journalisation F4 & Fixé \\
+\hline
+INJ-06 & Sur-caviardage et consommation pilotables par le document & Justifié \\
+\hline
+GEN-01 & Le flux principal de caviardage est cassé à ce commit & Fixé \\
+\hline
+GEN-02 & Architecture et asynchronisme & Fixé : regex et LLM lancés en parallèle (\texttt{asyncio.gather}), regex dans des fils séparés \\
+\hline
+GEN-03 & Qualité de la détection & Fixé : 97\,\% de rappel et 100\,\% de précision avec gemma4-26b-moe (jeu d'essai de 32 données, 3 passages) \\
+\hline
+GEN-04 & Tests et CI & Fixé : 182 tests unitaires lancés par la CI (couverture 84\,\% ; 210 tests et 92\,\% de couverture avec les tests DAO) \\
+\hline
+GEN-05 & Robustesse et validation des entrées & Fixé : taille maximale (413), encodage UTF-8 (415), validation Pydantic des e-mails et mots de passe \\
+\hline
+GEN-06 & Dépendances & Fixé : versions figées dans \texttt{uv.lock} \\
+\hline
+GEN-07 & Reproductibilité et configuration & Fixé : \texttt{.env.example}, \texttt{uv.lock} et procédure d'installation complète dans le README \\
+\hline
+GEN-08 & Empreinte du document original & Fixé : HMAC-SHA256 avec une clé secrète (\texttt{DOC\_HASH\_SECRET}) \\
+\hline
+\end{longtable}
+
 
 Pour autant, tous les constats n'ont pas appelé une correction technique totale : certains ont été classés comme \textit{« Justifié »} ou \textit{« Partiellement fixé »} lorsque le choix de conception répondait à un contexte précis ou à une limite assumée. Par exemple, le point \texttt{ER3-04} est noté partiellement corrigé car une politique de mot de passe robuste a bien été imposée (au moins 8 caractères, majuscule, minuscule, chiffre et caractère spécial), mais aucune limitation du nombre de tentatives de connexion n'a été ajoutée, choix assumé compte tenu du cadre du projet. De même, certains identifiants ou comptes de test de base n'ont pas été supprimés ou durcis comme dans un produit fini (à l'image des comptes de test conservés pour la démonstration dans \texttt{ER3-01} ou des protections CORS/XSRF désactivées pour Onyxia dans \texttt{ER1-05}), car il s'agit d'un projet académique orienté développement, test et démonstration plutôt que d'un livrable final déployé en production.
 
@@ -573,7 +630,7 @@ L'évaluation globale du pipeline s'appuie sur un corpus d'environ cinquante doc
     \centering
     % Remplacer le chemin ci-dessous par celui de votre capture d'écran de la matrice de confusion
     \includegraphics[width=0.9\textwidth]{matrice_confusion.png}
-    \caption{Matrice de confusion multi-classes obtenue sur le corpus d'évaluation par rapport à \texttt{ground\_truth\_spans.json}.}
+    \caption{Rapport de performance multi-classes obtenue sur le corpus d'évaluation par rapport à \texttt{ground\_truth\_spans.json}.}
     \label{fig:matrice_confusion}
 \end{figure}
 
@@ -614,7 +671,7 @@ Enfin, le reste a fini par être testé plus tard, lorsque nous avions implémen
 \textit{Présenter le bilan du projet,
 les limites rencontrées et les améliorations possibles.}
 (...)
-Parmi les fonctionnalités qui n'ont pas été implémentées, il y a le NER qui peut être intégré directement dans l'architecture existante en ajoutant une valeur à l'énumération des analyseurs, en créant un décorateur dédié (SpacyDecorator) qui extrait les entités nommées (personnes, lieux, organisations) avec leurs positions de caractères (start_char, end_char), et en l'enregistrant dans AnalyserFactory. Cela offrirait une alternative locale sans dépendance externe pour comparer un modèle NER dédié à un LLM généraliste. Enfin, empaqueter l'API FastAPI, l'interface et la base de données dans des conteneurs Docker faciliterait grandement le déploiement sur différents environnements (comme Onyxia) tout en évitant les écarts de configuration entre postes. Couplée à une intégration continue plus complète (exécution systématique des tests unitaires et d'intégration, vérifications de qualité de code et contrôles de sécurité à chaque poussée), cette démarche rendrait le projet encore plus fiable, reproductible et prêt pour une mise en production.
+Parmi les fonctionnalités qui n'ont pas été implémentées, il y a le NER qui peut être intégré directement dans l'architecture existante en ajoutant une valeur à l'énumération des analyseurs, en créant un décorateur dédié (SpacyDecorator) qui extrait les entités nommées (personnes, lieux, organisations) avec leurs positions de caractères (start\_char, end\_char), et en l'enregistrant dans AnalyserFactory. Cela offrirait une alternative locale sans dépendance externe pour comparer un modèle NER dédié à un LLM généraliste. Enfin, empaqueter l'API FastAPI, l'interface et la base de données dans des conteneurs Docker faciliterait grandement le déploiement sur différents environnements (comme Onyxia) tout en évitant les écarts de configuration entre postes. Couplée à une intégration continue plus complète (exécution systématique des tests unitaires et d'intégration, vérifications de qualité de code et contrôles de sécurité à chaque poussée), cette démarche rendrait le projet encore plus fiable, reproductible et prêt pour une mise en production.
 
 Nous avons identifié d'autres pistes d'amélioration, comme les temps de traitements longs qui proviennent principalement des appels aux modèles LLM (temps d'inférence et latence réseau/API externe) et du traitement de documents longs. L'approche asynchrone (async/await) permet de ne pas bloquer la boucle d'événements et d'exécuter plus efficacement les opérations concurrentes (par exemple combiner un traitement Regex rapide avec d'autres étapes). Pour aller plus loin, l'ajout de timeouts ou d'un cache sur les contenus déjà analysés permettrait de réduire encore davantage la latence.
 % ==================================================
@@ -886,5 +943,6 @@ systématique. \\
 \end{longtable}
 
 \newpage
+
 \end{document}
 
