@@ -76,24 +76,32 @@ def role(id_person: int, token: str) -> str:
 def caviarder(token: str, nom_fichier: str, contenu: bytes, utiliser_llm: bool = True, masquer: bool = True) -> dict:
     # L'API lit params avec ast.literal_eval : il faut une écriture Python (True/False), pas du JSON.
     params = repr({"llm": utiliser_llm, "mask": masquer})
-    reponse = requests.post(
-        f"{API_URL}/doc/redact/",
-        headers={"x-auth-token": token},
-        files={"file": (nom_fichier, contenu, "text/plain")},
-        data={"params": params},
-        timeout=TIMEOUT_LLM,
-    )
+    try:
+        reponse = requests.post(
+            f"{API_URL}/doc/redact/",
+            headers={"x-auth-token": token},
+            files={"file": (nom_fichier, contenu, "text/plain")},
+            data={"params": params},
+            timeout=TIMEOUT_LLM,
+        )
+    except requests.Timeout as erreur:
+        # Message lisible au lieu d'une trace d'erreur dans l'interface
+        raise ApiError(504, "Le serveur n'a pas répondu à temps. Réessayez, ou décochez le LLM.") from erreur
     return _lire(reponse)
 
 def anonymiser_par_llm(token: str, nom_fichier: str, contenu: bytes, masquer: bool = True) -> dict:
     """FO2 : demande au LLM de réécrire lui-même le document anonymisé (rien n'est enregistré)."""
-    reponse = requests.post(
-        f"{API_URL}/doc/redact_llm/",
-        headers={"x-auth-token": token},
-        files={"file": (nom_fichier, contenu, "text/plain")},
-        data={"mask": masquer},
-        timeout=TIMEOUT_LLM,
-    )
+    try:
+        reponse = requests.post(
+            f"{API_URL}/doc/redact_llm/",
+            headers={"x-auth-token": token},
+            files={"file": (nom_fichier, contenu, "text/plain")},
+            data={"mask": masquer},
+            timeout=TIMEOUT_LLM,
+        )
+    except requests.Timeout as erreur:
+        # Le caviardage classique reste affiché ; seule la comparaison FO2 manque
+        raise ApiError(504, "Le LLM n'a pas fini de réécrire le document à temps.") from erreur
     return _lire(reponse)
     ############################################ADMIN#######
 

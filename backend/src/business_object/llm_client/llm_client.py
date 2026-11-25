@@ -18,11 +18,12 @@ load_environment_variables()
 # on doit encapsuler cela dans une fonction pour qu'il soit:
 # 1) non executé dans le cas où ne veut pas utiliser le LLM
 # 2) mocké dans les tests qui ont besoin d'accéder à AsyncOpenAI
-def create_client():
+def create_client(max_retries: int = 2):
     return AsyncOpenAI(
         base_url=os.environ["LLM_BASE_URL"],
         api_key=os.environ["SSPCLOUD_API_KEY"],
         timeout=120.0,
+        max_retries=max_retries,
     )
 
 async def detect_pii(document: str) -> str | None:
@@ -46,7 +47,9 @@ async def anonymiser_directement(document: str, masquer: bool = True) -> str:
 
     masquer=True : marqueurs [NAME_1]... ; masquer=False : données fictives (pseudonymisation).
     """
-    client = create_client()
+        # Pas de nouvel essai automatique : réécrire un long document peut dépasser 120 s,
+    # et 3 essais dépasseraient les 180 s d'attente du front
+    client = create_client(max_retries=0)
 
     response = await client.chat.completions.create(
         model=os.getenv("LLM_MODEL", "gemma4-26b-moe"),
