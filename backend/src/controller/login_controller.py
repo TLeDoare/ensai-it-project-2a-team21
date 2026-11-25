@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 
 from schema.person_model import LoginModel
 from service.person_service import PersonService
-from utils.exceptions import AccountDisabled, WrongCredError
+from utils.exceptions import AccountDisabled, TooManyAttempts, WrongCredError
 from utils.log_utils import get_logger
 from utils.security import verify_token
 
@@ -33,6 +33,10 @@ def login(credentials: LoginModel, service=Depends(get_person_service)):
         raise HTTPException(status_code=401, detail="Invalid credentials") from WrongCredError
     except AccountDisabled:
         raise HTTPException(status_code=403, detail="Ce compte est désactivé. Contactez un administrateur.") from AccountDisabled
+    except TooManyAttempts:
+        raise HTTPException(
+            status_code=429, detail="Trop d'essais de connexion ratés. Réessayez dans 15 minutes."
+        ) from TooManyAttempts
 
 
 @router.post("/logout/")

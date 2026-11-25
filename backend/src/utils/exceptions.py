@@ -30,3 +30,6 @@ class RedactorError(Exception):
 
 class AccountDisabled(Exception):
     """Le compte existe mais a été désactivé par un administrateur : connexion refusée."""
+
+class TooManyAttempts(Exception):
+    """Trop d'essais de connexion ratés pour cette adresse : connexion refusée pendant un moment (ER3-04)."""

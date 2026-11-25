@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
 from business_object.analyser.overlap import resoudre_chevauchements
 from business_object.llm_client.injection_filter import InjectionFilter
+from business_object.llm_client.injection_judge import SUSPECT, InjectionJudge
 from business_object.llm_client.llm_client import anonymiser_directement
 from business_object.person import Person
 from business_object.redacted_doc import RedactedDoc
@@ -38,7 +40,17 @@ class DocService:
         text = file
 
         analyser = AnalyserFactory().get_analyser(params)
-        positions = await analyser.analyse(text)
+        params_journal = dict(params)
+        if params.get("llm", True):
+            # FO3 : le juge d'injection tourne en parallèle de la détection ; son verdict est
+            # seulement enregistré dans le journal, il ne bloque jamais le caviardage
+            positions, verdict = await asyncio.gather(analyser.analyse(text), InjectionJudge().juger(text))
+            params_journal["juge_injection"] = verdict
+            if verdict == SUSPECT:
+                logger.warning(f"Le juge d'injection signale le document de {sent_by.email}")
+                InjectionAttemptDAO().register_attempt(sent_by.email, hash_document(file), "Juge LLM")
+        else:
+            positions = await analyser.analyse(text)
 
         # On s'assure ici que l'analyse n'a pas rencontré de problème
         analysis_fail = []
@@ -63,7 +75,7 @@ class DocService:
         author = PersonDAO().find_by_id(sent_by.id)
 
         # Si l'analyse rate, elle est convertie en chaîne de caractère pour être facilement retransmise à l'utilisateur
-        redacted_doc = RedactedDoc(doc_hash, datetime.now(), author.email, params, positions_filtrees, None, redacted_content, [af.to_str_tuple() for af in analysis_fail])
+        redacted_doc = RedactedDoc(doc_hash, datetime.now(), author.email, params_journal, positions_filtrees, None, redacted_content, [af.to_str_tuple() for af in analysis_fail])
         DocDAO().register_document(redacted_doc)
 
         return redacted_doc

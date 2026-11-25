@@ -4,7 +4,14 @@ from openai import AsyncOpenAI
 
 from utils.env_variables import load_environment_variables
 
-from .prompt_templates import SYSTEM_PROMPT, build_rewrite_message, build_rewrite_system_prompt, build_user_message
+from .prompt_templates import (
+    JUDGE_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
+    build_judge_message,
+    build_rewrite_message,
+    build_rewrite_system_prompt,
+    build_user_message,
+)
 
 load_environment_variables()
 
@@ -51,3 +58,20 @@ async def anonymiser_directement(document: str, masquer: bool = True) -> str:
         max_tokens=8000,
     )
     return response.choices[0].message.content or ""
+
+
+async def juger_injection(document: str) -> str:
+    """FO3 : demande au LLM si le document tente de manipuler le système ; renvoie son JSON brut."""
+    client = create_client()
+
+    response = await client.chat.completions.create(
+        model=os.getenv("LLM_MODEL", "gemma4-26b-moe"),
+        messages=[
+            {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+            {"role": "user", "content": build_judge_message(document)},
+        ],
+        temperature=0.0,
+        max_tokens=50,
+        response_format={"type": "json_object"},
+    )
+    return response.choices[0].message.content

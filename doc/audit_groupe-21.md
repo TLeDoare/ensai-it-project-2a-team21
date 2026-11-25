@@ -19,7 +19,7 @@
 | ER3-01 | réinitialisation de la base sans authentification et comptes par défaut commités | Fixé pour la réinitialisation (administrateur uniquement) ; comptes de test justifiés pour la démonstration |
 | ER3-02 | hachage de mot de passe inadapté | Fixé |
 | ER3-03 | jetons de session permanents, stockés en clair, sans révocation | Fixé |
-| ER3-04 | aucune protection contre la force brute, aucune politique de mot de passe | Partiellement fixé : politique de mot de passe imposée (8 caractères, majuscule, minuscule, chiffre, caractère spécial) ; pas de limite du nombre d'essais, limite assumée |
+| ER3-04 | aucune protection contre la force brute, aucune politique de mot de passe | Fixé : politique de mot de passe imposée (8 caractères, majuscule, minuscule, chiffre, caractère spécial) ; après 5 échecs de connexion en 15 minutes pour une même adresse, elle est bloquée 15 minutes (code 429), y compris pour une adresse inconnue afin de ne pas révéler quels comptes existent ; chaque blocage est écrit dans backend/logs/backend.log (utils/limiteur_connexion.py, tests dans test_limite_connexion.py) |
 | ER3-05 | liste complète des utilisateurs exposée au rôle superviseur | Justifié |
 | INJ-01 | le filtre d'injection décrit dans le rapport n'existe pas | Fixé |
 | INJ-02 | aucun jeu adversarial exécuté, aucune CI | Fixé, et justifié |

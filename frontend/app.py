@@ -46,7 +46,8 @@ def page_connexion():
                 reponse = api.connexion(email, mot_de_passe)
             except api.ApiError as erreur:
                 # 403 : bons identifiants mais compte désactivé par un administrateur (F1)
-                if erreur.status == 403:
+                # 429 : trop d'essais ratés, l'adresse est bloquée 15 minutes (ER3-04)
+                if erreur.status in (403, 429):
                     st.error(erreur.message)
                 else:
                     # Message volontairement vague : on n'indique pas si c'est l'e-mail ou le mot de passe.
@@ -119,6 +120,13 @@ def afficher_resultat(resultat: dict):
 
     st.divider()
     st.subheader("Résultat")
+
+    # FO3 : verdict du juge d'injection, enregistré dans le journal ; il ne bloque pas le caviardage
+    if reponse["params"].get("juge_injection") == "suspect":
+        st.warning(
+            "Ce document contient peut-être un passage rédigé pour tromper l'outil de détection. "
+            "Vérifiez attentivement que toutes les données personnelles sont bien masquées avant de le diffuser."
+        )
 
     if resultat["llm"] and nb_llm == 0:
         st.warning(
@@ -302,6 +310,8 @@ def page_historique():
                 # Paramètres du traitement, enregistrés dans le journal (F4)
                 "Stratégie": "Masquage" if d["params"].get("mask", True) else "Pseudonymisation",
                 "LLM": "Oui" if d["params"].get("llm", True) else "Non",
+                # FO3 : verdict du juge d'injection (absent pour un traitement sans LLM)
+                "Juge d'injection": d["params"].get("juge_injection", "non lancé"),
                 "Empreinte": d["hash"][:12],
             }
             for d in documents
@@ -365,6 +375,8 @@ def page_historique():
         with graphique_llm:
             st.markdown("**Traitements avec ou sans LLM**")
             st.bar_chart(tableau["LLM"].value_counts())
+        st.markdown("**Verdicts du juge d'injection**")
+        st.bar_chart(tableau["Juge d'injection"].value_counts())
 
     st.dataframe(
         tableau.sort_values("Date", ascending=False),
