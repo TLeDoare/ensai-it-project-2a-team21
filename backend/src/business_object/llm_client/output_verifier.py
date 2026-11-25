@@ -18,8 +18,9 @@ class OutputVerifier:
         try:
             parsed = json.loads(raw)
             spans = parsed.get("spans", [])
-        except json.JSONDecodeError:
-            raise LLMParseError from json.JSONDecodeError
+        except json.JSONDecodeError as erreur:
+            # On transforme l'erreur technique en erreur métier, en gardant la cause d'origine pour les logs
+            raise LLMParseError("La réponse du LLM n'est pas un JSON valide.") from erreur
 
         llm_positions = set()
         for span in spans:

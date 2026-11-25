@@ -1,18 +1,69 @@
-[theme]
-primaryColor = "#185ABD"
-backgroundColor = "#F5F8FD"
-secondaryBackgroundColor = "#E3ECFA"
-textColor = "#14223A"
-font = "sans serif"
-baseFontSize = 17
-baseRadius = "medium"
+# Thème Streamlit (1.66) aligné sur le système de design Anonymia.
+# À placer dans frontend/.streamlit/config.toml
+# (Streamlit lit le dossier .streamlit du répertoire d'où l'app est lancée).
 
 [server]
-headless = true
-# Nécessaire derrière le proxy d'Onyxia (/proxy/8501), sinon l'envoi de fichiers échoue.
-# À réactiver en production.
-enableCORS = false
-enableXsrfProtection = false
+# Sert le dossier frontend/static/ : les polices sont hébergées par l'app
+# elle-même, aucune requête vers Google Fonts (pas de fuite d'IP, RGPD).
+enableStaticServing = true
 
-[browser]
-gatherUsageStats = false
+[theme]
+base = "light"
+primaryColor = "#0E3B38"              # teal 700 — marque (boutons, sélections)
+backgroundColor = "#F8F5EE"           # paper — fond principal
+secondaryBackgroundColor = "#FFFFFF"  # champs et blocs
+textColor = "#121216"                 # ink 900 — noir caviar
+linkColor = "#1C5F59"                 # teal 500
+codeBackgroundColor = "#E9ECEF"       # silver 100
+borderColor = "#E7E1D4"               # bordure papier
+showWidgetBorder = true
+showSidebarBorder = false             # remplacé par le liseré or de theme.py
+baseRadius = "10px"
+font = "Inter"
+headingFont = "Poppins"
+codeFont = "JetBrainsMono"
+
+[theme.sidebar]
+backgroundColor = "#E7F0EE"           # teal 50
+secondaryBackgroundColor = "#FFFFFF"
+
+# --- Polices auto-hébergées (fichiers dans frontend/static/) ---
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/inter-latin-400-normal.woff2"
+weight = 400
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/inter-latin-500-normal.woff2"
+weight = 500
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/inter-latin-600-normal.woff2"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Poppins"
+url = "app/static/poppins-latin-500-normal.woff2"
+weight = 500
+
+[[theme.fontFaces]]
+family = "Poppins"
+url = "app/static/poppins-latin-600-normal.woff2"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Poppins"
+url = "app/static/poppins-latin-700-normal.woff2"
+weight = 700
+
+[[theme.fontFaces]]
+family = "JetBrainsMono"
+url = "app/static/jetbrains-mono-latin-400-normal.woff2"
+weight = 400
+
+[[theme.fontFaces]]
+family = "JetBrainsMono"
+url = "app/static/jetbrains-mono-latin-500-normal.woff2"
+weight = 500

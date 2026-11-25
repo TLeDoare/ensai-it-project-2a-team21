@@ -15,6 +15,7 @@ class PersonModel(BaseModel):
     id: int
     email: EmailStr
     role: Role
+    active: bool = True
 
 
 class LoginModel(BaseModel):
@@ -31,4 +32,11 @@ class RegisterModel(BaseModel):
 class UpdateModel(BaseModel):
     id: int
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8, max_length=128, pattern=PASSWORD_REGEX)
+
+class RoleModel(BaseModel):
+    role: Role
+
+
+class ActiveModel(BaseModel):
+    active: bool

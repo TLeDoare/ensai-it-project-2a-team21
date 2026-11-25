@@ -12,10 +12,11 @@ st.set_page_config(page_title="Anonymia", layout="wide")
 apply_theme()
 
 # Écrans accessibles par rôle : un rôle hérite des écrans du rôle inférieur, comme dans le dossier.
+# « Mon compte » est accessible à tous : chacun peut changer son propre mot de passe.
 ECRANS = {
-    "UTILISATEUR": ["Caviarder un document"],
-    "SUPERVISEUR": ["Caviarder un document", "Historique"],
-    "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes"],
+    "UTILISATEUR": ["Caviarder un document", "Mon compte"],
+    "SUPERVISEUR": ["Caviarder un document", "Historique", "Mon compte"],
+    "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes", "Mon compte"],
 }
 
 
@@ -43,9 +44,13 @@ def page_connexion():
         if valider:
             try:
                 reponse = api.connexion(email, mot_de_passe)
-            except api.ApiError:
-                # Message volontairement vague : on n'indique pas si c'est l'e-mail ou le mot de passe.
-                st.error("E-mail ou mot de passe incorrect.")
+            except api.ApiError as erreur:
+                # 403 : bons identifiants mais compte désactivé par un administrateur (F1)
+                if erreur.status == 403:
+                    st.error(erreur.message)
+                else:
+                    # Message volontairement vague : on n'indique pas si c'est l'e-mail ou le mot de passe.
+                    st.error("E-mail ou mot de passe incorrect.")
                 return
             # Conservé d'une page à l'autre ; le jeton accompagne chaque appel à l'API.
             st.session_state.utilisateur = {
@@ -140,6 +145,61 @@ def afficher_resultat(resultat: dict):
         with st.container(border=True, height=420):
             st.markdown(render_redacted(reponse["content"]), unsafe_allow_html=True)
 
+    # --- Comparaison côte à côte des détecteurs (FO4), repliée par défaut pour alléger l'affichage ---
+    with st.expander("Comparer les détecteurs (regex / LLM)"):
+        # Sépare les PII selon le détecteur qui les a trouvées (champ "source" renvoyé par l'API)
+        pii_regex = [d for d in details if d["source"] == "Regex"]
+        pii_llm = [d for d in details if d["source"] == "LLM"]
+        col_regex, col_llm = st.columns(2)
+        with col_regex:
+            st.markdown(f"Expressions régulières ({len(pii_regex)} PII)")
+            with st.container(border=True, height=300):
+                # Texte d'origine surligné uniquement avec les PII trouvées par les regex
+                st.markdown(surligner(resultat["original"], pii_regex), unsafe_allow_html=True)
+        with col_llm:
+            st.markdown(f"LLM ({len(pii_llm)} PII)")
+            with st.container(border=True, height=300):
+                # Texte d'origine surligné uniquement avec les PII trouvées par le LLM
+                st.markdown(surligner(resultat["original"], pii_llm), unsafe_allow_html=True)
+        # Types propres à chaque détecteur : montre leur complémentarité
+        types_regex = {d["type"] for d in pii_regex}
+        types_llm = {d["type"] for d in pii_llm}
+        st.caption(
+            "Types trouvés seulement par les regex : " + (", ".join(sorted(types_regex - types_llm)) or "aucun")
+            + " | seulement par le LLM : " + (", ".join(sorted(types_llm - types_regex)) or "aucun")
+        )
+        # Nombre de PII par type pour chaque détecteur, côte à côte
+        if details:
+            st.dataframe(
+                pd.crosstab(pd.Series([d["type"] for d in details], name="Type"),
+                            pd.Series([d["source"] for d in details], name="Détecteur")),
+                use_container_width=True,
+            )
+        st.caption(
+            "Une donnée trouvée par les deux détecteurs n'est comptée qu'une fois, "
+            "sous le détecteur retenu lors de la fusion des chevauchements."
+        )
+
+    # FO2 : comparaison du pipeline classique et de la réécriture directe par le LLM
+    if "direct" in resultat or "direct_erreur" in resultat:
+        with st.expander("Comparer avec l'anonymisation directe par le LLM", expanded=True):
+            if "direct_erreur" in resultat:
+                st.error("La réécriture directe a échoué : " + resultat["direct_erreur"])
+            else:
+                col_classique, col_direct = st.columns(2)
+                with col_classique:
+                    st.markdown("**Pipeline classique** (détection puis remplacement)")
+                    with st.container(border=True, height=300):
+                        st.markdown(render_redacted(reponse["content"]), unsafe_allow_html=True)
+                with col_direct:
+                    st.markdown("**Réécriture directe par le LLM**")
+                    with st.container(border=True, height=300):
+                        st.markdown(surligner(resultat["direct"], []), unsafe_allow_html=True)
+                st.caption(
+                    "La réécriture directe n'est pas vérifiable : on ne sait pas quelles données le LLM a remplacées, "
+                    "ni s'il en a oublié. Elle sert à comparer, pas à diffuser ; elle n'est pas enregistrée dans l'historique."
+                )
+
     st.download_button(
         "Télécharger le document caviardé",
         reponse["content"],
@@ -175,6 +235,8 @@ def page_caviarder():
     with st.expander("Options"):
         strategie = st.radio("Stratégie", ["Masquage", "Pseudonymisation"], index=0)
         utiliser_llm = st.toggle("Utiliser le LLM (noms, adresses, lieux...)", value=True)
+        # FO2 : second appel, indépendant du premier, où le LLM réécrit lui-même le document
+        comparer_direct = st.toggle("Comparer avec l'anonymisation directe par le LLM", value=False)
 
     if st.button("Caviarder", type="primary"):
         # Le fichier est prioritaire ; à défaut, le texte collé est envoyé comme un fichier.
@@ -202,6 +264,18 @@ def page_caviarder():
             "llm": utiliser_llm,
         }
 
+        # FO2 : un échec de ce second appel n'empêche pas d'afficher le caviardage classique
+        if comparer_direct:
+            try:
+                with st.spinner("Réécriture directe par le LLM..."):
+                    # Même stratégie que le caviardage classique, pour comparer ce qui est comparable
+                    direct = api.anonymiser_par_llm(
+                        st.session_state.utilisateur["token"], nom, contenu, masquer=(strategie == "Masquage")
+                    )
+                st.session_state.resultat["direct"] = direct["content"]
+            except api.ApiError as erreur:
+                st.session_state.resultat["direct_erreur"] = f"{erreur.message} ({erreur.status})"
+
     if "resultat" in st.session_state:
         afficher_resultat(st.session_state.resultat)
 
@@ -225,6 +299,9 @@ def page_historique():
                 "Date": pd.to_datetime(d["upload_date"]),
                 "Auteur": d["sent_by"],
                 "PII détectées": len(d["details"]),
+                # Paramètres du traitement, enregistrés dans le journal (F4)
+                "Stratégie": "Masquage" if d["params"].get("mask", True) else "Pseudonymisation",
+                "LLM": "Oui" if d["params"].get("llm", True) else "Non",
                 "Empreinte": d["hash"][:12],
             }
             for d in documents
@@ -242,9 +319,52 @@ def page_historique():
     if len(periode) == 2:
         tableau = tableau[tableau["Date"].dt.date.between(periode[0], periode[1])]
 
-    col1, col2 = st.columns(2)
+    # Toutes les PII des documents encore visibles après les filtres (pour les graphiques ci-dessous)
+    numeros_visibles = set(tableau["N°"])
+    pii_visibles = pd.DataFrame(
+        [pii for doc in documents if doc["id"] in numeros_visibles for pii in doc["details"]],
+        columns=["start", "end", "type", "confidence", "source"],
+    )
+
+    col1, col2, col3 = st.columns(3)
     col1.metric("Documents traités", len(tableau))
     col2.metric("PII détectées au total", int(tableau["PII détectées"].sum()))
+    # Moyenne arrondie à une décimale ; 0 si aucun document ne correspond aux filtres
+    col3.metric("PII par document (moyenne)", round(tableau["PII détectées"].mean(), 1) if len(tableau) else 0)
+
+    # --- Graphiques des indicateurs d'activité (F4), regroupés en trois onglets ---
+    onglet_activite, onglet_donnees, onglet_usage = st.tabs(["Activité", "Données détectées", "Usage"])
+    with onglet_activite:
+        graphique_jours, graphique_auteurs = st.columns(2)
+        with graphique_jours:
+            st.markdown("**Documents traités par jour**")
+            # Compte les documents filtrés pour chaque date
+            st.bar_chart(tableau.groupby(tableau["Date"].dt.date).size())
+        with graphique_auteurs:
+            st.markdown("**Documents traités par auteur**")
+            st.bar_chart(tableau["Auteur"].value_counts())
+    with onglet_donnees:
+        if pii_visibles.empty:
+            st.info("Aucune PII sur la période choisie.")
+        else:
+            graphique_types, graphique_sources = st.columns(2)
+            with graphique_types:
+                st.markdown("**Fréquence des types de PII**")
+                st.bar_chart(pii_visibles["type"].value_counts())
+            with graphique_sources:
+                st.markdown("**PII par détecteur (regex ou LLM)**")
+                st.bar_chart(pii_visibles["source"].value_counts())
+            # Croisement type x détecteur : quel détecteur trouve quel type de donnée
+            st.markdown("**Types de PII selon le détecteur**")
+            st.dataframe(pd.crosstab(pii_visibles["type"], pii_visibles["source"]), use_container_width=True)
+    with onglet_usage:
+        graphique_strategie, graphique_llm = st.columns(2)
+        with graphique_strategie:
+            st.markdown("**Stratégie de caviardage choisie**")
+            st.bar_chart(tableau["Stratégie"].value_counts())
+        with graphique_llm:
+            st.markdown("**Traitements avec ou sans LLM**")
+            st.bar_chart(tableau["LLM"].value_counts())
 
     st.dataframe(
         tableau.sort_values("Date", ascending=False),
@@ -258,9 +378,229 @@ def page_historique():
     numero = st.selectbox("Voir le détail du document n°", tableau["N°"].tolist())
     document = next(d for d in documents if d["id"] == numero)
     with st.container(border=True):
-        st.markdown(render_redacted(document["content"]), unsafe_allow_html=True)
+        # Lire le texte du document sans planter s'il est absent
+        contenu = document.get("content") if document else None
+        if contenu is None:
+            # Document sans texte disponible : message au lieu d'une erreur
+            st.info("Par conception, le contenu des documents n'est pas conservé : seuls l'empreinte et les types de PII détectés sont journalisés.")
+        else:
+            # Cas normal : afficher le texte caviardé
+            st.markdown(render_redacted(contenu), unsafe_allow_html=True)
     types = sorted({d["type"] for d in document["details"]})
     st.caption("Types détectés : " + (", ".join(types) if types else "aucun"))
+
+def page_comptes():
+    entete("Gestion des comptes")
+    token = st.session_state.utilisateur["token"]
+
+    # --- Liste des comptes existants ---
+    try:
+        comptes = api.utilisateurs(token)
+    except api.ApiError as erreur:
+        st.error(f"Impossible de charger les comptes ({erreur.status}) : {erreur.message}")
+        return
+
+    if comptes:
+        # Le mot de passe haché n'est jamais affiché : seules l'identité et le rôle sont utiles ici.
+        tableau = pd.DataFrame(
+            [
+                {
+                    "N°": c.get("id"),
+                    "E-mail": c.get("email"),
+                    "Rôle": c.get("role"),
+                    # Statut F1 : un compte désactivé est conservé mais ne peut plus se connecter
+                    "Statut": "Actif" if c.get("active", True) else "Désactivé",
+                }
+                for c in comptes
+            ]
+        )
+                # Un compteur pour le total, puis un par rôle (0 si aucun compte n'a ce rôle)
+        colonnes = st.columns(4)
+        colonnes[0].metric("Comptes", len(tableau))
+        for colonne, (role_nom, libelle) in zip(
+            colonnes[1:],
+            [("UTILISATEUR", "Utilisateurs"), ("SUPERVISEUR", "Superviseurs"), ("ADMINISTRATEUR", "Administrateurs")],
+        ):
+            colonne.metric(libelle, int((tableau["Rôle"] == role_nom).sum()))
+        st.dataframe(tableau.sort_values("N°"), hide_index=True, width="stretch")
+    else:
+        st.info("Aucun compte trouvé.")
+
+    st.divider()
+
+               # --- Trois boutons d'action : un clic ouvre le panneau, un second clic le referme ---
+    if "action_compte" not in st.session_state:
+        st.session_state.action_compte = None
+
+    def basculer(action: str):
+        """Ouvre le panneau demandé, ou le referme s'il est déjà ouvert."""
+        st.session_state.action_compte = None if st.session_state.action_compte == action else action
+
+    col_creer, col_modifier, col_statut, col_supprimer = st.columns(4)
+    col_creer.button("Créer un compte", type="primary", use_container_width=True,
+                     on_click=basculer, args=("creer",))
+    col_modifier.button("Modifier un compte", type="primary", use_container_width=True,
+                        on_click=basculer, args=("modifier",), disabled=not comptes)
+    col_statut.button("Activer / désactiver", type="primary", use_container_width=True,
+                      on_click=basculer, args=("statut",), disabled=not comptes)
+    col_supprimer.button("Supprimer un compte", type="primary", use_container_width=True,
+                         on_click=basculer, args=("supprimer",), disabled=not comptes)
+
+    action = st.session_state.action_compte
+    # Liste des comptes au format lisible, partagée par les panneaux Modifier, Statut et Supprimer
+    choix = {f"{c['email']} ({c['role']})": c for c in comptes} if comptes else {}
+    roles = list(ECRANS.keys())
+
+    # --- Panneau Créer ---
+    if action == "creer":
+        with st.form("creation_compte", clear_on_submit=True):
+            st.markdown("**Créer un compte**")
+            email = st.text_input("Adresse e-mail")
+            mot_de_passe = st.text_input(
+                "Mot de passe provisoire",
+                type="password",
+                help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
+            )
+            role_compte = st.selectbox("Rôle", roles)
+            valider = st.form_submit_button("Valider la création", type="primary")
+        if valider:
+            if not email.strip() or not mot_de_passe:
+                st.warning("L'e-mail et le mot de passe sont obligatoires.")
+                return
+            # Mêmes exigences que l'API : chaque règle non respectée est listée pour l'utilisateur
+            regles = [
+                (len(mot_de_passe) >= 8, "8 caractères minimum"),
+                (any(c.islower() for c in mot_de_passe), "une minuscule"),
+                (any(c.isupper() for c in mot_de_passe), "une majuscule"),
+                (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
+                (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
+            ]
+            manquantes = [libelle for respectee, libelle in regles if not respectee]
+            if manquantes:
+                st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
+                return
+            try:
+                api.creer_compte(token, email.strip(), mot_de_passe, role_compte)
+            except api.ApiError as erreur:
+                st.error(f"La création a échoué ({erreur.status}) : {erreur.message}")
+                return
+            st.success(f"Compte {email.strip()} créé avec le rôle {role_compte}.")
+            st.rerun()
+
+    # --- Panneau Modifier ---
+    elif action == "modifier":
+        st.markdown("**Modifier le rôle d'un compte**")
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_modif")]
+        nouveau_role = st.selectbox("Nouveau rôle", roles, index=roles.index(compte["role"]))
+        if st.button("Enregistrer le rôle", type="primary"):
+            try:
+                api.changer_role(token, compte["id"], nouveau_role)
+                st.success(f"{compte['email']} a maintenant le rôle {nouveau_role}.")
+                st.rerun()
+            except api.ApiError as erreur:
+                st.error(f"Changement refusé ({erreur.status}) : {erreur.message}")
+
+    # --- Panneau Activer / désactiver ---
+    elif action == "statut":
+        st.markdown("**Activer ou désactiver un compte**")
+        st.caption("Un compte désactivé est conservé avec son historique, mais ne peut plus se connecter.")
+
+        # Message de réussite conservé après le rechargement de la page (st.rerun efface l'affichage)
+        if "message_statut" in st.session_state:
+            st.success(st.session_state.pop("message_statut"))
+
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_statut")]
+        actif = compte.get("active", True)
+        st.write(f"Statut actuel : **{'Actif' if actif else 'Désactivé'}**")
+        # Le bouton propose l'action inverse du statut actuel
+        libelle = "Désactiver ce compte" if actif else "Réactiver ce compte"
+        if st.button(libelle, type="primary"):
+            try:
+                api.changer_statut(token, compte["id"], not actif)
+                etat = "désactivé" if actif else "réactivé"
+                st.session_state["message_statut"] = f"Compte {compte['email']} {etat}."
+                st.rerun()
+            except api.ApiError as erreur:
+                st.error(f"Changement refusé ({erreur.status}) : {erreur.message}")
+
+    # --- Panneau Supprimer ---
+    elif action == "supprimer":
+        st.markdown("**Supprimer un compte**")
+
+        # Message de réussite conservé après le rechargement de la page (st.rerun efface l'affichage)
+        if "message_suppression" in st.session_state:
+            st.success(st.session_state.pop("message_suppression"))
+
+        compte = choix[st.selectbox("Compte", list(choix.keys()), key="compte_suppr")]
+
+        @st.dialog("Confirmer la suppression")
+        def confirmer_suppression(compte_cible: dict):
+            """Fenêtre modale : la suppression n'a lieu qu'après une validation explicite, compte par compte."""
+            st.write(f"Voulez-vous vraiment supprimer le compte **{compte_cible['email']}** ?")
+            st.caption("Cette action est définitive : le compte ne pourra pas être restauré.")
+            col_annuler, col_supprimer = st.columns(2)
+            # Annuler : ferme simplement la fenêtre, sans rien modifier
+            if col_annuler.button("Annuler", use_container_width=True):
+                st.rerun()
+            # Supprimer : appel à l'API, puis fermeture de la fenêtre et rechargement de la liste
+            if col_supprimer.button("Supprimer", type="primary", use_container_width=True):
+                try:
+                    api.supprimer_compte(token, compte_cible["id"])
+                    st.session_state["message_suppression"] = f"Compte {compte_cible['email']} supprimé."
+                    st.rerun()
+                except api.ApiError as erreur:
+                    st.error(f"Suppression refusée ({erreur.status}) : {erreur.message}")
+
+        # Le bouton ouvre seulement la fenêtre : aucune suppression directe depuis la page
+        if st.button("Supprimer ce compte", type="primary"):
+            confirmer_suppression(compte)
+
+def page_mon_compte():
+    entete("Mon compte")
+    utilisateur = st.session_state.utilisateur
+    # E-mail et rôle affichés en lecture seule : seul un administrateur peut changer le rôle,
+    # et l'e-mail n'est pas modifiable (identifiant de connexion et clé du journal d'audit)
+    st.text_input("Adresse e-mail", value=utilisateur["email"], disabled=True)
+    st.caption(f"Rôle : {utilisateur['role'].capitalize()}. Pour changer de rôle, contactez un administrateur.")
+
+    with st.form("changer_mot_de_passe", clear_on_submit=True):
+        st.markdown("**Changer mon mot de passe**")
+        mot_de_passe = st.text_input(
+            "Nouveau mot de passe",
+            type="password",
+            help="8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un caractère spécial.",
+        )
+        confirmation = st.text_input("Confirmer le nouveau mot de passe", type="password")
+        valider = st.form_submit_button("Enregistrer", type="primary")
+
+    if not valider:
+        return
+    if not mot_de_passe:
+        st.warning("Saisissez un nouveau mot de passe.")
+        return
+    if mot_de_passe != confirmation:
+        st.warning("Les deux mots de passe ne sont pas identiques.")
+        return
+    # Mêmes règles que pour la création de compte, vérifiées avant l'envoi
+    regles = [
+        (len(mot_de_passe) >= 8, "8 caractères minimum"),
+        (any(c.islower() for c in mot_de_passe), "une minuscule"),
+        (any(c.isupper() for c in mot_de_passe), "une majuscule"),
+        (any(c.isdigit() for c in mot_de_passe), "un chiffre"),
+        (any(c in "!@#%^&(),.?\":{}|<>_-+=" for c in mot_de_passe), "un caractère spécial"),
+    ]
+    manquantes = [libelle for respectee, libelle in regles if not respectee]
+    if manquantes:
+        st.warning("Mot de passe trop faible. Il manque : " + ", ".join(manquantes) + ".")
+        return
+
+    try:
+        # L'e-mail actuel est renvoyé tel quel : l'API exige le champ mais ne le modifie pas
+        api.modifier_mon_compte(utilisateur["token"], utilisateur["id"], utilisateur["email"], mot_de_passe)
+    except api.ApiError as erreur:
+        st.error(f"La modification a échoué ({erreur.status}) : {erreur.message}")
+        return
+    st.success("Votre mot de passe a été modifié. Utilisez-le à votre prochaine connexion.")
 
 # Aiguillage principal : Streamlit réexécute ce fichier en entier à chaque interaction.
 if "utilisateur" not in st.session_state:
@@ -272,6 +612,10 @@ else:
         page_caviarder()
     elif ecran == "Historique":
         page_historique()
+    elif ecran == "Gestion des comptes":
+        page_comptes()
+    elif ecran == "Mon compte":
+        page_mon_compte()
     else:
         entete(ecran)
         st.info("Cet écran sera construit dans une prochaine étape.")

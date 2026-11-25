@@ -27,3 +27,6 @@ class LLMParseError(Exception):
 
 class RedactorError(Exception):
     """Erreur levée lorsque le caviardeur rencontre un problème."""
+
+class AccountDisabled(Exception):
+    """Le compte existe mais a été désactivé par un administrateur : connexion refusée."""

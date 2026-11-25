@@ -82,7 +82,7 @@ async def test_find_by_id_not_found(mock_person_service, mock_doc_dao_class):
         assert result is None
 
 @pytest.mark.asyncio
-@patch("service.doc_service.hash_any", return_value="hash_test")
+@patch("service.doc_service.hash_document", return_value="hash_test")
 @patch("service.doc_service.DocDAO")
 @patch("service.doc_service.PersonDAO")
 @patch("business_object.redacted_doc.RedactedDoc")

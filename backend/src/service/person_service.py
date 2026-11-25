@@ -6,7 +6,7 @@ from psycopg2.errors import UniqueViolation
 from business_object.person import Person
 from business_object.types import Access, Role
 from dao.person_dao import PersonDAO
-from utils.exceptions import AuthError, EmailAlreadyUsed, PersonNotFound, WrongCredError
+from utils.exceptions import AccountDisabled, AuthError, EmailAlreadyUsed, PersonNotFound, WrongCredError
 from utils.security import hash_any, verify_password
 
 
@@ -63,6 +63,41 @@ class PersonService:
         PersonDAO().update(person)
         return person
 
+    def change_role(self, id: int, role: Role, sent_by: Person) -> Person:
+        """Change le rôle d'un compte (administrateur uniquement)."""
+        if sent_by.role != Role.Administrateur:
+            raise AuthError
+        # Un administrateur ne modifie pas son propre rôle : évite de bloquer l'application sans administrateur
+        if sent_by.id == id:
+            raise AuthError
+        person = self.find_by_id(id)
+        person.role = role
+        person.password = None  # COALESCE dans le DAO : le mot de passe existant est conservé
+        PersonDAO().update(person)
+        return person
+
+    def delete(self, id: int, sent_by: Person) -> None:
+        """Supprime un compte (administrateur uniquement, jamais son propre compte)."""
+        self.grant_auth(sent_by, Access.DeletePerson)
+        if sent_by.id == id:
+            raise AuthError
+        if not PersonDAO().delete(id):
+            raise PersonNotFound
+
+    def set_active(self, id: int, active: bool, sent_by: Person) -> Person:
+        """Désactive ou réactive un compte (administrateur uniquement, jamais son propre compte).
+
+        Un compte désactivé reste en base, avec son historique, mais ne peut plus se connecter.
+        """
+        self.grant_auth(sent_by, Access.DeletePerson)
+        # Un administrateur ne se désactive pas lui-même : évite de bloquer l'application sans administrateur
+        if sent_by.id == id:
+            raise AuthError
+        person = self.find_by_id(id)
+        PersonDAO().set_active(id, active)
+        person.active = active
+        return person
+
     def grant_auth(self, who: Person, req: Access, third_p = None) -> None:
         access = False
         if req == Access.ReadDoc:
@@ -96,6 +131,10 @@ class PersonService:
 
         if not verify_password(password, person.password):
             raise WrongCredError
+
+        # Vérifié après le mot de passe : on n'indique pas l'état d'un compte à qui ne connaît pas son mot de passe
+        if not person.active:
+            raise AccountDisabled
 
         access_token = secrets.token_urlsafe(32)
 

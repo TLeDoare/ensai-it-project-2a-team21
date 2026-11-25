@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 
 from schema.person_model import LoginModel
 from service.person_service import PersonService
-from utils.exceptions import WrongCredError
+from utils.exceptions import AccountDisabled, WrongCredError
 from utils.log_utils import get_logger
 from utils.security import verify_token
 
@@ -31,6 +31,8 @@ def login(credentials: LoginModel, service=Depends(get_person_service)):
         }
     except WrongCredError:
         raise HTTPException(status_code=401, detail="Invalid credentials") from WrongCredError
+    except AccountDisabled:
+        raise HTTPException(status_code=403, detail="Ce compte est désactivé. Contactez un administrateur.") from AccountDisabled
 
 
 @router.post("/logout/")
