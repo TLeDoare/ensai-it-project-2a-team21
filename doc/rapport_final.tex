@@ -68,7 +68,11 @@ Deuxième année -- Projet informatique
 
 \vspace{0.7cm}
 
-{\Huge \bfseries ANONYMIA}
+\IfFileExists{anonymia_logo.png}{
+    \includegraphics[width=0.42\textwidth]{anonymia_logo.png}
+}{
+    {\Huge \bfseries ANONYMIA}
+}
 
 \vspace{0.3cm}
 
@@ -286,7 +290,7 @@ La réponse précise aux besoins s’est largement axée sur la liste des foncti
 
 \subsubsection{Fonctionnalité 2: Détection des données personnelles}
 
-La détection de données personnelles fait en réalité appel à deux processus différents: le premier est la détection de données personnelles par expression régulière. En effet, certaines PII (Personally Identifiable Information) telles que le NIR ou l’IBAN  possèdent des formats connus et encodés de manière prévisible,  ce qui permet  de les détecter à l'aide d'expression régulière. La liste des  PII  est donnée en  annexe. Cependant certaines informations sensibles telles que les prénoms ou les informations médicales ne respectent pas des formats précis. Ainsi, nous pouvons faire appel à des outils plus développés et  pouvant prendre  en compte le contexte  textuel : ce sont les LLM (Large Language Model). Si le LLM rencontre un dysfonctionnement, alors seul la détection par expression régulière est appelée et l’utilisateur en est averti.
+La détection de données personnelles fait en réalité appel à deux processus différents: le premier est la détection de données personnelles par expression régulière. En effet, certaines PII (Personally Identifiable Information) telles que le NIR ou l’IBAN  possèdent des formats connus et encodés de manière prévisible,  ce qui permet  de les détecter à l'aide d'expression régulière. La liste des  PII  est donnée en  annexe. Cependant certaines informations sensibles telles que les prénoms ou les informations médicales ne respectent pas des formats précis. Ainsi, nous pouvons faire appel à des outils plus développés et  pouvant prendre  en compte le contexte  textuel : ce sont les LLM (Large Language Model). Si le LLM rencontre un dysfonctionnement, alors seule la détection par expression régulière est appelée et l’utilisateur en est averti.
 
 Les fonctions de recherche par expression régulière sont disponibles dans la librairie standard de Python. Ainsi, c'est celle-là que nous utiliserons dans notre projet. Cependant, pour accomplir une tâche aussi complexe que la détection de prénom, nous devons utiliser des modèles de langage avancés, qui ne peuvent généralement pas fonctionner sur un ordinateur personnel. Nous faisons alors appel aux modèles de LLM proposés par Onyxia. En particulier, notre application s’est concentrée sur l'intégration du modèle open-source Qwen, et l’API utilisée pour communiquer au LLM utilise le modèle OpenAI, qui est un standard de l’industrie.
 
@@ -384,7 +388,7 @@ l'utilisation du modèle de langage.
 Concernant l'authentification, les mots de passe des utilisateurs ne sont jamais stockés en clair dans la base de données. Seule une version hachée et salée est conservée, de sorte qu'une compromission de la base ne permette pas d'accéder directement aux mots de passe. Les droits d'accès sont également limités selon trois rôles : utilisateur, superviseur et administrateur. Cette séparation permet de restreindre l'accès aux fonctionnalités sensibles, notamment la gestion des comptes et la consultation de l'historique des traitements.
 
 
-Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte cryptographique du document peut également être calculée afin de pouvoir identifier qu'un document a déjà été traité sans avoir à conserver son contenu. De plus, pour rendre le caviardage cohérent (par exemple “Jean Dupont” toujours caviardé en “[NOM\_1]”, et pas “[NOM\_1]”, puis “[NOM\_2]”), les stratégies de caviardage doivent enregistrer des tables de correspondanc. Pour que le masquage ne puisse pas être inversé, les stratégies de caviardage sont instanciées seulement au runtime, et chaque document a sa propre instance de “caviardeur”, ce qui rend impossible la réversibilité. 
+Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte cryptographique du document peut également être calculée afin de pouvoir identifier qu'un document a déjà été traité sans avoir à conserver son contenu. De plus, pour rendre le caviardage cohérent (par exemple “Jean Dupont” toujours caviardé en “[NOM\_1]”, et pas “[NOM\_1]”, puis “[NOM\_2]”), les stratégies de caviardage doivent enregistrer des tables de correspondance. Pour que le masquage ne puisse pas être inversé, les stratégies de caviardage sont instanciées seulement au runtime, et chaque document a sa propre instance de “caviardeur”, ce qui rend impossible la réversibilité. 
 
 L'utilisation d'un LLM introduit par ailleurs un risque spécifique d'injection de prompt. Un document soumis par l'utilisateur peut contenir des instructions malveillantes afin de pousser le modèle à ne pas détecter certaines PII. Si une telle attaque réussissait, des données personnelles pourraient rester présentes dans le document final. Pour limiter ce risque, Anonymia repose sur une défense en profondeur en trois étapes: 
 
@@ -409,7 +413,7 @@ Comme recommandé dans la notice du projet, nous nous sommes appuyés sur un dia
 
 Le travail a été organisé autour d'une architecture en couches claire (API/Modèles, Services, Business Objects, DAO), permettant de découpler les responsabilités et de répartir les développements entre les membres du groupe (endpoints FastAPI, logique métier dans les services, détecteurs et stratégies de caviardage, persistance via les DAO, et tests). Toutefois, chacun a pu expérimenter et s'approprier chacune des couches lors des premières sessions de code, avant de se spécialiser pour des tâches précises.
 
-Nous avons décidé de rédiger ce rapport en LateX, comme pour le rapport intermédiaire : pour cela, nous avons utilisé Overleaf. Ce site permet une compilation en temps réel et un aperçu instantané du PDF généré, ce qui permet de vérifier facilement et rapidement le rendu, et ainsi de détecter les erreurs de syntaxe et les ajustements de code à faire.
+Nous avons décidé de rédiger ce rapport en LaTeX, comme pour le rapport intermédiaire : pour cela, nous avons utilisé Overleaf. Ce site permet une compilation en temps réel et un aperçu instantané du PDF généré, ce qui permet de vérifier facilement et rapidement le rendu, et ainsi de détecter les erreurs de syntaxe et les ajustements de code à faire.
 Les échanges quotidiens de l'équipe se sont faits via WhatsApp pour convenir de créneaux de travail et réfléchir à des choix de conception, débattre sur le typage de variables etc.
 
 Pour stocker les données persistantes du projet, comme les comptes des utilisateurs (avec les mots de passe hashés), ou les documents traités et leurs métadonnées nous avons utilisé le service PostgreSQL avec nos propres identifiants onyxia à renseigner en variables d'environnement, ainsi qu'un éditeur de base de données (CloudBeaver) également disponible sur le datalab.
@@ -421,7 +425,7 @@ En ce qui concerne notre politique de chiffrement, comme préconisé, les opéra
 La politique pour les mots de passe repose sur deux fonctions clés dans security.py : hash\_any(any: str) : Utilisée pour transformer une chaîne en hash. Bien que nommée de manière générique, elle est la base du hachage sécurisé dans le projet.
 verify\_password(password: str, hashed\_password: str) : Permet de comparer un mot de passe clair avec un hash stocké.
 Détection d'injection de prompt : dans DocService.create, si une tentative d'injection est détectée par le InjectionFilter, le système calcule le hash du document fautif : doc\_hash = hash\_any(file)
-logger.warning(f"!!! TENTATIVE D'INJECTION DE PROMPT DETECTEE !!! ... (Hash: {doc_hash})")
+\texttt{logger.warning(f"!!! TENTATIVE D'INJECTION DE PROMPT DETECTEE !!! ... (Hash: \{doc\_hash\})")}
 InjectionAttemptDAO().register\_attempt(sent\_by.email, doc\_hash, "Pattern matching"). Cela permet de journaliser et d'identifier des patterns d'attaque sans stocker le contenu potentiellement malveillant ou sensible en clair dans les logs de sécurité.
 Identifiant de Document (empreinte digitale) : le hash du document est utilisé comme identifiant unique dans le processus de création d'un document rédigé (RedactedDoc). Cela permet de lier le document traité à sa version originale.
 
@@ -510,7 +514,7 @@ Pour autant, tous les constats n'ont pas appelé une correction technique totale
 
 \subsection{Tests complémentaires et évaluation par un corpus de textes}
 Nous avons également réalisé des tests sur des classes et méthodes que nous jugions cruciales et pertinentes. Il s'agit surtout de tests unitaires rapides à exécuter. Ils ont notamment permis de vérifier le masquage, la pseudonymisation, la vérification de sortie ou encore la gestion des chevauchements de spans (overlaps).
-\
+
 
 L'évaluation globale du pipeline s'appuie sur un corpus d'environ cinquante documents variés (\texttt{.md} et \texttt{.txt}) dans \texttt{backend/tests\_tuteur/documents\_test/} et sur une grille de vérité terrain (\texttt{ground\_truth\_spans.json}) répertoriant les segments de PII attendus, leur type et leurs positions exactes. En confrontant les sorties du pipeline complet aux annotations de référence, on calcule notamment le rappel (limiter les fuites de données personnelles) et la précision (éviter de dégrader excessivement la lisibilité des documents).
 
@@ -522,7 +526,7 @@ L'évaluation globale du pipeline s'appuie sur un corpus d'environ cinquante doc
     \label{fig:matrice_confusion}
 \end{figure}
 
-Enfin, le reste a fini par être testé plus tard, lorsque nous avions implémenté les fonctionnalités essentielles, pour atteindre une couverture globale du code d'envrion 96\%.
+Enfin, le reste a fini par être testé plus tard, lorsque nous avions implémenté les fonctionnalités essentielles, pour atteindre une couverture globale du code d'environ 96\%.
 
 
 % ==================================================
@@ -583,7 +587,7 @@ Pour la partie du code : au départ, je n'étais pas forcément très à l'aise 
 
 Concernant le travail de groupe, je retiens surtout l'importance de la communication et de l'organisation. La répartition des tâches nous a permis d'avancer en parallèle, mais elle impliquait également de bien comprendre les modifications des autres. Nous avons parfois rencontré des difficultés ou dû revenir sur certains choix initiaux, ce qui nous a demandé de nous adapter au fur et à mesure.
 
-Finalement, je suis satisfait d'avoir participé à ce projet. Il m'a permis de consolider mes connaissances en Python et d'avoir pu pour a première fois créer un frontend, mais surtout de mieux comprendre les exigences du développement logiciel en équipe. Je pense également avoir gagné en autonomie, même si certaines étapes m'ont demandé plus de temps que prévu. C'est principalement cette expérience de travail sur une application commune que je retiendrai.
+Finalement, je suis satisfait d'avoir participé à ce projet. Il m'a permis de consolider mes connaissances en Python et d'avoir pu pour la première fois créer un frontend, mais surtout de mieux comprendre les exigences du développement logiciel en équipe. Je pense également avoir gagné en autonomie, même si certaines étapes m'ont demandé plus de temps que prévu. C'est principalement cette expérience de travail sur une application commune que je retiendrai.
 
 \subsection{Cabrel Kuate}
 
@@ -616,7 +620,7 @@ Finalement, je suis satisfait d'avoir participé à ce projet. Il m'a permis de 
 \subsection{Liste des fonctionnalités optionnelles}
 \renewcommand{\labelenumi}{FO\arabic{enumi}.}
 \begin{enumerate}
-  \item \textbf{item Détecteur par modèle de NER local.} Ajout d’un troisième détecteur basé sur spaCy. Le modèle utilisé (fr\_core\_news\_lg) est un outil de NER (Named Entity Recognition, ou reconnaissance d’entités nommées) : un modèle pré-entraîné qui identifie automatiquement noms de personnes, lieux et organisations dans un texte. Cette FO permet de comparer la qualité d’un détecteur dédié au NER avec celle du LLM généraliste, sans dépendance à un service externe.
+  \item \textbf{Détecteur par modèle de NER local.} Ajout d’un troisième détecteur basé sur spaCy. Le modèle utilisé (fr\_core\_news\_lg) est un outil de NER (Named Entity Recognition, ou reconnaissance d’entités nommées) : un modèle pré-entraîné qui identifie automatiquement noms de personnes, lieux et organisations dans un texte. Cette FO permet de comparer la qualité d’un détecteur dédié au NER avec celle du LLM généraliste, sans dépendance à un service externe.
 \item \textbf{Anonymisation directe par LLM.} Un mode supplémentaire d’anonymisation où le LLM produit en une seule étape le document anonymisé, plutôt que de simplement détecter les positions. L’utilisateur peut alors comparer le résultat avec celui produit par le pipeline classique (détection puis substitution) et apprécier les différences en termes de fluidité, de naturel et de fidélité au document source.
 \item \textbf{Juge d’injection LLM.} Ajout d’un second appel LLM jouant le rôle de « juge » : sa seule mission est de décider si le document soumis tente de manipuler le système. Il s’exécute en parallèle de la détection principale et son verdict enrichit les métadonnées de journalisation sans bloquer le pipeline.
 \item \textbf{Console d’exploration.} Interface utilisateur interactive complétant l’API par un outil d’analyse adapté aux utilisateurs métier. Permet de soumettre des documents et visualiser les PII détectées (mises en évidence dans le texte source), de comparer côte à côte les résultats des différents détecteurs sur un même document afin d’apprécier leurs forces et faiblesses, et de consulter sous forme graphique les indicateurs d’activité enregistrés en F4 (volumétrie, fréquence des types de PII détectées, et plus généralement tout indicateur que les élèves jugeront utile). Le périmètre exact du visuel est laissé à l’appréciation du groupe.
