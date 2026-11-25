@@ -426,8 +426,9 @@ Le service des documents pilote le processus de caviardage de l’application. V
     \centering
     \includegraphics[width=\linewidth]{uml}
     \caption{Diagramme des classes de l'analyseur}
+    \label{fig:anclass}
 \end{figure}
-Le rôle de l'analyseur est central dans le processus de traitement de document. En effet, c'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. 
+Le rôle de l'analyseur est central dans le processus de traitement de document. En effet, c'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. Le diagramme des classes associé est la figure~\ref{fig:anclass}.
 
 \begin{enumerate}
   \item \textsc{Analyseur} est l'interface de base, qui ne possède qu'une fonction virtuelle se chargeant de convertir un contenu textuel en un ensemble de positions de PII.
@@ -459,9 +460,10 @@ Les deux détecteurs trouvent parfois la même donnée, ou deux morceaux qui se 
     \centering
     \includegraphics[width=\linewidth]{uml2}
     \caption{Diagramme des classes du caviardeur}
+    \label{fig:cavclass}
 \end{figure}
 
-Une fois la position des PII connues, il existe plusieurs stratégies pour le caviarder: le masquage et la pseudonymisation, que nous avons détaillé précédemment. Cela a été implémenté par le patron de conception de la stratégie, ici aussi fortement inspirée de l’implémentation proposée par Refactoring Guru:
+Une fois la position des PII connues, il existe plusieurs stratégies pour le caviarder: le masquage et la pseudonymisation, que nous avons détaillé précédemment.  Le diagramme des classes associé est la figure~\ref{fig:cavclass}. Le caviardeur a été implémenté par le patron de conception de la stratégie, ici aussi fortement inspirée de l’implémentation proposée par Refactoring Guru:
 
 \begin{itemize}
   \item \textsc{RedactorStrategy} (interface) représente le contrat unique, c’est à dire qu’une seule stratégie sera exécutée sur le contenu à caviarder.
