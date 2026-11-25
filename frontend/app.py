@@ -6,7 +6,10 @@ import api_client as api
 import pandas as pd
 import streamlit as st
 
+from theme import apply_theme, couleur_pii, page_header, hero_header, legende_cercles, render_redacted, sidebar_brand
+
 st.set_page_config(page_title="Anonymia", layout="wide")
+apply_theme()
 
 # Écrans accessibles par rôle : un rôle hérite des écrans du rôle inférieur, comme dans le dossier.
 ECRANS = {
@@ -15,32 +18,15 @@ ECRANS = {
     "ADMINISTRATEUR": ["Caviarder un document", "Historique", "Gestion des comptes"],
 }
 
-# Couleur de surlignage par type de PII ; les types absents de la liste sont en gris.
-COULEURS = {
-    "name": "#FFD6A5",
-    "address": "#CAFFBF",
-    "email": "#9BF6FF",
-    "phone_number": "#BDB2FF",
-    "birthdate": "#FFADAD",
-    "place": "#FDFFB6",
-    "organism": "#FFC6FF",
-    "NIR": "#A0C4FF",
-    "IBAN": "#A0C4FF",
-}
 
-
-def entete():
-    # HTML autorisé ici car le contenu est écrit par nous, jamais fourni par l'utilisateur.
-    st.markdown("<h1 style='text-align:center; color:#185ABD;'>Anonymia</h1>", unsafe_allow_html=True)
-    st.markdown(
-        "<p style='text-align:center; opacity:0.75;'>Caviardage de données personnelles"
-        " dans les documents administratifs</p>",
-        unsafe_allow_html=True,
-    )
+def entete(titre: str, description: str = ""):
+    # Bandeau teal en tête de chaque écran ; le sur-titre rappelle l'espace (rôle) de l'utilisateur.
+    role = st.session_state.utilisateur["role"].lower()
+    page_header(titre, description, eyebrow=f"Espace {role}")
 
 
 def page_connexion():
-    entete()
+    hero_header()
     # Seule la colonne du milieu est utilisée : le formulaire reste centré et étroit.
     _, centre, _ = st.columns([1, 1.2, 1])
     with centre:
@@ -74,7 +60,7 @@ def page_connexion():
 def barre_laterale() -> str:
     utilisateur = st.session_state.utilisateur
     with st.sidebar:
-        st.markdown("### Anonymia")
+        sidebar_brand()
         st.text(utilisateur["email"])
         st.caption(utilisateur["role"].capitalize())
         st.divider()
@@ -102,21 +88,22 @@ def barre_laterale() -> str:
 
 
 def surligner(texte: str, details: list) -> str:
-    """Renvoie le texte en HTML, avec chaque PII détectée surlignée selon son type."""
+    """Renvoie le texte en HTML, chaque PII détectée surlignée selon son cercle."""
+    texte = texte.replace("\r", "")
     morceaux = []
     position = 0
     for d in sorted(details, key=lambda d: d["start"]):
         if d["start"] < position:
             continue
-        couleur = COULEURS.get(d["type"], "#E0E0E0")
+        couleur = couleur_pii(d["type"])
         morceaux.append(html.escape(texte[position:d["start"]]))
         morceaux.append(
-            f"<mark style='background:{couleur}; padding:0 3px; border-radius:4px;' title='{d['type']}'>"
+            f"<mark style='background:{couleur};' title='{html.escape(d['type'])}'>"
             f"{html.escape(texte[d['start']:d['end']])}</mark>"
         )
         position = d["end"]
     morceaux.append(html.escape(texte[position:]))
-    return "".join(morceaux).replace("\r", "").replace("\n", "<br>")
+    return '<div class="anm-texte">' + "".join(morceaux) + "</div>"
 
 
 def afficher_resultat(resultat: dict):
@@ -144,12 +131,14 @@ def afficher_resultat(resultat: dict):
     gauche, droite = st.columns(2)
     with gauche:
         st.markdown("**Texte d'origine**")
+        legende_cercles()
         with st.container(border=True, height=420):
             st.markdown(surligner(resultat["original"], details), unsafe_allow_html=True)
     with droite:
         st.markdown("**Texte caviardé**")
+        st.markdown('<div class="anm-legende">&nbsp;</div>', unsafe_allow_html=True)
         with st.container(border=True, height=420):
-            st.markdown(surligner(reponse["content"], []), unsafe_allow_html=True)
+            st.markdown(render_redacted(reponse["content"]), unsafe_allow_html=True)
 
     st.download_button(
         "Télécharger le document caviardé",
@@ -174,7 +163,8 @@ def afficher_resultat(resultat: dict):
 
 
 def page_caviarder():
-    st.subheader("Caviarder un document")
+    entete("Caviarder un document",
+                "Envoyez un fichier .txt / .md ou collez un texte : les données personnelles sont repérées puis masquées.")
 
     onglet_fichier, onglet_texte = st.tabs(["Envoyer un fichier", "Coller un texte"])
     with onglet_fichier:
@@ -216,7 +206,7 @@ def page_caviarder():
         afficher_resultat(st.session_state.resultat)
 
 def page_historique():
-    st.subheader("Historique des traitements")
+    entete("Historique des traitements", "Documents déjà caviardés, avec les types de données détectés.")
 
     try:
         documents = api.historique(st.session_state.utilisateur["token"])
@@ -268,7 +258,7 @@ def page_historique():
     numero = st.selectbox("Voir le détail du document n°", tableau["N°"].tolist())
     document = next(d for d in documents if d["id"] == numero)
     with st.container(border=True):
-        st.markdown(surligner(document["content"], []), unsafe_allow_html=True)
+        st.markdown(render_redacted(document["content"]), unsafe_allow_html=True)
     types = sorted({d["type"] for d in document["details"]})
     st.caption("Types détectés : " + (", ".join(types) if types else "aucun"))
 
@@ -276,11 +266,12 @@ def page_historique():
 if "utilisateur" not in st.session_state:
     page_connexion()
 else:
+    # Chaque écran affiche son propre en-tête (page_header) avec son titre.
     ecran = barre_laterale()
-    entete()
     if ecran == "Caviarder un document":
         page_caviarder()
     elif ecran == "Historique":
         page_historique()
     else:
+        entete(ecran)
         st.info("Cet écran sera construit dans une prochaine étape.")
