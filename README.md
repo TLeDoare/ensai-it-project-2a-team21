@@ -156,6 +156,12 @@ uv run --project .. python ../tests_tuteur/test_complet.py
 
 Results on 24 November 2026 (regex + `gemma4-26b-moe`): recall 94 % on circle 1 (direct identifiers), 86 % on circle 2, 37 % on circle 3 (sensitive or contextual data), 82 % overall and 90 % without the internal file numbers and public figures that our rules deliberately leave visible; precision 98 %.
 
+The injection defences were measured on the same corpus with `backend/scripts/evaluer_juge.py` (one run, `gemma4-26b-moe`): the pattern filter blocks 2 of the 17 trap documents, while the injection judge (FO3) flags all 17, including the 15 the filter misses, with no false alarm on the 51 other documents. From the repository root:
+
+```bash
+uv run --project backend python backend/scripts/evaluer_juge.py
+```
+
 ## Model comparison
 
 `backend/scripts/comparer_modeles.py` compares the SSPCloud text models on a fixed, hand-annotated test set (recall first, under a precision constraint, 3 runs per model):

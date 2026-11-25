@@ -55,7 +55,7 @@ Coverage on 24 November 2026: 85 % without the DAO tests (216 cases), 93 % with 
 uv run --project backend pytest backend/tests/test_business_object backend/tests/test_service -m "not llm" --cov=backend/src --cov-report=term
 ```
 
-`tests_tuteur/` holds the tutor's annotated corpus (68 documents) and its evaluation script; `scripts/comparer_modeles.py` compares the SSPCloud models. Both call the real LLM (see the root README).
+`tests_tuteur/` holds the tutor's annotated corpus (68 documents) and its evaluation script; `scripts/comparer_modeles.py` compares the SSPCloud models and `scripts/evaluer_juge.py` measures the injection filter and judge. They all call the real LLM (see the root README).
 
 ### Logs
 
