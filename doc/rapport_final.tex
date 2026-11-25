@@ -69,7 +69,7 @@ Deuxième année -- Projet informatique
 \vspace{0.7cm}
 
 \IfFileExists{anonymia_logo.png}{
-    \includegraphics[width=0.42\textwidth]{anonymia_logo.png}
+    \includegraphics[width=0.30\textwidth]{anonymia_logo.png}
 }{
     {\Huge \bfseries ANONYMIA}
 }
@@ -146,17 +146,68 @@ LE DOARÉ Tanguy
 
 \section{Contexte de l'application}
 
+Anonymia repère automatiquement les données personnelles contenues dans un document administratif et les remplace, afin que ce document puisse circuler sans exposer les personnes qui y sont citées.
+
 \subsection{Expression du besoin}
 
-\textit{Section à compléter par le groupe.}
+Les administrations produisent chaque jour des courriers, décisions, comptes rendus et dossiers qui contiennent des noms, des adresses, des numéros de sécurité sociale, des coordonnées bancaires ou des informations de santé. Avant d'être diffusés, archivés ou traités automatiquement, ces documents doivent être expurgés de ces données, pour deux raisons :
+
+\begin{itemize}
+    \item \textbf{le droit d'accès aux documents administratifs} : un document comportant des mentions protégées, notamment par le secret de la vie privée, reste communicable à un tiers, mais seulement après occultation de ces mentions (articles L311-6 et L311-7 du Code des relations entre le public et l'administration) ;
+    \item \textbf{le Règlement général sur la protection des données (RGPD)} : le principe de minimisation interdit de conserver ou de transmettre plus de données personnelles que nécessaire, et certaines catégories, comme la santé ou l'origine ethnique, font l'objet d'une protection renforcée (article 9).
+\end{itemize}
+
+Ce caviardage est aujourd'hui souvent réalisé à la main. Il est long, mobilise du temps d'agent, et une seule donnée oubliée suffit à identifier une personne. Anonymia automatise cette tâche en combinant deux détecteurs : des expressions régulières, fiables pour les identifiants au format fixe (NIR, IBAN, adresse électronique), et un modèle de langage pour les informations exprimées en langage naturel (noms, lieux, situations médicales). Chaque donnée détectée est ensuite masquée ou pseudonymisée. L'outil assiste l'agent sans le remplacer : une relecture humaine reste nécessaire avant toute diffusion.
 
 \subsection{Utilisateurs et rôles}
 
-\textit{Section à compléter par le groupe.}
+Anonymia s'adresse aux agents des organismes qui manipulent des documents administratifs nominatifs : administrations de l'État, collectivités territoriales, établissements publics, services juridiques ou d'archives. Chaque compte possède l'un des trois rôles suivants, qui déterminent les fonctionnalités accessibles.
+
+\begin{table}[htbp]
+    \centering
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{p{2.5cm} p{5.6cm} p{6.4cm}}
+        \toprule
+        \textbf{Rôle} & \textbf{Profil} & \textbf{Fonctionnalités} \\
+        \midrule
+        Utilisateur & Agent chargé de préparer les documents à diffuser & Soumettre un document, consulter et télécharger sa version caviardée \\
+        Superviseur & Responsable de service ou référent protection des données & En plus : consulter l'historique des traitements et le tableau de bord \\
+        Administrateur & Gestionnaire de l'outil & En plus : créer, modifier, désactiver et supprimer les comptes \\
+        \bottomrule
+    \end{tabular}
+    \caption{Rôles des utilisateurs d'Anonymia}
+    \label{tab:roles}
+\end{table}
+
+Les personnes citées dans les documents ne sont pas utilisatrices de l'application, mais ce sont elles qu'elle protège.
 
 \subsection{Nature et format des données}
 
-\textit{Section à compléter par le groupe.}
+L'application traite du texte brut : des fichiers \texttt{.txt} ou \texttt{.md} (Markdown), encodés en \textbf{UTF-8}. UTF-8 est l'encodage le plus répandu de la norme Unicode : il représente tous les caractères du français (lettres accentuées, «~ç~», «~€~», guillemets) et ceux des autres langues, ce qui évite qu'un nom accentué soit altéré, puis mal détecté. Ces formats sont lisibles par tout logiciel et ne contiennent ni mise en page ni métadonnées cachées. Un fichier qui n'est pas un texte UTF-8 valide, ou qui dépasse la taille maximale autorisée, est refusé.
+
+Un document suit le parcours suivant :
+
+\begin{enumerate}
+    \item l'agent dépose un fichier ou colle un texte dans l'interface web ;
+    \item l'interface transmet le document au serveur par une requête \textbf{HTTP} \texttt{POST /doc/redact/} : le fichier et les paramètres de traitement (activation du LLM, choix entre masquage et pseudonymisation) sont envoyés dans une requête \textit{multipart}, accompagnés du jeton de connexion de l'agent ;
+    \item le serveur détecte puis remplace les données personnelles, et renvoie au format \textbf{JSON} le texte caviardé et la liste des détections (type, position dans le texte, détecteur, niveau de confiance) ;
+    \item l'agent relit le résultat et le télécharge au format \texttt{.txt}.
+\end{enumerate}
+
+Le contenu original des documents n'est jamais enregistré : la base de données ne conserve qu'une empreinte du document et les métadonnées du traitement.
+
+\subsection*{Définitions}
+
+\begin{description}
+    \item[Donnée personnelle (PII)] Toute information se rapportant à une personne physique identifiée ou identifiable, directement (un nom, un NIR) ou indirectement (une date de naissance croisée avec une commune) ; article 4 du RGPD. PII est l'acronyme anglais de \textit{Personally Identifiable Information}.
+    \item[Caviardage] Suppression ou masquage des passages d'un document qui ne doivent pas être diffusés ; on parle aussi d'occultation.
+    \item[Masquage] Remplacement de chaque donnée par un jeton indiquant son type, par exemple «~[NOM\_1]~».
+    \item[Pseudonymisation] Remplacement d'une donnée par une valeur fictive de même nature, par exemple un faux nom ou un faux IBAN.
+    \item[Anonymisation] Transformation irréversible après laquelle plus aucune personne ne peut être identifiée, même par recoupement ; les données anonymes sortent du champ du RGPD.
+    \item[Expression régulière] Motif décrivant la forme d'une chaîne de caractères, qui permet de la retrouver dans un texte.
+    \item[Modèle de langage (LLM)] Modèle d'intelligence artificielle entraîné sur de grandes quantités de texte, capable d'interpréter le contexte d'un document.
+\end{description}
+
 
 
 % ==================================================
