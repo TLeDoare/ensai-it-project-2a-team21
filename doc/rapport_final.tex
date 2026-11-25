@@ -206,7 +206,7 @@ Le contenu original des documents n'est jamais enregistré : la base de données
 \begin{description}
     \item[Donnée personnelle (PII)] Toute information se rapportant à une personne physique identifiée ou identifiable, directement (un nom, un NIR) ou indirectement (une date de naissance croisée avec une commune) ; article 4 du RGPD. PII est l'acronyme anglais de \textit{Personally Identifiable Information}.
     \item[Caviardage] Suppression ou masquage des passages d'un document qui ne doivent pas être diffusés ; on parle aussi d'occultation.
-    \item[Masquage] Remplacement de chaque donnée par un jeton indiquant son type, par exemple «~[NOM\_1]~».
+    \item[Masquage] Remplacement de chaque donnée par un jeton indiquant son type, par exemple «~[NAME\_1]~».
     \item[Pseudonymisation] Remplacement d'une donnée par une valeur fictive de même nature, par exemple un faux nom ou un faux IBAN.
     \item[Anonymisation] Transformation irréversible après laquelle plus aucune personne ne peut être identifiée, même par recoupement ; les données anonymes sortent du champ du RGPD.
     \item[Expression régulière] Motif décrivant la forme d'une chaîne de caractères, qui permet de la retrouver dans un texte.
@@ -284,30 +284,6 @@ Cette décomposition favorise la réutilisation des composants et permet de test
 
 Afin d'illustrer les interactions entre les différents composants du backend, nous avons réalisé un diagramme de séquence représentant le déroulement de la détection des données personnelles au sein d'un document. Ce diagramme, élaboré lors de la phase de conception, met en évidence le rôle de l'API, du service chargé de coordonner l'analyse et des deux mécanismes complémentaires de détection. Le traitement repose sur l'exécution concurrente du détecteur par expressions régulières et du détecteur utilisant un modèle de langage. Ce dernier fait intervenir des mécanismes de filtrage des entrées et de vérification des réponses produites. Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une liste de données personnelles identifiées dans le document.
 
-\iffalse
-\begin{figure}[htbp]
-    \centering
-
-    \IfFileExists{diagramme_sequence.png}{
-        \includegraphics[
-            width=\textwidth
-        ]{diagramme_sequence.png}
-    }{
-        \fbox{
-            \parbox{0.85\textwidth}{
-                \centering
-                Diagramme de séquence à insérer.
-            }
-        }
-    }
-
-    \caption{
-        Diagramme de séquence du flux nominal
-        de détection, issu de la conception initiale
-    }
-    \label{fig:sequence_detection}
-\end{figure}
-\fi
 
 \begin{landscape}
 \begin{figure}[p]
@@ -333,7 +309,7 @@ Le fonctionnement d'Anonymia repose principalement sur un ensemble de bibliothè
 
 \textbf{FastAPI} assure l'exposition des fonctionnalités du backend sous forme d'API HTTP. \textbf{Pydantic} permet de valider les données échangées, tandis que \textbf{Streamlit} et \textbf{Requests} sont utilisés respectivement pour l'interface web et sa communication avec le serveur.
 
-La persistance est assurée par \textbf{PostgreSQL}. La base conserve notamment les comptes utilisateurs, les informations nécessaires à la gestion des sessions et les métadonnées des traitements. Les documents originaux ne sont pas enregistrés dans les tables de suivi des documents : celles-ci conservent notamment une empreinte du document, la date du traitement et les informations relatives aux données personnelles détectées.
+La persistance est assurée par \textbf{PostgreSQL} (comptes, sessions et journal des traitements, détaillés à la section~4).
 
 La détection des données personnelles repose sur deux approches complémentaires. Les expressions régulières permettent d'identifier des informations présentant une structure reconnaissable, tandis qu'un grand modèle de langage (\textit{Large Language Model}, LLM) est mobilisé pour analyser les éléments nécessitant une interprétation contextuelle.
 
@@ -389,7 +365,7 @@ Les fonctions de recherche par expression régulière sont disponibles dans la l
 \subsubsection{Fonctionnalité 3: Anonymisation}
 
 Nous devons tout d'abord rappeler que l'anonymisation à laquelle nous faisons référence ici n'a aucune valeur juridique. En effet, l'utilisateur reste dans tous les cas responsable du traitement des informations sensibles et l'application ne garantit pas que toutes ces informations seront détectées et caviardées. 
-L'anonymisation peut être approchée par deux stratégies: la première est le masquage, et la seconde est la pseudonymisation. Le masquage remplace l'information sensible par une référence qui reprend le type de la donnée: par exemple “Jean Martin” est remplacé par “[NOM\_1]”. 
+L'anonymisation peut être approchée par deux stratégies: la première est le masquage, et la seconde est la pseudonymisation. Le masquage remplace l'information sensible par une référence qui reprend le type de la donnée: par exemple “Jean Martin” est remplacé par “[NAME\_1]”. 
 
 La seconde est la pseudonymisation, qui remplace l'information sensible par une information possédant la même forme: par exemple, “Jean Martin” est remplacé par “Paul Durand”. La pseudonymisation que nous pratiquons n'est pas celle au sens du droit RGPD: en effet selon la RGPD, la pseudonymisation implique qu'il est possible de retrouver les informations originales non caviardées; notre application n'enregistre cependant aucune table de correspondance et donc ne permet pas de retrouver les informations sensibles à partir d’un contenu anonymisé.
 
@@ -408,13 +384,13 @@ La première étape de cette fonctionnalité est la soumission d’un document t
     \centering
     \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{service}
     \caption{Diagramme d'activité de \textsc{DocService}}
+    \label{fig:service}
 \end{figure}
 \end{landscape}
-Le service des documents pilote le processus de caviardage de l’application. Voici le déroulement du processus de création de document:
+Le service des documents pilote le processus de caviardage de l’application (figure~\ref{fig:service}). Voici le déroulement du processus de création de document:
 \begin{itemize}
 \item Tout d’abord le service s’assure que l’utilisateur possède la permission de téléverser des documents.
 \item Un filtre d’injection est instancié afin de vérifier qu'il n'y a pas de tentative d'injection de prompt dans la requête. Si une tentative d’injection est détectée, elle est enregistrée dans la table \texttt{prompt\_injection\_attempt} et le document est refusé (réponse 400), même si le LLM est désactivé.
-\item Suite à cela, le service instancie un “analyseur” (que nous décrirons plus en détail par la suite) qui a pour objectif de  trouver les positions des PII à caviarder à partir d'un texte. Il y a deux processus qui permettent de réaliser cette tâche: d'abord le détecteur par expressions régulières, suivi du détecteur faisant appel au LLM, si celui-ci est activé dans les paramètres spécifiés. Ces deux processus sont exécutés de manière concurrente (\texttt{asyncio.gather}) afin de réduire le temps de réponse de l'application et de se conformer au cahier des charges. Quand le LLM est activé, le juge d'injection (FO3) est lancé en même temps.
 \item Suite à cela, le service instancie un “analyseur” (que nous décrirons plus en détail par la suite) qui a pour objectif de  trouver les positions des PII à caviarder à partir d'un texte. Il y a deux processus qui permettent de réaliser cette tâche: d'abord le détecteur par expressions régulières, suivi du détecteur faisant appel au LLM, si celui-ci est activé dans les paramètres spécifiés. Ces deux processus sont exécutés de manière concurrente (\texttt{asyncio.gather}) afin de réduire le temps de réponse de l'application et de se conformer au cahier des charges. Quand le LLM est activé, le juge d'injection (FO3) est lancé en même temps.
 \item Le service fait appel à un “caviardeur” qui s'occupe de remplacer les instances de PII détectées par un contenu masqué ou pseudonymisé en fonction des paramètres spécifiés par l’utilisateur.
 \item Le service enregistre les métadonnées du traitement dans la base de données (empreinte, auteur, date, positions, options, verdict du juge). Ni le contenu original ni le document caviardé ne sont enregistrés.
@@ -428,12 +404,12 @@ Le service des documents pilote le processus de caviardage de l’application. V
     \caption{Diagramme des classes de l'analyseur}
     \label{fig:anclass}
 \end{figure}
-Le rôle de l'analyseur est central dans le processus de traitement de document. En effet, c'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. Le diagramme des classes associé est la figure~\ref{fig:anclass}.
+C'est l'analyseur qui est chargé de prendre en entrée le contenu du fichier téléversé par l'utilisateur et d'en ressortir les positions des PII détectées dans ce document. Cependant, contrairement à \textsc{OutputVerifier} et \textsc{InjectionFilter} ( ayant respectivement pour fonction de s'assurer que la sortie du LLM est valide et que le document téléversé ne contient pas d'injection de prompt), il est implémenté suivant un design pattern plus complexe: c'est le patron du décorateur. Son implémentation est fortement inspirée de l'implémentation proposée par Refactoring Guru. Le diagramme des classes associé est la figure~\ref{fig:anclass}.
 
 \begin{enumerate}
   \item \textsc{Analyseur} est l'interface de base, qui ne possède qu'une fonction virtuelle se chargeant de convertir un contenu textuel en un ensemble de positions de PII.
   \item \textsc{AnalyserFactory} est instanciée par \textsc{DocService}. Elle lit \textsc{params} et assemble la chaîne adéquate.
-  \item \textsc{EmptyAnalyser} est l'implémentation de base qui ne renvoie aucune position. Il correspond au composant concret au cœur de la chaîne.
+  \item \textsc{EmptyAnalyser} est l'implémentation de base qui ne renvoie aucune position. C'est le composant concret placé au bout de la chaîne.
   \item \textsc{AnalyserDecorator} est une classe abstraite qui implémente \textsc{Analyser} et est capable d'envelopper n'importe quel autre analyseur afin de l'appeler dans la chaîne.
   \item Enfin \textsc{RegexDecorator} et \textsc{LLMDecorator} sont les décorateurs concrets. Chacun détecte les PII suivant leurs algorithmes propres et ajoute leur position aux positions déjà produites par le wrapper (le décorateur qu’ils «emballent»).
 \end{enumerate}
@@ -516,7 +492,7 @@ l'utilisation du modèle de langage.
 Concernant l'authentification, les mots de passe des utilisateurs ne sont jamais stockés en clair dans la base de données. Seule une version hachée et salée est conservée (Argon2), de sorte qu'une compromission de la base ne permette pas d'accéder directement aux mots de passe. À la connexion, le serveur crée un jeton aléatoire dont il ne garde que l'empreinte SHA-256 et la date d'expiration, 24 heures plus tard ; la déconnexion l'efface. Après cinq échecs de connexion en quinze minutes pour une même adresse, celle-ci est bloquée quinze minutes (réponse 429), ce qui rend une attaque par force brute beaucoup trop lente. Une adresse inconnue est comptée de la même façon, pour ne pas révéler quels comptes existent, et chaque blocage est écrit dans le fichier de logs. Les droits d'accès sont également limités selon trois rôles : utilisateur, superviseur et administrateur. Cette séparation permet de restreindre l'accès aux fonctionnalités sensibles, notamment la gestion des comptes et la consultation de l'historique des traitements.
 
 
-Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte du document est calculée avec HMAC-SHA256 et une clé secrète (\texttt{DOC\_HASH\_SECRET}) : la même empreinte signale un document déjà traité, mais personne ne peut deviner un texte et vérifier s'il a été traité sans connaître la clé. De plus, pour rendre le caviardage cohérent (par exemple “Jean Dupont” toujours caviardé en “[NOM\_1]”, et pas “[NAME\_1]”, puis “[NAME\_2]”), chaque stratégie construit pendant le traitement une table de correspondance en mémoire. Cette table n'est jamais enregistrée et disparaît à la fin du traitement, et chaque document a sa propre instance de “caviardeur”, ce qui empêche de retrouver les valeurs d'origine. 
+Une attention particulière est également portée aux documents soumis à l'application. Le contenu brut d'un document n'a pas vocation à être enregistré de manière permanente. La journalisation conserve uniquement les métadonnées nécessaires au suivi du traitement, telles que l'utilisateur, la date, les détecteurs utilisés ou le nombre de PII détectées. Une empreinte du document est calculée avec HMAC-SHA256 et une clé secrète (\texttt{DOC\_HASH\_SECRET}) : la même empreinte signale un document déjà traité, mais personne ne peut deviner un texte et vérifier s'il a été traité sans connaître la clé. De plus, pour rendre le caviardage cohérent (par exemple pour que “Jean Dupont” devienne “[NAME\_1]” à chacune de ses apparitions, et pas “[NAME\_1]” puis “[NAME\_2]”), chaque stratégie construit pendant le traitement une table de correspondance en mémoire. Cette table n'est jamais enregistrée et disparaît à la fin du traitement, et chaque document a sa propre instance de “caviardeur”, ce qui empêche de retrouver les valeurs d'origine. 
 
 L'utilisation d'un LLM introduit par ailleurs un risque spécifique d'injection de prompt. Un document soumis par l'utilisateur peut contenir des instructions malveillantes afin de pousser le modèle à ne pas détecter certaines PII. Si une telle attaque réussissait, des données personnelles pourraient rester présentes dans le document final. Pour limiter ce risque, Anonymia repose sur une défense en profondeur en trois étapes: 
 
@@ -556,15 +532,9 @@ Les échanges quotidiens de l'équipe se sont faits via WhatsApp pour convenir d
 Pour stocker les données persistantes du projet, comme les comptes des utilisateurs (avec les mots de passe hashés), ou les documents traités et leurs métadonnées nous avons utilisé le service PostgreSQL avec nos propres identifiants onyxia à renseigner en variables d'environnement, ainsi qu'un éditeur de base de données (CloudBeaver) également disponible sur le datalab.
 De même, pour l'utilisation du client LLM de l'API d'onyxia utilisant la librairie openai, nos clés personnelles et modèle de langage choisi sont exploités via le module dotenv et un exemple de remplissage est fourni à la racine du dépôt : \texttt{.env.example}.
 
-Notre journalisation est initialisée via initialize\_logs avec logging\_config.yml vers backend/logs/backend.log, et raccourcit les noms de loggers longs avec get\_logger. Un LogMiddleware trace les requêtes HTTP (START, END, FAILED) et le décorateur @log journalise les entrées/sorties des méthodes avec LogIndentation, tout en masquant les paramètres sensibles (password, token, secret, key, etc.) et en tronquant les sorties volumineuses (list, dict, str). En revanche, l'indentation globale en attribut de classe peut se mélanger en exécution asynchrone (async/await) sous FastAPI. Les tentatives d'injection sont également loggées.
+La journalisation est initialisée par \texttt{initialize\_logs} à partir de \texttt{logging\_config.yml} et écrit dans \texttt{backend/logs/backend.log}. Un \texttt{LogMiddleware} trace chaque requête HTTP (début, fin, échec) et le décorateur \texttt{@log} journalise les entrées et sorties des méthodes, en masquant les paramètres sensibles (mot de passe, jeton, clé) et en tronquant les sorties volumineuses. Le contenu des documents n'est jamais écrit dans les logs. Une tentative d'injection y est signalée avec la seule empreinte du document, puis enregistrée dans la table \texttt{prompt\_injection\_attempt}. Limite connue : l'indentation des logs est un attribut de classe partagé, et peut se mélanger quand plusieurs requêtes s'exécutent en même temps.
 
-En ce qui concerne notre politique de chiffrement, comme préconisé, les opérations de hachage ont été réalisées par la bibliothèque pwdlib en instanciant l'algorithme de hachage Argon2 qui est robuste et résiste aux attaques par force brute.
-La politique pour les mots de passe repose sur deux fonctions clés dans security.py : hash\_any(any: str) : Utilisée pour transformer une chaîne en hash. Bien que nommée de manière générique, elle est la base du hachage sécurisé dans le projet.
-verify\_password(password: str, hashed\_password: str) : Permet de comparer un mot de passe clair avec un hash stocké.
-De même, pour l'utilisation du client LLM de l'API d'onyxia utilisant la librairie openai, nos clés personnelles et modèle de langage choisi sont exploités via le module dotenv et un exemple de remplissage est fourni à la racine du dépôt : \texttt{.env.example}.
-\texttt{logger.warning(f"!!! TENTATIVE D'INJECTION DE PROMPT DETECTEE !!! ... (Hash: \{doc\_hash\})")}
-InjectionAttemptDAO().register\_attempt(sent\_by.email, doc\_hash, "Pattern matching"). Cela permet de journaliser et d'identifier des patterns d'attaque sans stocker le contenu potentiellement malveillant ou sensible en clair dans les logs de sécurité.
-Identifiant de document (empreinte) : l'empreinte HMAC du document est enregistrée avec chaque traitement (\texttt{RedactedDoc}). Elle permet de reconnaître un document déjà traité sans en conserver le contenu.
+Le hachage des mots de passe passe par la bibliothèque \texttt{pwdlib} avec l'algorithme Argon2, résistant aux attaques par force brute. Le fichier \texttt{utils/security.py} regroupe les deux fonctions utiles : \texttt{hash\_any}, qui calcule l'empreinte d'une chaîne, et \texttt{verify\_password}, qui compare un mot de passe saisi à l'empreinte enregistrée.
 
 \subsection{Synchronisation et gestion de version}
 
@@ -584,66 +554,6 @@ Le backend compte 180 fonctions de test, réparties en trois ensembles ; avec le
 
 Un test appelle réellement le LLM : il porte la marque \texttt{llm} et n'est lancé qu'à la main. À chaque envoi sur la branche \texttt{main}, GitHub Actions lance les tests des objets métier et des services. La couverture du code atteint 84 \% avec ces seuls tests (221 cas) et 93 \% en local avec les tests des DAO (253 cas).
 
-\subsubsection{Tests DAO}
-
-Ces tests sont des tests d'intégration qui vérifient que les requêtes SQL interagissent correctement avec la base de données (PostgreSQL). Ils utilisent une base de données dédiée aux tests et des fixtures pour assurer l'isolation.
-
-\subsubsection{\texttt{test\_person\_dao.py} (gestion des utilisateurs)}
-Ce module est crucial car il gère l'authentification et la sécurité.
-
-\begin{itemize}
-    \item \textbf{Cycle de vie de l'utilisateur :} Vérifie la création complète d'un utilisateur (\texttt{create}), la lecture par ID (\texttt{find\_by\_id}) ou par email, et la mise à jour des profils.
-    \item \textbf{Sécurité des sessions :}
-    \begin{itemize}
-        \item Vérifie que les jetons d'accès (\texttt{access\_token}) sont stockés de manière sécurisée sous forme de hash SHA-256 en base de données.
-        \item Vérifie l'expiration des jetons : un jeton expiré ne doit pas permettre de retrouver l'utilisateur.
-        \item Vérifie la révocation (\texttt{revoke\_access\_token}) qui doit nettoyer les informations de session.
-    \end{itemize}
-    \item \textbf{Contraintes d'intégrité :} Teste la gestion des erreurs SQL, comme l'impossibilité d'avoir deux utilisateurs avec le même email (\texttt{UniqueViolation}) ou l'obligation d'avoir un email (\texttt{NotNullViolation}).
-    \item \textbf{Gestion des rôles/statuts :} Vérifie que la désactivation d'un compte (\texttt{set\_active}) coupe immédiatement la session en cours.
-\end{itemize}
-
-\subsubsection{\texttt{test\_doc\_dao.py} (gestion des documents caviardés)}
-Ce module assure la persistance de l'historique d'audit.
-
-\begin{itemize}
-    \item \textbf{Enregistrement et Audit :} Vérifie que lorsqu'un document est enregistré, son empreinte (\texttt{doc\_hash}) et le nombre de données sensibles (PII) détectées sont correctement stockés.
-    \item \textbf{Récupération (pour la relecture) :} Assure que l'on peut reconstruire un objet \texttt{RedactedDoc} complet (avec ses détails de positions de PII et ses paramètres de stratégie) à partir de la base de données.
-    \item \textbf{Journalisation :} Vérifie la capacité à lister tous les documents enregistrés (\texttt{find\_all}), ce qui constitue le journal de bord du système.
-\end{itemize}
-
-\subsubsection{Tests des services}
-
-Ces tests utilisent principalement des Mocks (simulations de composants) pour isoler la logique métier des dépendances externes (DAO et LLM). Ils vérifient que les règles métier sont appliquées avant que les données ne touchent la base de données.
-
-\subsubsection{\texttt{test\_doc\_service.py} (orchestration du caviardage)}
-C'est le cœur du système. Les tests vérifient la création de A à Z d'un document.
-
-\begin{itemize}
-    \item \textbf{Contrôle d'accès (autorisation) :} Avant chaque action (lecture ou création), le service appelle \texttt{PersonService.grant\_auth}. Les tests vérifient que si l'utilisateur n'a pas les droits nécessaires (ex: \texttt{Access.ReadDoc}), l'action est bloquée ou l'autorisation est vérifiée.
-    \item \textbf{Processus de création :}
-    \begin{itemize}
-        \item \textbf{Authentification :} Vérifie que l'auteur envoyé est bien recherché en base de données via son ID.
-        \item \textbf{Caviardage :} Simule le passage du texte brut dans un \texttt{Redactor}. Les tests vérifient que le texte transformé (ex: \texttt{"Contact : [EMAIL\_1]"}) et les positions détectées sont correctement générés.
-        \item \textbf{Persistance :} Vérifie que le document résultant est transmis au \texttt{DocDAO} pour enregistrement final.
-    \end{itemize}
-    \item \textbf{Gestion d'erreurs métier :} Vérifie que si un document est demandé mais n'existe pas, une exception spécifique \texttt{DocNotFound} est levée (au lieu d'une erreur SQL brute).
-\end{itemize}
-
-
-\begin{table}[h!]
-    \centering
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{Couche} & \textbf{Type de test} & \textbf{Cible principale} \\
-        \hline
-        DAO & Intégration & Intégrité des données, Contraintes SQL, Sécurité des hashs. \\
-        \hline
-        Service & Unitaire / Mock & Règles d'autorisation, flux de transformation, Gestion des erreurs. \\
-        \hline
-    \end{tabular}
-    \caption{Résumé de la stratégie de test par couche}
-\end{table}
 \subsubsection{Audit et tests complémentaires}
 
 Quelques semaines avant le rendu final, dans l'optique d'aider à l'amélioration de notre projet, notre tuteur a réalisé un audit complet de l'application sous la forme d'un fichier Markdown (\texttt{.md}) recensant 26 constats (1 critique, 9 élevés, 12 moyens et 4 faibles), qui met en valeur certains acquis tout en pointant des vulnérabilités et dysfonctionnements sur des événements redoutés tels que l'exfiltration de PII (\texttt{ER1}), l'usage non autorisé de la clé LLM (\texttt{ER2}) ou la compromission des identifiants utilisateurs (\texttt{ER3}). L'audit comporte également une section dédiée à l'injection de prompt (conformité à la fonctionnalité F5 et efficacité réelle, avec des points comme l'absence de filtre amont \texttt{INJ-01}, l'absence de tests adversariaux et de CI \texttt{INJ-02} ou la détection des omissions \texttt{INJ-03}), ainsi qu'une partie consacrée à l'architecture, à l'asynchronisme (\texttt{GEN-02}) et à la qualité globale (\texttt{GEN-01} à \texttt{GEN-08}). Pour traiter méthodiquement la majorité de ces retours, nous avons mis en place un fichier de suivi d'avancement détaillant les réactions apportées : la majorité des constats sont marqués comme \textit{Fixé}, comme la suppression des valeurs sensibles dans les logs et réponses 422 (\texttt{ER1-04}), la création différée du client LLM uniquement lors d'un appel (\texttt{ER2-02}), la restriction de la réinitialisation de la base aux administrateurs (\texttt{ER3-01}), l'ajout d'un filtre, de tests et de la journalisation sur l'injection (\texttt{INJ-01} à \texttt{INJ-05}), l'exécution parallèle de la regex et du LLM via \texttt{asyncio.gather} (\texttt{GEN-02}), ou encore le calcul de l'empreinte du document par HMAC-SHA256 avec \texttt{DOC\_HASH\_SECRET} (\texttt{GEN-08}).
@@ -697,7 +607,7 @@ GEN-02 & Architecture et asynchronisme & Fixé : regex et LLM lancés en parall�
 \hline
 GEN-03 & Qualité de la détection & Fixé : 97\,\% de rappel et 100\,\% de précision avec gemma4-26b-moe (jeu d'essai de 32 données, 3 passages) \\
 \hline
-GEN-04 & Tests et CI & Fixé : 182 tests unitaires lancés par la CI (couverture 84\,\% ; 210 tests et 92\,\% de couverture avec les tests DAO) \\
+GEN-04 & Tests et CI & Fixé : 221 cas de test lancés par la CI à chaque envoi sur \texttt{main} (couverture 84\,\%) ; 253 cas et 93\,\% de couverture avec les tests DAO \\
 \hline
 GEN-05 & Robustesse et validation des entrées & Fixé : taille maximale (413), encodage UTF-8 (415), validation Pydantic des e-mails et mots de passe \\
 \hline
@@ -710,26 +620,41 @@ GEN-08 & Empreinte du document original & Fixé : HMAC-SHA256 avec une clé secr
 \end{longtable}
 
 
-Pour autant, tous les constats n'ont pas appelé une correction technique totale : certains ont été classés comme \textit{« Justifié »} ou \textit{« Partiellement fixé »} lorsque le choix de conception répondait à un contexte précis ou à une limite assumée. Certains identifiants ou comptes de test de base n'ont pas été supprimés ou durcis comme dans un produit fini (à l'image des comptes de test conservés pour la démonstration dans \texttt{ER3-01} ou des protections CORS/XSRF désactivées pour Onyxia dans \texttt{ER1-05}), car il s'agit d'un projet académique orienté développement, test et démonstration plutôt que d'un livrable final déployé en production.
+Pour autant, tous les constats n'ont pas appelé une correction technique totale : trois ont été classés comme \textit{« Justifié »} lorsque le choix de conception répondait à un contexte précis ou à une limite assumée. Certains identifiants ou comptes de test de base n'ont pas été supprimés ou durcis comme dans un produit fini (à l'image des comptes de test conservés pour la démonstration dans \texttt{ER3-01} ou des protections CORS/XSRF désactivées pour Onyxia dans \texttt{ER1-05}), car il s'agit d'un projet académique orienté développement, test et démonstration plutôt que d'un livrable final déployé en production.
 
 
 \subsection{Tests complémentaires et évaluation par un corpus de textes}
 \label{sec:corpus}
-Nous avons également réalisé des tests sur des classes et méthodes que nous jugions cruciales et pertinentes. Il s'agit surtout de tests unitaires rapides à exécuter. Ils ont notamment permis de vérifier le masquage, la pseudonymisation, la vérification de sortie ou encore la gestion des chevauchements de spans (overlaps).
+L'évaluation du pipeline complet s'appuie sur le corpus fourni par le tuteur : 68 documents administratifs fictifs (\texttt{.md} et \texttt{.txt}, dossier \texttt{backend/tests\_tuteur/documents\_test/}) et une grille de vérité terrain (\texttt{ground\_truth\_spans.json}) qui donne, pour chaque donnée attendue, son type et sa position. Le script \texttt{test\_complet.py}, fourni par le tuteur et adapté à notre code, soumet les 68 documents à la configuration retenue (regex et \texttt{gemma4-26b-moe}) et compare chaque détection à la grille. Nous lui avons ajouté la fusion des détections qui se chevauchent, que l'application fait avant de caviarder : sans elle, une ville surlignée à l'intérieur de « Mairie de Quimper » comptait comme une fausse alerte. Il faut lire ces résultats avec précaution : la grille utilise ses propres types (PERSON, ORG, INTERNAL\_ID...), qu'il faut faire correspondre aux nôtres, et contient des cas que nous avons choisi de ne pas traiter, comme les numéros de dossier internes ou les personnalités publiques. Le README du corpus le dit lui-même : chaque projet fixe ses propres règles.
 
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Cercle de la grille} & \textbf{Attendues} & \textbf{Trouvées} & \textbf{Rappel} \\
+        \midrule
+        1 : nom, adresse, téléphone, e-mail, IBAN, NIR & 162 & 153 & 94 \% \\
+        2 : date de naissance, lieu, organisme, plaque, passeport & 78 & 67 & 86 \% \\
+        3 : profession, lien familial, identifiant interne, personnalité publique & 51 & 19 & 37 \% \\
+        \midrule
+        Total & 291 & 239 & 82 \% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Résultats sur le corpus du tuteur (68 documents, 24 novembre 2026)}
+    \label{tab:tuteur}
+\end{table}
 
-L'évaluation globale du pipeline s'appuie sur un corpus d'environ cinquante documents variés (\texttt{.md} et \texttt{.txt}) dans \texttt{backend/tests\_tuteur/documents\_test/} et sur une grille de vérité terrain (\texttt{ground\_truth\_spans.json}) répertoriant les segments de PII attendus, leur type et leurs positions exactes. En confrontant les sorties du pipeline complet aux annotations de référence, on calcule notamment le rappel (limiter les fuites de données personnelles) et la précision (éviter de dégrader excessivement la lisibilité des documents). Il faut l'interpréter avec précaution : la grille utilise ses propres types (PERSON, ORG, INTERNAL\_ID...), qu'il faut faire correspondre aux nôtres, et contient des cas que nous avons choisi de ne pas traiter, comme les numéros de dossier internes ou les personnalités publiques. Le README du corpus le dit lui-même : chaque projet fixe ses propres règles.
+La précision globale est de 98 \%. Les données qui identifient directement une personne sont retrouvées à 94 \%. Les 24 numéros de dossier (INTERNAL\_ID) et la personnalité publique ne sont pas détectés, par choix ; sans eux, le rappel atteint 90 \%. Les pertes restantes portent sur des données à format libre : lieux, professions et liens familiaux. La figure~\ref{fig:matrice_confusion} détaille les résultats par type. Ce corpus nous a aussi servi à corriger le prompt : les organismes n'étaient d'abord retrouvés qu'à 17 \%, parce que le prompt citait ce type sans le définir ; après l'ajout d'une définition et d'exemples, ils le sont à 89 \%.
 
 \begin{figure}[htbp]
     \centering
-    % Remplacer le chemin ci-dessous par celui de votre capture d'écran de la matrice de confusion
-    \includegraphics[width=0.9\textwidth]{matrice_confusion.png}
-    \caption{Rapport de performance multi-classes obtenue sur le corpus d'évaluation par rapport à \texttt{ground\_truth\_spans.json}.}
+    \includegraphics[width=0.48\textwidth]{matrice_confusion.png}
+    \caption{Rapport de performance par type sur le corpus du tuteur, par rapport à \texttt{ground\_truth\_spans.json}}
     \label{fig:matrice_confusion}
 \end{figure}
 
-Enfin, le reste a fini par être testé plus tard, lorsque nous avions implémenté les fonctionnalités essentielles, pour atteindre une couverture globale du code d'environ 96\%.
-
+Le même corpus a servi à mesurer les défenses contre l'injection (script \texttt{evaluer\_juge.py}). Le filtre à motifs ne bloque que 2 des 17 documents piégés : les autres formulent leur consigne autrement (« Disregard previous instructions », fausse note système, consigne en base64). Le juge d'injection signale les 17 et ne donne aucune fausse alerte sur les 51 autres documents. Ce résultat repose sur un seul passage et sur un corpus que nous connaissions en écrivant le prompt du juge.
 
 \subsection{Traitements longs et disparition d'une source}
 
@@ -785,27 +710,26 @@ Il n'y a pas d'inscription libre : seul l'administrateur crée les comptes. Chaq
 
 \subsection{Choix des patrons de conception}
 
-Les détecteurs se cumulent et s'assemblent selon les options de chaque requête : c'est le rôle du patron décorateur (\texttt{AnalyserFactory}, \texttt{RegexDecorator}, \texttt{LLMDecorator}). Les modes de caviardage, eux, s'excluent : c'est celui du patron stratégie (\texttt{RedactorContext}, \texttt{MaskRedactor}, \texttt{PseudonymiseRedactor}). Dans les deux cas, ajouter un détecteur ou un mode revient à créer une classe, sans modifier les autres (principe ouvert/fermé). Le détail et les diagrammes figurent à la section~\ref{sec:chevauchements} et autour ; ils sont adaptés des exemples de Refactoring Guru.
+Les détecteurs se cumulent et s'assemblent selon les options de chaque requête : c'est le rôle du patron décorateur (\texttt{AnalyserFactory}, \texttt{RegexDecorator}, \texttt{LLMDecorator}). Les modes de caviardage, eux, s'excluent : c'est celui du patron stratégie (\texttt{RedactorContext}, \texttt{MaskRedactor}, \texttt{PseudonymiseRedactor}). Dans les deux cas, ajouter un détecteur ou un mode revient à créer une classe, sans modifier les autres (principe ouvert/fermé). Le détail figure avec les diagrammes de classes (figures~\ref{fig:anclass} et~\ref{fig:cavclass}), adaptés des exemples de Refactoring Guru.
 
 \subsection{Gestion des erreurs et mode dégradé}
 
-Les détecteurs se cumulent et s'assemblent selon les options de chaque requête : c'est le rôle du patron décorateur (\texttt{AnalyserFactory}, \texttt{RegexDecorator}, \texttt{LLMDecorator}). Les modes de caviardage, eux, s'excluent : c'est celui du patron stratégie (\texttt{RedactorContext}, \texttt{MaskRedactor}, \texttt{PseudonymiseRedactor}). Dans les deux cas, ajouter un détecteur ou un mode revient à créer une classe, sans modifier les autres (principe ouvert/fermé). Le détail et les diagrammes figurent à la section~\ref{sec:chevauchements} et autour ; ils sont adaptés des exemples de Refactoring Guru.
+Les services lèvent des exceptions métier (\texttt{AuthError}, \texttt{DocNotFound}, \texttt{LLMInjectionError}...) que les contrôleurs traduisent en codes HTTP : 401 pour un jeton absent ou invalide, 403 pour une action interdite ou un compte désactivé, 400 pour une tentative d'injection, 413 pour un document trop long, 415 pour un fichier qui n'est pas un texte UTF-8, 429 après cinq échecs de connexion. Si le LLM ne répond pas ou renvoie une réponse invalide, l'analyse continue avec les expressions régulières seules et la réponse signale l'échec ; l'interface l'affiche en avertissement. Pour l'anonymisation directe (FO2), qui n'a pas de solution de repli, l'échec est renvoyé tel quel (503) et l'interface affiche un message clair, y compris quand le serveur ne répond pas à temps.
 
 
 % ==================================================
 % 6. CONCLUSION
 % ==================================================
 
-\newpage
 \section{Conclusion et perspectives}
 
 Anonymia remplit les cinq fonctionnalités demandées, ainsi que trois des quatre options. Sur notre jeu d'essai, la combinaison des expressions régulières et du LLM retrouve 97 \% des données personnelles sans faux positif, en moins d'une seconde par document avec le modèle retenu. Sur le corpus indépendant du tuteur, elle retrouve 94 \% des données d'identification directe et 82 \% de l'ensemble, avec une précision de 98 \%. L'application reste utilisable sans le LLM, refuse les documents qui tentent de manipuler le modèle et ne conserve aucun contenu.
 
 Le travail sur le LLM a demandé plus d'itérations que prévu : la réécriture du prompt a fait passer le rappel du LLM de 69 \% à plus de 80 \%, et les corrections qui ont suivi l'audit du tuteur ont porté pour l'essentiel sur la sécurité, un point que nous avions sous-estimé au départ. Plusieurs limites restent : les lieux, les professions et les liens familiaux sont moins bien détectés, les échecs d'analyse ne sont pas enregistrés dans le journal, et la console compare les détecteurs sur le résultat fusionné, où une donnée trouvée par les deux n'est attribuée qu'à l'un d'eux.
 
-Parmi les fonctionnalités qui n'ont pas été implémentées, il y a le NER qui peut être intégré directement dans l'architecture existante en ajoutant une valeur à l'énumération des analyseurs, en créant un décorateur dédié (\texttt{SpacyDecorator}) qui extrait les entités nommées (personnes, lieux, organisations) avec leurs positions de caractères (\texttt{start\_char}, \texttt{end\_char}), et en l'enregistrant dans AnalyserFactory. Cela offrirait une alternative locale sans dépendance externe pour comparer un modèle NER dédié à un LLM généraliste. Enfin, empaqueter l'API FastAPI, l'interface et la base de données dans des conteneurs Docker faciliterait grandement le déploiement sur différents environnements (comme Onyxia) tout en évitant les écarts de configuration entre postes. Couplée à une intégration continue plus complète (exécution systématique des tests unitaires et d'intégration, vérifications de qualité de code et contrôles de sécurité à chaque poussée), cette démarche rendrait le projet encore plus fiable, reproductible et prêt pour une mise en production.
+Parmi les fonctionnalités qui n'ont pas été implémentées, il y a le NER qui peut être intégré directement dans l'architecture existante en ajoutant une valeur à l'énumération des analyseurs, en créant un décorateur dédié (\texttt{SpacyDecorator}) qui extrait les entités nommées (personnes, lieux, organisations) avec leurs positions de caractères (\texttt{start\_char}, \texttt{end\_char}), et en l'enregistrant dans AnalyserFactory. Cela offrirait une alternative locale sans dépendance externe pour comparer un modèle NER dédié à un LLM généraliste. Enfin, empaqueter l'API FastAPI, l'interface et la base de données dans des conteneurs Docker faciliterait le déploiement sur différents environnements (comme Onyxia) tout en évitant les écarts de configuration entre postes. Couplée à une intégration continue plus complète (exécution systématique des tests unitaires et d'intégration, vérifications de qualité de code et contrôles de sécurité à chaque poussée), cette démarche rapprocherait le projet d'une mise en production.
 
-Nous avons identifié d'autres pistes d'amélioration, comme les temps de traitements longs qui proviennent principalement des appels aux modèles LLM (temps d'inférence et latence réseau/API externe) et du traitement de documents longs. L'approche asynchrone (async/await) permet de ne pas bloquer la boucle d'événements et d'exécuter plus efficacement les opérations concurrentes (par exemple combiner un traitement Regex rapide avec d'autres étapes). Pour aller plus loin, l'ajout de timeouts ou d'un cache sur les contenus déjà analysés permettrait de réduire encore davantage la latence.
+Enfin, un cache des documents déjà analysés, repérés par leur empreinte, éviterait de rappeler le LLM pour un texte déjà traité.
 % ==================================================
 % 7. NOTES INDIVIDUELLES
 % ==================================================
@@ -878,7 +802,7 @@ plus la décision de détection relève d'un choix de conception à documenter,
 et non d'une évidence technique.
 
 \medskip
-\noindent\textbf{Cercle 1 --- Identification directe et non ambiguë}
+\noindent\textbf{Cercle 1 : identification directe et non ambiguë}
 
 \smallskip
 
@@ -947,7 +871,7 @@ personne. \\
 
 
 \medskip
-\noindent\textbf{Cercle 2 --- Identification indirecte ou dépendante du contexte}
+\noindent\textbf{Cercle 2 : identification indirecte ou dépendante du contexte}
 
 \smallskip
 
@@ -1016,7 +940,7 @@ contrairement à une structure très restreinte. \\
 
 
 \medskip
-\noindent\textbf{Cercle 3 --- Jugement fortement contextuel et catégories sensibles}
+\noindent\textbf{Cercle 3 : jugement fortement contextuel et catégories sensibles}
 
 \smallskip
 
