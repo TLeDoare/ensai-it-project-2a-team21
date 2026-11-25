@@ -282,7 +282,7 @@ Cette décomposition favorise la réutilisation des composants et permet de test
 
 \subsubsection{Illustration par un diagramme de séquence}
 
-Afin d'illustrer les interactions entre les différents composants du backend, nous avons réalisé un diagramme de séquence représentant le déroulement de la détection des données personnelles au sein d'un document. Ce diagramme, élaboré lors de la phase de conception, met en évidence le rôle de l'API, du service chargé de coordonner l'analyse et des deux mécanismes complémentaires de détection. Le traitement repose sur l'exécution concurrente du détecteur par expressions régulières et du détecteur utilisant un modèle de langage. Ce dernier fait intervenir des mécanismes de filtrage des entrées et de vérification des réponses produites. Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une liste de données personnelles identifiées dans le document.
+Afin d'illustrer les interactions entre les différents composants du backend, nous avons réalisé un diagramme de séquence représentant le déroulement de la détection des données personnelles au sein d'un document. Ce diagramme met en évidence le rôle de l'API, du service chargé de coordonner l'analyse et des deux mécanismes complémentaires de détection. Le traitement repose sur l'exécution concurrente du détecteur par expressions régulières et du détecteur utilisant un modèle de langage. Ce dernier fait intervenir des mécanismes de filtrage des entrées et de vérification des réponses produites. Les résultats des deux détecteurs sont ensuite regroupés afin d'obtenir une liste de données personnelles identifiées dans le document.
 
 
 \begin{landscape}
@@ -290,7 +290,7 @@ Afin d'illustrer les interactions entre les différents composants du backend, n
   \thispagestyle{empty}
     \centering
     \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{diagramme_sequence}
-    \caption{Diagramme de séquence du flux nominal de détection, issu de la conception initiale}
+    \caption{Diagramme de séquence du flux nominal de détection}
     \label{fig:sequence_detection}
 \end{figure}
 \end{landscape}
