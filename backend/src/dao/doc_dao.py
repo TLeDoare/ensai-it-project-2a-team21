@@ -1,5 +1,6 @@
 import json
 from ast import literal_eval
+from datetime import date, timedelta
 
 import psycopg2
 
@@ -77,14 +78,35 @@ class DocDAO(metaclass=Singleton):
                     )
         return redacted_doc
 
-    def find_all(self) -> list[RedactedDoc]:
+    def find_all(self, auteur: str | None = None, debut: date | None = None, fin: date | None = None) -> list[RedactedDoc]:
+        """Renvoie le journal des traitements, du plus récent au plus ancien, avec des filtres facultatifs (F4).
+
+        auteur : e-mail de l'auteur (sans tenir compte des majuscules) ; debut et fin : dates incluses.
+        """
+        # Chaque filtre ajoute une condition écrite par nous ; les valeurs passent toujours en paramètres liés
+        conditions, valeurs = [], {}
+        if auteur:
+            conditions.append("LOWER(author_email) = LOWER(%(auteur)s)")
+            valeurs["auteur"] = auteur.strip()
+        if debut:
+            conditions.append("upload_date >= %(debut)s")
+            valeurs["debut"] = debut
+        if fin:
+            # fin est incluse : on garde tout ce qui est avant le lendemain à minuit
+            conditions.append("upload_date < %(lendemain)s")
+            valeurs["lendemain"] = fin + timedelta(days=1)
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
         with DBConnection().connection as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
-                    """
+                    f"""
                     SELECT *
                     FROM redacteddoc
-                    """
+                    {where}
+                    ORDER BY upload_date DESC
+                    """,
+                    valeurs,
                 )
                 doc_bdd = cursor.fetchall()
         liste_doc = []

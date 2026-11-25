@@ -1,4 +1,5 @@
 from ast import literal_eval
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException
@@ -93,9 +94,19 @@ async def find_by_id(id: int, doc_service=Depends(get_doc_service), current_pers
         raise HTTPException(status_code=401, detail="Accès non autorisé.") from AuthError
 
 @router.post("/find_all", response_model=list[DocModel], tags=["Doc"])
-async def find_all(doc_service=Depends(get_doc_service), current_person=Depends(verify_token)):
+async def find_all(
+    auteur: str | None = None,
+    debut: date | None = None,
+    fin: date | None = None,
+    doc_service=Depends(get_doc_service),
+    current_person=Depends(verify_token),
+):
+    """Journal des traitements (F4). Filtres facultatifs : e-mail de l'auteur, date de début et date de fin
+    (format AAAA-MM-JJ, dates incluses). Sans filtre, tout le journal est renvoyé."""
+    if debut and fin and debut > fin:
+        raise HTTPException(status_code=400, detail="La date de début doit précéder la date de fin.")
     try:
-        return doc_service.find_all(current_person)
+        return doc_service.find_all(current_person, auteur, debut, fin)
     except DocNotFound:
         raise HTTPException(status_code=404, detail="Ce document n'existe pas") from DocNotFound
     except AuthError:

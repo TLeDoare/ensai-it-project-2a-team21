@@ -18,7 +18,7 @@ controller  ->  service  ->  business_object
 | `main.py` | Creates the FastAPI application, registers the routers (`/login`, `/person`, `/doc`) and the `GET /reset_database` route. Can also be run directly from the repository root: `uv run --project backend python backend/src/main.py`. |
 | `controller/` | HTTP layer: one router per resource. Checks the session token (`x-auth-token` header), validates input with the Pydantic models of `schema/`, calls a service and turns business exceptions into HTTP codes (400, 401, 403, 404, 409, 413, 415, 429). |
 | `schema/` | Pydantic models for requests and responses (`PersonModel`, `DocModel`). |
-| `service/` | Application rules: `PersonService` (login, login attempt limit, tokens, accounts, rights matrix in `grant_auth`) and `DocService` (injection filter, analysis, injection judge, redaction, audit log). |
+| `service/` | Application rules: `PersonService` (login, login attempt limit, tokens, accounts, rights matrix in `grant_auth`) and `DocService` (injection filter, analysis, injection judge, redaction, audit log and its author and period filters). |
 | `business_object/` | Entities (`Person`, `RedactedDoc`, enums in `types.py`) and algorithms, with no HTTP or SQL: `analyser/` (Decorator pattern: `LLMDecorator(RegexDecorator(EmptyAnalyser()))`, built by `AnalyserFactory`; overlap merge in `overlap.py`), `llm_client/` (SSPCloud client, prompts, `InjectionFilter`, `OutputVerifier`, `InjectionJudge`), `redactor/` (Strategy pattern: masking or pseudonymisation, chosen through `RedactorContext`). |
 | `dao/` | All SQL queries, with bound parameters only: `PersonDAO`, `DocDAO`, `InjectionAttemptDAO`. `DBConnection` is a singleton holding the PostgreSQL connection. |
 | `utils/` | Environment variables, exceptions, password and document hashing (`security.py`), login attempt limiter, logging helper, database reset. |
@@ -49,7 +49,7 @@ The DAO tests refuse to run on any other schema than `project_test_dao`, so they
 uv run --project backend pytest backend/tests/test_dao
 ```
 
-Coverage on 24 November 2026: 85 % without the DAO tests (216 cases), 93 % with them (244 cases):
+Coverage on 24 November 2026: 84 % without the DAO tests (221 cases), 93 % with them (253 cases):
 
 ```bash
 uv run --project backend pytest backend/tests/test_business_object backend/tests/test_service -m "not llm" --cov=backend/src --cov-report=term

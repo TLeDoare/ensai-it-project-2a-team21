@@ -13,7 +13,7 @@ The API is built with FastAPI, and the user interface with Streamlit.
 | F1 | Login with email and password (Argon2 hash), 24-hour revocable session token, three roles. After 5 failed logins in 15 minutes for the same address, it is blocked for 15 minutes (HTTP 429). The administrator creates, changes the role of, deactivates or reactivates, and deletes accounts. |
 | F2 | Detection by 13 regular expressions and by the LLM, run in parallel, then merged. Each item comes with its position, type, confidence and detector. If the LLM fails, the regex results are used and the failure is reported. |
 | F3 | Masking (`[NAME_1]`, `[NIR_1]`...) or consistent pseudonymisation (the same value always gets the same substitute within a document). |
-| F4 | Audit log of every processing: date, author, HMAC fingerprint of the document (never its content), number, types and positions of detected items, options. Supervisors and administrators browse it with filters and charts. |
+| F4 | Audit log of every processing: date, author, HMAC fingerprint of the document (never its content), number, types and positions of detected items, options. Supervisors and administrators browse it, filtered by author and period through the API (`POST /doc/find_all?auteur=a@a.com&debut=2026-11-01&fin=2026-11-30`, every filter optional), with charts in the interface. |
 | F5 | Strict system prompt and forced JSON output, injection filter before the call (the document is refused, HTTP 400), verification of the LLM answer (invented items removed, suspicious omission reported). |
 | FO2 | Optional direct rewrite by the LLM (`POST /doc/redact_llm/`), shown next to the regular result for comparison. Not logged, not offered for download. |
 | FO3 | When the LLM is enabled, a second LLM call judges in parallel whether the document tries to manipulate the model. The verdict (`sain`, `suspect` or `indisponible`) is stored in the audit log; a suspicious document is still redacted, but the user is warned and the attempt is recorded. |
@@ -142,7 +142,7 @@ DAO tests write to the database, so they refuse to run on the production schema.
 uv run --project backend pytest backend/tests/test_dao
 ```
 
-Coverage on 24 November 2026: 85 % with unit tests only (216 cases), 93 % including DAO tests (244 cases). Add `--cov=backend/src --cov-report=term` to measure it.
+Coverage on 24 November 2026: 84 % with unit tests only (221 cases), 93 % including DAO tests (253 cases). Add `--cov=backend/src --cov-report=term` to measure it.
 
 The test marked `llm` calls the real model; run it with `-m llm`.
 

@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import date, datetime
 
 from business_object.analyser.analyser_factory import AnalyserFactory
 from business_object.analyser.overlap import resoudre_chevauchements
@@ -105,9 +105,10 @@ class DocService:
             return doc
 
     @log
-    def find_all(self, sent_by: Person):
+    def find_all(self, sent_by: Person, auteur: str | None = None, debut: date | None = None, fin: date | None = None):
+        """Journal des traitements (F4), filtré par auteur et par période si ces paramètres sont donnés."""
         PersonService().grant_auth(sent_by, Access.ReadDoc)
-        docs = DocDAO().find_all()
+        docs = DocDAO().find_all(auteur, debut, fin)
         if docs == []:
             raise DocNotFound
         else:
