@@ -769,7 +769,9 @@ J'en retiens qu'une architecture en couches, qui m'a d'abord paru lourde, fait g
 
 \subsection{Tom Le Besnerais}
 
-\textit{Note individuelle -- une page maximum.}
+Dans ce projet, je me suis surtout occupé de la partie « déterministe » de la détection : définir la typologie des données à caviarder et écrire les expressions régulières correspondantes avec le module re. Au départ, je pensais qu'il suffirait de lister quelques motifs (e-mail, téléphone) et que le plus dur serait ailleurs. J'ai vite compris que la vraie difficulté était de décider ce qui relève ou non d'une donnée personnelle, et à quel niveau de précision.
+Techniquement, je retiens plusieurs leçons. Un motif qui détecte « tout ce qui ressemble » à un numéro de téléphone attrape aussi des dates, des références de commande ou des montants : j'ai dû accepter de rendre les motifs plus stricts (formats +33 ou 0X, séparés par des espaces, points ou tirets) et de les valider ensuite en Python. Pour les cartes bancaires, la clé de Luhn permettait d'écarter les suites de seize chiffres sans intérêt, et pour le numéro de sécurité sociale, de recalculer la clé de contrôle. J'ai aussi appris à utiliser re.compile une seule fois plutôt qu'à chaque appel, les groupes nommés et le mode re.VERBOSE, sans lequel mes expressions n'étaient plus lisibles, même pour moi après deux semaines. Un autre problème, plus subtil, était le chevauchement : un IBAN contient des suites de chiffres qu'une autre regex peut prendre pour un numéro de téléphone, ce qui nous a obligés à fixer un ordre de priorité entre les détecteurs et à fusionner les zones qui se recouvrent avant de remplacer le texte par des balises du type [EMAIL].
+Finalement, je retiens qu'il faut être organisé et rigoureux même pour des détails qui peuvent paraître insignifiants au premier abord.
 
 \subsection{Tanguy Le Doaré}
 
